@@ -7,5 +7,6 @@ gem 'ruote'
 
 group :development, :test do 
   gem 'rspec'
+  gem 'watchr'
 end
 
