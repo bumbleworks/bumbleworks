@@ -7,8 +7,13 @@ module Bumbleworks
       yield configuration if block_given?
     end
 
+
     def configuration
       @configuration ||= Bumbleworks::Configuration.new
+    end
+
+    def reset!
+      @configuration = nil
     end
   end
 end
