@@ -63,6 +63,7 @@ end
 # Watchr Rules
 # --------------------------------------------------
 watch( '^spec/spec_helper\.rb'                    ) {     run_all_specs }
+watch( '^spec/fixtures/sample_app.*\.rb'          ) {     run_last_test }
 watch( '^spec/.*_spec\.rb'                        ) { |m| run_single_spec(m[0]) }
 watch( '^lib/(.*)\.rb'                            ) { |m| run_last_test }
 
