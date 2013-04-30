@@ -51,7 +51,13 @@ module Bumbleworks
 
 
     def definitions_directory
-      @definitions_directory ||= File.join(root, default_folder)
+      @definitions_directory ||= begin
+        default_definition_directories.detect do |default_folder|
+          folder = File.join(root, default_folder)
+          next unless File.directory?(folder)
+          break folder
+        end
+      end
     end
 
     def root
@@ -68,8 +74,8 @@ module Bumbleworks
       self.class.defined_settings
     end
 
-    def default_folder
-      '/lib/process_definitions'
+    def default_definition_directories
+      ['/lib/process_definitions']
     end
   end
 end

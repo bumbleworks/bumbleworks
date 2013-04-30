@@ -24,6 +24,7 @@ describe Bumbleworks::Configuration do
     end
 
     it 'returns the default folder if not set by client app' do
+      File.stub(:directory? => true)
       configuration.root = '/Root'
       configuration.definitions_directory.should == '/Root/lib/process_definitions'
     end
@@ -40,6 +41,8 @@ describe Bumbleworks::Configuration do
       configuration.definitions_directory = 'One/Two'
       configuration.definitions_directory.should == 'One/Two'
       configuration.clear!
+
+      File.stub(:directory? => true)
       configuration.root = '/Root'
       configuration.definitions_directory.should == '/Root/lib/process_definitions'
     end
