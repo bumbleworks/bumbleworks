@@ -22,10 +22,9 @@ describe SampleApp1 do
 
     it 'discovers default Root/participants directory folder' do
       described_class.any_instance.stub(:setup_bumbleworks) do
-        Bumbleworks.configure do |c|
-          c.root = File.join(app_root, 'app')
-        end
+        Bumbleworks.root  = File.join(app_root, 'app')
       end
+
       described_class.new
       Bumbleworks.participants_directory.should == File.join(app_root, 'app', 'participants' )
     end

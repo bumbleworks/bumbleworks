@@ -25,7 +25,7 @@ end
 def run_single_spec *spec
   tags = "--tag #{ARGV[1]}" if ARGV[1]
   spec = spec.join(' ')
-  run "bundle exec rspec  #{spec} --order rand #{tags}"
+  run "bundle exec rspec  #{spec} -d --order rand #{tags}"
 end
 
 def run_specs_with_shared_examples(shared_example_filename, spec_path = 'spec')

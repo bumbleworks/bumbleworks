@@ -4,7 +4,9 @@ require "bumbleworks/configuration"
 module Bumbleworks
   class << self
     extend Forwardable
-    def_delegators :@configuration, :root, :definitions_directory, :participants_directory
+    Configuration.defined_settings.each do |setting|
+      def_delegators :configuration, setting, "#{setting.to_s}="
+    end
 
     def configure
       reset!

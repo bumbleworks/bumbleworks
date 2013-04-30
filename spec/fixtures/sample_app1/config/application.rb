@@ -5,13 +5,7 @@ class SampleApp1
   end
 
   def setup_bumbleworks
-    Bumbleworks.configure do |c|
-      c.root = File.expand_path('../../', __FILE__)
-    end
-  end
-
-  def workflow_engine
-    @workflow_engine ||= Bumbleworks.new
+    Bumbleworks.root = File.expand_path('../../', __FILE__)
   end
 end
 
