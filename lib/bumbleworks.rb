@@ -4,13 +4,12 @@ require "bumbleworks/configuration"
 module Bumbleworks
   class << self
     extend Forwardable
-    def_delegators :@configuration, :root, :definitions_directory
+    def_delegators :@configuration, :root, :definitions_directory, :participants_directory
 
     def configure
       reset!
       yield configuration if block_given?
     end
-
 
     def configuration
       @configuration ||= Bumbleworks::Configuration.new
