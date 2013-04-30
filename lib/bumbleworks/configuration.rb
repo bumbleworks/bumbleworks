@@ -13,6 +13,7 @@ module Bumbleworks
   #
   class Configuration
     class UndefinedSetting < StandardError; end
+    class InvalidSetting < StandardError; end
 
     class << self
       def define_setting(name)
@@ -60,11 +61,11 @@ module Bumbleworks
     end
 
     def definitions_directory
-      @definitions_directory ||= find_folder(default_definition_directories)
+      @definitions_folder ||= default_definition_directory
     end
 
     def participants_directory
-      @participants_directory ||= find_folder(default_participant_directories)
+      @participants_folder ||= default_participant_directory
     end
 
     def root
@@ -74,6 +75,7 @@ module Bumbleworks
 
     def clear!
       defined_settings.each {|setting| instance_variable_set("@#{setting}", nil)}
+      @definitions_folder = @participants_folder = nil
     end
 
     private
@@ -81,20 +83,32 @@ module Bumbleworks
       self.class.defined_settings
     end
 
-    def default_definition_directories
-      ['lib/process_definitions']
+    def default_definition_directory
+      default_folders = ['lib/process_definitions']
+      find_folder(default_folders, @definitions_directory, "Definitions folder not found")
     end
 
-    def default_participant_directories
-      ['participants', 'app/participants']
+    def default_participant_directory
+      default_folders = ['participants', 'app/participants']
+      find_folder(default_folders, @participants_directory, "Participants folder not found")
     end
 
-    def find_folder(default_directories)
-      default_directories.detect do |default_folder|
+    def find_folder(default_directories, defined_directory, message)
+      # use defined directory structure if defined
+      if defined_directory
+        defined_directory = File.join(root, defined_directory) unless defined_directory[0] == '/'
+      end
+
+      # next look in default directory structure
+      defined_directory ||= default_directories.detect do |default_folder|
         folder = File.join(root, default_folder)
         next unless File.directory?(folder)
         break folder
       end
+
+      return defined_directory if File.directory?(defined_directory.to_s)
+
+      raise Bumbleworks::Configuration::InvalidSetting, "#{message}: #{defined_directory}"
     end
   end
 end
