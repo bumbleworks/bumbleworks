@@ -22,18 +22,12 @@ describe Bumbleworks do
       described_class.reset!
     end
 
-    let!(:configuration) do
-      double.tap do |configuration|
-        Bumbleworks::Configuration.should_receive(:new).and_return(configuration)
-      end
-    end
-
     it 'creates an instance of Bumbleworks::Configuration' do
-      described_class.configuration.should == configuration
+      described_class.configuration.should be_an_instance_of(Bumbleworks::Configuration)
     end
 
     it 'returns the same instance when called multiple times' do
-      described_class.configuration.should == configuration
+      configuration = described_class.configuration
       described_class.configuration.should == configuration
     end
   end
