@@ -60,14 +60,34 @@ module Bumbleworks
       @defined_settings = []
     end
 
+    # Path where Bumbleworks will look for ruote process defintiions to load.
+    # The path can be relative or absolute.  Relative paths are
+    # relative to Bumbleworks.root.
+    #
     def definitions_directory
       @definitions_folder ||= default_definition_directory
     end
 
+    # Path where Bumbleworks will look for ruote participants to load.
+    # The path can be relative or absolute.  Relative paths are
+    # relative to Bumbleworks.root.
+    #
     def participants_directory
       @participants_folder ||= default_participant_directory
     end
 
+    # Root folder where bumbleworks looks for ruote assets (participants,
+    # process_definitions, ..etc.)  The root path must be absolute.
+    # It can be defined throguh a configuration block:
+    #   Bumbleworks.configure {|c| c.root = '/somewhere'}
+    #
+    # Or directly:
+    #   Bumbleworks.root = '/somewhere/else/'
+    #
+    # If the root is not defined, Bumbleworks will use the root of known
+    # frameworks (Rails, Sinatra and Rory).  Otherwise, it will raise an
+    # error if not defined.
+    #
     def root
       @root ||= case
       when defined?(Rails) then Rails.root
@@ -78,6 +98,8 @@ module Bumbleworks
       end
     end
 
+    # Clears all memoize variables and configuration settings
+    #
     def clear!
       defined_settings.each {|setting| instance_variable_set("@#{setting}", nil)}
       @definitions_folder = @participants_folder = nil
