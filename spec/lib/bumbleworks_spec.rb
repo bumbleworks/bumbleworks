@@ -15,6 +15,22 @@ describe Bumbleworks do
     end
   end
 
+  describe '.storage' do
+    it 'can set directly' do
+      storage = double("Storage")
+      Bumbleworks.storage = storage
+      Bumbleworks.storage.should == storage
+      Bumbleworks.configuration.storage.should == storage
+    end
+
+    it 'can set with a block' do
+      storage = double("Storage")
+      Bumbleworks.configure {|c| c.storage = storage }
+      Bumbleworks.storage.should == storage
+      Bumbleworks.configuration.storage.should == storage
+    end
+  end
+
   describe '.configuration' do
     before :each do
       described_class.reset!

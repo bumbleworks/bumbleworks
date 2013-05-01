@@ -56,6 +56,18 @@ module Bumbleworks
     # default: ${Bumbleworks.root}/participants then ${Bumbleworks.root}/app/participants
     define_setting :participants_directory
 
+    # Bumbelworks requires a dedicated key-value storage for process information.  Two
+    # storage solutions are currently supported: Redis and Sequel.  You can set the storage
+    # as follows:
+    #
+    # @Exammple: Redis
+    #   Bumbleworks.storage = Redis.new(:host => '127.0.0.1', :db => 0, :thread_safe => true)
+    #
+    # @Example: Sequel with Postgres db
+    #   Bumbleworks.storage = Sequel.connect('postgres://user:password@host:port/database_name')
+    #
+    define_setting :storage
+
     def initialize
       @defined_settings = []
     end

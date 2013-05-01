@@ -99,6 +99,14 @@ describe Bumbleworks::Configuration do
     end
   end
 
+  describe "#storage" do
+    it 'can set storage directly' do
+      storage = double("Storage")
+      configuration.storage = storage
+      configuration.storage.should == storage
+    end
+  end
+
   describe '#clear!' do
     it 'resets #root' do
       configuration.root = '/Root'
