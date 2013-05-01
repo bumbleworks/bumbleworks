@@ -69,8 +69,13 @@ module Bumbleworks
     end
 
     def root
-      raise UndefinedSetting.new("Bumbleworks.root must be set") unless @root
-      @root
+      @root ||= case
+      when defined?(Rails) then Rails.root
+      when defined?(Rory) then Rory.root
+      when defined?(Sinatra::Application) then Sinatra::Application.root
+      else
+        raise UndefinedSetting.new("Bumbleworks.root must be set") unless @root
+      end
     end
 
     def clear!

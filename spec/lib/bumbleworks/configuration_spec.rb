@@ -13,6 +13,41 @@ describe Bumbleworks::Configuration do
       configuration.root = '/what/about/that'
       configuration.root.should == '/what/about/that'
     end
+
+    it 'uses Rails.root if Rails is defined' do
+      class Rails
+        def self.root
+          '/Rails/Root'
+        end
+      end
+
+      configuration.root.should == '/Rails/Root'
+      Object.send(:remove_const, :Rails)
+    end
+
+    it 'uses Sinatra::Application.root if defined' do
+      class Sinatra
+        class Application
+          def self.root
+            '/Sinatra/Root'
+          end
+        end
+      end
+
+      configuration.root.should == '/Sinatra/Root'
+      Object.send(:remove_const, :Sinatra)
+    end
+
+    it 'uses Rory.root if defined' do
+      class Rory
+        def self.root
+          '/Rory/Root'
+        end
+      end
+
+      configuration.root.should == '/Rory/Root'
+      Object.send(:remove_const, :Rory)
+    end
   end
 
   describe "#definitions_directory" do
