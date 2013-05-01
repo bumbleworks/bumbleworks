@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 describe Bumbleworks::Configuration do
   let(:configuration) {described_class.new}
   before :each do
