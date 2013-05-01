@@ -2,8 +2,12 @@ require "bumbleworks/version"
 require "bumbleworks/configuration"
 
 module Bumbleworks
+  class UnsupportedMode < StandardError; end
+
   class << self
     extend Forwardable
+    attr_accessor :env
+
     Configuration.defined_settings.each do |setting|
       def_delegators :configuration, setting, "#{setting.to_s}="
     end
@@ -17,8 +21,21 @@ module Bumbleworks
       @configuration ||= Bumbleworks::Configuration.new
     end
 
+    def register_participants(&block)
+      @participant_block = block
+    end
+
+    def participant_block
+      raise UnsupportedMode unless @env == 'test'
+      @participant_block
+    end
+
+    private
     def reset!
       @configuration = nil
+      @participant_block = nil
+    end
+
     end
   end
 end

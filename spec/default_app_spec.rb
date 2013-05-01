@@ -5,10 +5,6 @@ describe SampleApp do
   describe "Bumbleworks.configure: use default folders" do
     let(:app_root) {File.expand_path('../fixture_app', __FILE__)}
 
-    before :each do
-      Bumbleworks.reset!
-    end
-
     it 'sets Bumbleworks configuration for application root' do
       described_class.new
       Bumbleworks.root.should == app_root
