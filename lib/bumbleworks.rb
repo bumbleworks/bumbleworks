@@ -1,5 +1,6 @@
 require "bumbleworks/version"
 require "bumbleworks/configuration"
+require "bumbleworks/support"
 require "ruote"
 require "ruote-redis"
 require "ruote-sequel"
@@ -36,7 +37,10 @@ module Bumbleworks
     end
 
     def start!(options = {:autostart_worker => true})
-      load_and_register_participants
+      load_participants
+      register_participant_list
+      #autoload_process_definitions
+
     end
 
     def engine
@@ -50,12 +54,19 @@ module Bumbleworks
     end
 
     private
-    def load_and_register_participants
+    def register_participant_list
       if @participant_block.is_a? Proc
         engine.register &@participant_block
       end
     end
 
+    def load_participants
+      Dir["#{participants_directory}/*.rb"].each do |path|
+        name = File.basename(path, '.rb')
+        name = Bumbleworks::Support.camelize(name)
+        Object.autoload name.to_sym, path
+      end
+    end
 
     def ruote_storage
       raise UndefinedSetting, "Storage must be set" unless storage

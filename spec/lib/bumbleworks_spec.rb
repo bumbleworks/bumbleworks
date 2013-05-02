@@ -32,9 +32,8 @@ describe Bumbleworks do
   end
 
   describe '.start!' do
-    it 'does things in order' do
-      # registers storage
-      # registers engine
+    before :each do
+      Bumbleworks.stub(:load_participants)
     end
 
     it 'loads and registers the participants' do

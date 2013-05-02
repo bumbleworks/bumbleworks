@@ -25,6 +25,13 @@ describe SampleApp do
       Bumbleworks.root = File.join(app_root, 'app')
       Bumbleworks.participants_directory.should == File.join(app_root, 'app', 'participants' )
     end
+
+    it 'loads participants' do
+      described_class.new
+      Bumbleworks.root = File.join(app_root, 'app')
+      Bumbleworks.engine.participant_list.should have(2).items
+      Bumbleworks.engine.participant_list.map(&:classname).should =~ ['HoneyParticipant', 'MolassesParticipant']
+    end
   end
 end
 
