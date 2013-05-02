@@ -1,7 +1,9 @@
 require "bumbleworks/version"
 require "bumbleworks/configuration"
 require "bumbleworks/support"
+require "bumbleworks/process_definition"
 require "ruote"
+require "ruote/reader"
 require "ruote-redis"
 require "ruote-sequel"
 
@@ -39,8 +41,7 @@ module Bumbleworks
     def start!(options = {:autostart_worker => true})
       load_participants
       register_participant_list
-      #autoload_process_definitions
-
+      load_process_definitions
     end
 
     def engine
@@ -61,10 +62,22 @@ module Bumbleworks
     end
 
     def load_participants
-      Dir["#{participants_directory}/*.rb"].each do |path|
+      all_files(participants_directory) do |name, path|
+        Object.autoload name.to_sym, path
+      end
+    end
+
+    def load_process_definitions
+      all_files(definitions_directory) do |_, path|
+        ProcessDefinition.create!(path)
+      end
+    end
+
+    def all_files(directory)
+      Dir["#{directory}/**/*.rb"].each do |path|
         name = File.basename(path, '.rb')
         name = Bumbleworks::Support.camelize(name)
-        Object.autoload name.to_sym, path
+        yield name, path
       end
     end
 

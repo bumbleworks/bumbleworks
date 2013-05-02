@@ -34,6 +34,7 @@ describe Bumbleworks do
   describe '.start!' do
     before :each do
       Bumbleworks.stub(:load_participants)
+      Bumbleworks.stub(:load_process_definitions)
     end
 
     it 'loads and registers the participants' do
