@@ -6,6 +6,8 @@ require "ruote-sequel"
 
 module Bumbleworks
   class UnsupportedMode < StandardError; end
+  class UndefinedSetting < StandardError; end
+  class InvalidSetting < StandardError; end
 
   class << self
     extend Forwardable

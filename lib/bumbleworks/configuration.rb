@@ -12,8 +12,6 @@ module Bumbleworks
   #   end
   #
   class Configuration
-    class UndefinedSetting < StandardError; end
-    class InvalidSetting < StandardError; end
 
     class << self
       def define_setting(name)

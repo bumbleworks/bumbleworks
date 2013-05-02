@@ -6,7 +6,7 @@ describe Bumbleworks::Configuration do
 
   describe "#root" do
     it 'raises an error if client did not define' do
-      expect{configuration.root}.to raise_error Bumbleworks::Configuration::UndefinedSetting
+      expect{configuration.root}.to raise_error Bumbleworks::UndefinedSetting
     end
 
     it 'returns folder set by user' do
@@ -65,12 +65,12 @@ describe Bumbleworks::Configuration do
 
     it 'raises an error if default folder not found' do
       configuration.root = '/Root'
-      expect{configuration.definitions_directory}.to raise_error Bumbleworks::Configuration::InvalidSetting
+      expect{configuration.definitions_directory}.to raise_error Bumbleworks::InvalidSetting
     end
 
     it 'raises an error if specific folder not found' do
       configuration.definitions_directory = '/mumbo/jumbo'
-      expect{configuration.definitions_directory}.to raise_error Bumbleworks::Configuration::InvalidSetting
+      expect{configuration.definitions_directory}.to raise_error Bumbleworks::InvalidSetting
     end
   end
 
@@ -90,12 +90,12 @@ describe Bumbleworks::Configuration do
 
     it 'raises an error if default folder not found' do
       configuration.root = '/Root'
-      expect{configuration.participants_directory}.to raise_error Bumbleworks::Configuration::InvalidSetting
+      expect{configuration.participants_directory}.to raise_error Bumbleworks::InvalidSetting
     end
 
     it 'raises an error if specific folder not found' do
       configuration.participants_directory = '/mumbo/jumbo'
-      expect{configuration.participants_directory}.to raise_error Bumbleworks::Configuration::InvalidSetting
+      expect{configuration.participants_directory}.to raise_error Bumbleworks::InvalidSetting
     end
   end
 
@@ -111,7 +111,7 @@ describe Bumbleworks::Configuration do
     it 'resets #root' do
       configuration.root = '/Root'
       configuration.clear!
-      expect{configuration.root}.to raise_error Bumbleworks::Configuration::UndefinedSetting
+      expect{configuration.root}.to raise_error Bumbleworks::UndefinedSetting
     end
 
     it 'resets #definitions_directory' do
