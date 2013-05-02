@@ -20,6 +20,7 @@ GEM
     parslet (1.4.0)
       blankslate (~> 2.0)
     rake (10.0.4)
+    redis (3.0.4)
     rspec (2.13.0)
       rspec-core (~> 2.13.0)
       rspec-expectations (~> 2.13.0)
@@ -53,6 +54,13 @@ GEM
       rufus-scheduler (>= 2.0.16)
       rufus-treechecker (>= 1.0.8)
       sourcify (= 0.5.0)
+    ruote-redis (2.3.0)
+      redis
+      ruote (>= 2.3.0)
+    ruote-sequel (2.3.0)
+      ruote (>= 2.3.0)
+      sequel
+    sequel (3.47.0)
     sexp_processor (3.2.0)
     sourcify (0.5.0)
       file-tail (>= 1.0.5)
@@ -73,4 +81,6 @@ DEPENDENCIES
   rake
   rspec
   ruote
+  ruote-redis
+  ruote-sequel
   watchr

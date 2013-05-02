@@ -1,5 +1,8 @@
 require "bumbleworks/version"
 require "bumbleworks/configuration"
+require "ruote"
+require "ruote-redis"
+require "ruote-sequel"
 
 module Bumbleworks
   class UnsupportedMode < StandardError; end

@@ -4,6 +4,8 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'ruote'
+gem 'ruote-redis'
+gem 'ruote-sequel'
 
 group :development, :test do 
   gem 'rspec'
