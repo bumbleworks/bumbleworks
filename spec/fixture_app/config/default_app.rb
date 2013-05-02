@@ -15,7 +15,6 @@ class SampleApp
 
   def register_participants
     Bumbleworks.register_participants do
-      update_status StatusChangeParticipant
     end
   end
 
