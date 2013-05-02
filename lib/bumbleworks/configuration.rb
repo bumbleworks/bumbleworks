@@ -145,7 +145,7 @@ module Bumbleworks
 
       return defined_directory if File.directory?(defined_directory.to_s)
 
-      raise Bumbleworks::Configuration::InvalidSetting, "#{message}: #{defined_directory}"
+      raise Bumbleworks::InvalidSetting, "#{message}: #{defined_directory}"
     end
   end
 end

@@ -31,6 +31,60 @@ describe Bumbleworks do
     end
   end
 
+  describe '.start!' do
+    it 'does things in order' do
+      # registers storage
+      # registers engine
+    end
+
+    it 'loads and registers the participants' do
+      participant_block = Proc.new do
+      end
+
+      Bumbleworks.storage = {}
+      Bumbleworks.register_participants &participant_block
+      Bumbleworks.engine.should_receive(:register).with(&participant_block)
+      Bumbleworks.start!
+    end
+
+    it 'calls participant block to register them' do
+      participant_block = Proc.new do
+        catchall
+      end
+
+      Bumbleworks.storage = {}
+      Bumbleworks.register_participants &participant_block
+      Bumbleworks.engine.should_receive(:register).and_call_original
+      Bumbleworks.start!
+      Bumbleworks.engine.participant_list.first.should be_an_instance_of(Ruote::ParticipantEntry)
+    end
+
+
+    it 'calls catchall participant if no participants are defined' do
+
+    end
+
+    it 'raises error if no process definitions are loaded' do
+    end
+
+  end
+
+  describe '.engine' do
+    before :each do
+      Bumbleworks.reset!
+    end
+
+    it 'raises an error if no storage is defined' do
+      Bumbleworks.storage = nil
+      expect{Bumbleworks.engine}.to raise_error Bumbleworks::UndefinedSetting
+    end
+
+    it 'creates a new engine' do
+      Bumbleworks.storage = {}
+      Bumbleworks.engine.should be_an_instance_of(Ruote::Dashboard)
+    end
+  end
+
   describe '.participant_block' do
     it 'raises error if not in test mode' do
       Bumbleworks.env = 'not-in-test-mode'

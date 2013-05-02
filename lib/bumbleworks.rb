@@ -36,11 +36,41 @@ module Bumbleworks
     end
 
     private
+    def start!(options = {:autostart_worker => true})
+      load_and_register_participants
+    end
+
+    def engine
+      @engine ||= Ruote::Dashboard.new(ruote_storage)
+    end
+
     def reset!
       @configuration = nil
       @participant_block = nil
+      shutdown_engine
     end
 
+    private
+    def load_and_register_participants
+      if @participant_block.is_a? Proc
+        engine.register &@participant_block
+      end
     end
+
+
+    def ruote_storage
+      raise UndefinedSetting, "Storage must be set" unless storage
+
+      case storage
+        when Redis then Ruote::Redis::Storage.new(storage)
+        when Hash then Ruote::HashStorage.new(storage)
+      end
+    end
+
+    def shutdown_engine
+      @engine.shutdown if @engine && @engine.respond_to?(:shutdown)
+      @engine = nil
+    end
+
   end
 end
