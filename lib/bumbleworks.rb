@@ -35,7 +35,6 @@ module Bumbleworks
       @participant_block
     end
 
-    private
     def start!(options = {:autostart_worker => true})
       load_and_register_participants
     end
