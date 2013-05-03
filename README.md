@@ -1,11 +1,4 @@
 # Bumbleworks
-<dl>
-  <dt>bumble <em>noun</em></dt>
-  <dd>A confusion, jumble.</dd>
-  <dt>bumble <em>verb</em></dt>
-  <dd>To act in an inept, clumsy or inexpert manner; to make mistakes.<br/>
-  <em>Spiders build webs and wait for insects to bumble into them.</em></dd>
-</dl>
 
 Bumbleworks is a gem that adds a workflow engine (via [ruote](http://github.com/jmettraux/ruote)) to your Ruby application, and adds tools for task authorization and locking.  It also establishes conventions for easily loading process definitions and registering participant classes based on configurable file locations.
 
