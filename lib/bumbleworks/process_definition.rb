@@ -4,30 +4,21 @@ module Bumbleworks
   class DefinitionInvalid < StandardError; end
 
   class ProcessDefinition
-    attr_accessor :definition, :filename
+    attr_accessor :definition
 
-    def self.create!(filename)
-      pdef = new(filename)
-      pdef.load_definition_from_file
-      pdef
-    end
+    class << self
+      def define(name, *args, &block)
+        args.unshift({:name => name})
+        pdef = Ruote.define *args, &block
+        Bumbleworks.engine.variables[name] = pdef
+      end
 
-    def initialize(filename)
-      @filename = filename
-    end
-
-    def validate!
-      errors = []
-      errors << "definition" unless @definition
-      raise DefinitionInvalid, "Process definition must have a #{errors.join(" and ")}" if errors.present?
-      true
-    end
-
-    def load_definition_from_file
-      if File.exists?(filename.to_s)
-        @definition = Ruote::Reader.read(filename)
-      else
-        raise DefinitionFileNotFound, "Could not find definition file: #{filename}"
+      def create!(filename = nil)
+        if File.exists?(filename.to_s)
+          load filename
+        else
+          raise DefinitionFileNotFound, "Could not find definition file: #{filename}"
+        end
       end
     end
 
