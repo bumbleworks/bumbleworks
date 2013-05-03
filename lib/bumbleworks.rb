@@ -63,6 +63,11 @@ module Bumbleworks
       if @participant_block.is_a? Proc
         engine.register &@participant_block
       end
+
+      unless engine.participant_list.any? {|pl| pl.regex == "^.+$"}
+        catchall = Ruote::ParticipantEntry.new(["^.+$", ["Ruote::StorageParticipant", {}]])
+        engine.participant_list = engine.participant_list.push(catchall)
+      end
     end
 
     def load_participants
