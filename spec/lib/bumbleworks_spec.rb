@@ -32,9 +32,9 @@ describe Bumbleworks do
   end
 
   describe '.start!' do
-    it 'does things in order' do
-      # registers storage
-      # registers engine
+    before :each do
+      Bumbleworks.stub(:load_participants)
+      Bumbleworks.stub(:load_process_definitions)
     end
 
     it 'loads and registers the participants' do
@@ -59,7 +59,6 @@ describe Bumbleworks do
       Bumbleworks.engine.participant_list.first.should be_an_instance_of(Ruote::ParticipantEntry)
     end
 
-
     it 'calls catchall participant if no participants are defined' do
 
     end
@@ -82,6 +81,14 @@ describe Bumbleworks do
     it 'creates a new engine' do
       Bumbleworks.storage = {}
       Bumbleworks.engine.should be_an_instance_of(Ruote::Dashboard)
+    end
+  end
+
+  describe '.define' do
+    it 'delegates to ProcessDefinitions' do
+      block = Proc.new {}
+      Bumbleworks::ProcessDefinition.should_receive(:define).with('name', {}, &block)
+      Bumbleworks.define('name', {}, &block)
     end
   end
 

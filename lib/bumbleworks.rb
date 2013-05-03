@@ -1,6 +1,9 @@
 require "bumbleworks/version"
 require "bumbleworks/configuration"
+require "bumbleworks/support"
+require "bumbleworks/process_definition"
 require "ruote"
+require "ruote/reader"
 require "ruote-redis"
 require "ruote-sequel"
 
@@ -36,11 +39,17 @@ module Bumbleworks
     end
 
     def start!(options = {:autostart_worker => true})
-      load_and_register_participants
+      load_participants
+      register_participant_list
+      load_process_definitions
     end
 
     def engine
       @engine ||= Ruote::Dashboard.new(ruote_storage)
+    end
+
+    def define(name, *args, &block)
+      ProcessDefinition.define(name, *args, &block)
     end
 
     def reset!
@@ -50,12 +59,36 @@ module Bumbleworks
     end
 
     private
-    def load_and_register_participants
+    def register_participant_list
       if @participant_block.is_a? Proc
         engine.register &@participant_block
       end
+
+      unless engine.participant_list.any? {|pl| pl.regex == "^.+$"}
+        catchall = Ruote::ParticipantEntry.new(["^.+$", ["Ruote::StorageParticipant", {}]])
+        engine.participant_list = engine.participant_list.push(catchall)
+      end
     end
 
+    def load_participants
+      all_files(participants_directory) do |name, path|
+        Object.autoload name.to_sym, path
+      end
+    end
+
+    def load_process_definitions
+      all_files(definitions_directory) do |_, path|
+        ProcessDefinition.create!(path)
+      end
+    end
+
+    def all_files(directory)
+      Dir["#{directory}/**/*.rb"].each do |path|
+        name = File.basename(path, '.rb')
+        name = Bumbleworks::Support.camelize(name)
+        yield name, path
+      end
+    end
 
     def ruote_storage
       raise UndefinedSetting, "Storage must be set" unless storage

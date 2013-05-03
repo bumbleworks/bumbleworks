@@ -15,6 +15,8 @@ class SampleApp
 
   def register_participants
     Bumbleworks.register_participants do
+      make_honey HoneyParticipant
+      make_molasses MolassesParticipant
     end
   end
 
@@ -22,5 +24,6 @@ class SampleApp
     Bumbleworks.start!
   end
 end
+
 
 

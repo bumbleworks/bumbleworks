@@ -1,3 +1,4 @@
-Ruote.define 'make_molasses' do
-
+Bumbleworks.define 'make_molasses', :ref => 'good stuff' do
+  first 'cook it'
+  second 'eat it'
 end
