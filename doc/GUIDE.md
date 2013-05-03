@@ -25,9 +25,46 @@ Here's a first draft:
   5. Receive angry calls
   6. Go into hiding
 
-Looks great!  Now, given that we're agile, and extreme, and cross-country-functional, and 2.0, let's just go ahead and start building our factory - we'll develop it iteratively.  For now, we'll ignore steps 5 and 6, mostly because we're in denial.
+Looks great!  But you know what?  We're agile, and extreme, and cross-country-functional, and 2.0, so let's just go ahead and start building our factory - we'll develop it iteratively.
 
-In Bumbleworks, our plan might look something like this:
+## Our First Bumbleworks App
+
+First, let's start a new [Rails](http://rubyonrails.org) app.  You'll need, um, the Rails gem, and Ruby, and a computer, and.. you know what?  We're just going to assume you've got the Rails gem installed.  If not, [there are places you can go](http://rubyonrails.org/download) to find out how.
+
+> Look, I know you just wrote your own web framework for Ruby, and it uses DCI, and Octagonal Composition, and the Observitating De-executor Pattern from Lowland & Michael's PTTD 7th Edition, and your eyelashes literally pucker in disgust when someone suggests you use "off the shelf software."  But we're still going to use Rails for our tutorial, because we're too good for elitists like you.
+
+#### Rails
+
+Okay, now do this in a shell:
+
+    $ rails new zen_clock
+    $ cd zen_clock
+
+A bunch of crazy words will show up on your screen, probably in green text against a black background, unless you're lame.  Congratulations!  You know how to copy and paste.
+
+#### Adding the Bumbleworks Gem
+The first thing we need to do is corrupt our fresh Rails install with the Bumbleworks gem.  Edit `Gemfile` and add:
+
+```ruby
+gem 'bumbleworks'
+```
+
+And then, back in your shell:
+
+    $ bundle install
+
+Once again, your screen will fill up with nonsense words, making you appear esoterically smart.  Men and/or women (choose which one(s) you want to impress) love that.
+
+#### The Bumbleworks Data Store
+
+Bumbleworks needs its own data store, used only for process state.  We'll explore why this is important later, but for now, just accept that Bumbleworks had neglectful parents and is bad at sharing.
+
+Out of the box, Bumbleworks supports three storage types - [Redis](http://redis.io), [Sequel](http://sequel.rubyforge.org), and a simple Ruby Hash.  We're going to use the latter for now, since it requires no setup.  You would never use the Hash storage type for production - it's in-memory and in-process, so it won't survive a restart and you can't run multiple workers.  But for testing, it's ideal.
+
+### Writing a Process Definition
+
+
+In Bumbleworks, our plan above (for now, we'll ignore steps 5 and 6, mostly because we're in denial) might look something like this:
 
 ```ruby
 Bumbleworks.define_process :name => 'build_zen_clock' do
@@ -105,5 +142,32 @@ When Bumbleworks is running a plan and encounters a line like this, it will plac
 
 ### The Bumbleworks Task
 
-A Task (actually, Bumbleworks::Task) instance is a representation of 
+A Task (actually, Bumbleworks::Task) instance is a representation of a step on the assembly line that has to be completed by an "employee."  The conveyor belt stops temporarily until the activity is complete.
+
+If we were building something useful, this might be something like carving, painting, cleaning, filling, soldering, et cetera.  In the case of the Zen Clock, the assembly line works like this:
+
+  ```ruby
+1.  any_human :task => 'check_essence_of_time_for_leaks'
+2.  smart_human :task => 'contemplate_solitude_of_static_universe'
+3.  any_human :task => 'glue_parts_together'
+4.  robot :task => 'add_batteries'
+  ```
+
+1. The box of parts stops at a staffed workstation, where a lowly peon checks the Essence of Time part for leaks.  After verifying the part is intact, this peon pushes a button that starts the belt back up, moving the box of parts on to..
+
+2. .. another workstation, this time staffed by a high-paid human with decades of spiritual experience (and a certificate of attendance from the 2004 Zen Conference at Universal Studios Hollywood).  This human spends several hours imbuing the box of parts with the Collected Wisdom of the Stillness of the Unchanging but Infinite Cosmos, then pushes a button that starts the belt back up, moving the box of parts on to..
+
+3. .. the last human workstation, where a grizzled old human (whose hands were birthing foals before you were born) finally assembles the Clock, gradually becoming more and more convinced of its metaphysical qualities as the glue fumes rise.  The Clock is placed on the conveyor belt, a button is pushes, the belt starts back up, and we move on to our final destination..
+
+4. .. a robot, whose only task is to insert the required fourteen AA batteries.  Because, yes, the Zen Clock *does* include batteries.
+
+When a Bumbleworks process runs, it steps through the process definition sequentially (well, not always - but more about this later), and for each line it encounters, it:
+
+1. Creates a task for the given role,
+1. Waits for someone with that role to complete the task, and
+1. Moves on to the next line
+
+Remember when we added a `#build!` method to our ZenClock class, which in turn called `Bumbleworks.launch!` to start the build_zen_clock process?  As soon as that process starts, and the Bumbleworks parser hits the first line, a task (named "check_essence_of_time_for_leaks") is generated for the given role ("any_human") and dropped in the queue.  But who completes it?  Who is this mythical "any_human"?
+
+### The Bumbleworks Role
 

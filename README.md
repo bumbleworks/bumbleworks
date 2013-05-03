@@ -96,7 +96,7 @@ end
 
 ### Determining the Root Directory
 
-By default, Bumbleworks will attempt in several ways to find your root directory.  In the most common cases (Rails, Sinatra, running )
+By default, Bumbleworks will attempt in several ways to find your root directory.  In the most common cases (Rails, Sinatra, running via Rake), it usually won't have trouble guessing the directory.
 
 ## Usage
 
