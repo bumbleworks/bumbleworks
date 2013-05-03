@@ -48,6 +48,10 @@ module Bumbleworks
       @engine ||= Ruote::Dashboard.new(ruote_storage)
     end
 
+    def define(name, *args, &block)
+      ProcessDefinition.define(name, *args, &block)
+    end
+
     def reset!
       @configuration = nil
       @participant_block = nil

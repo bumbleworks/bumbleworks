@@ -32,6 +32,15 @@ describe SampleApp do
       Bumbleworks.engine.participant_list.should have(2).items
       Bumbleworks.engine.participant_list.map(&:classname).should =~ ['HoneyParticipant', 'MolassesParticipant']
     end
+
+    it 'loads process definitions' do
+      described_class.new
+      Bumbleworks.root = File.join(app_root, 'app')
+      Bumbleworks.engine.variables['make_honey'].should == ["define", {"name"=>"make_honey"}, [["dave", {"ref"=>"honey maker"}, []]]]
+      Bumbleworks.engine.variables['garbage_collector'].should == ["define", {"name"=>"garbage_collector"}, [["george", {"ref"=>"garbage collector"}, []]]]
+
+      Bumbleworks.engine.variables['make_molasses'].should == ["define", {"name"=>"make_molasses", "ref"=>"good stuff"}, [["first", {"cook it"=>nil}, []], ["second", {"eat it"=>nil}, []]]]
+    end
   end
 end
 
