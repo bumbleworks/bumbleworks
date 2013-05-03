@@ -34,5 +34,15 @@ describe Bumbleworks::ProcessDefinition do
                                               [["nike", {"ok"=>nil}, []],
                                                ["adidas", {"nice"=>nil}, []]]]
     end
+
+    it 'should raise an error when duplicate process names are detected' do
+      described_class.define('foot-traffic') do
+      end
+
+      expect do
+        described_class.define('foot-traffic') do
+        end
+      end.to raise_error
+    end
   end
 end
