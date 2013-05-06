@@ -1,7 +1,7 @@
 require 'spec_helper'
 require File.expand_path('../fixture_app/config/default_app', __FILE__)
 
-describe SampleApp do
+describe DefaultApp do
   describe "Bumbleworks.configure: use default folders" do
     let(:app_root) {File.expand_path('../fixture_app', __FILE__)}
 

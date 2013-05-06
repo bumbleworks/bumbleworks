@@ -1,5 +1,5 @@
 require File.expand_path('../../../../lib/bumbleworks', __FILE__)
-class SampleApp
+class DefaultApp
   def initialize
     setup_bumbleworks
     register_participants
