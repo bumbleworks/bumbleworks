@@ -8,7 +8,7 @@ module Bumbleworks
     attr_accessor :definition
 
     class << self
-      def define(name, *args, &block)
+      def define_process(name, *args, &block)
         if Bumbleworks.engine.variables[name]
           raise DefinitionDuplicate, "the process '#{name}' has already been defined"
         end

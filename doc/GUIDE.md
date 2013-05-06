@@ -67,7 +67,7 @@ Out of the box, Bumbleworks supports three storage types - [Redis](http://redis.
 In Bumbleworks, our plan above (for now, we'll ignore steps 5 and 6, mostly because we're in denial) might look something like this:
 
 ```ruby
-Bumbleworks.define_process :name => 'build_zen_clock' do
+Bumbleworks.define_process 'build_zen_clock' do
   make
   ship
 end
@@ -123,7 +123,7 @@ We're doing great!  We received an order, and we placed a box of parts on the co
 The Zen Clock, being at once a highly technical affair and a pseudo-spiritual scam, will require both robots and real humans to build it.  Let's flesh out the `build_zen_clock` process by expanding our previous `make` step:
 
 ```ruby
-Bumbleworks.define_process :name => 'build_zen_clock' do
+Bumbleworks.define_process 'build_zen_clock' do
   any_human :task => 'check_essence_of_time_for_leaks'
   smart_human :task => 'contemplate_solitude_of_static_universe'
   any_human :task => 'glue_parts_together'

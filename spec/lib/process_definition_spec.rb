@@ -11,7 +11,7 @@ describe Bumbleworks::ProcessDefinition do
     end
   end
 
-  describe '.define' do
+  describe '.define_process' do
     before :each do
       @variables = {}
       engine = double(:variables => @variables)
@@ -19,13 +19,13 @@ describe Bumbleworks::ProcessDefinition do
     end
 
     it 'adds a the name of process definition to Ruote' do
-      described_class.define('foot-traffic') do
+      described_class.define_process('foot-traffic') do
       end
       @variables['foot-traffic'].should_not be_nil
     end
 
     it 'adds processes the definition Ruote' do
-      described_class.define('foot-traffic') do
+      described_class.define_process('foot-traffic') do
         nike 'ok'
         adidas 'nice'
       end
@@ -36,11 +36,11 @@ describe Bumbleworks::ProcessDefinition do
     end
 
     it 'should raise an error when duplicate process names are detected' do
-      described_class.define('foot-traffic') do
+      described_class.define_process('foot-traffic') do
       end
 
       expect do
-        described_class.define('foot-traffic') do
+        described_class.define_process('foot-traffic') do
         end
       end.to raise_error
     end

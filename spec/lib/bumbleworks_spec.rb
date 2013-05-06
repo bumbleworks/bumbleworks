@@ -58,14 +58,6 @@ describe Bumbleworks do
       Bumbleworks.start!
       Bumbleworks.engine.participant_list.first.should be_an_instance_of(Ruote::ParticipantEntry)
     end
-
-    it 'calls catchall participant if no participants are defined' do
-
-    end
-
-    it 'raises error if no process definitions are loaded' do
-    end
-
   end
 
   describe '.engine' do
@@ -84,11 +76,11 @@ describe Bumbleworks do
     end
   end
 
-  describe '.define' do
+  describe '.define_process' do
     it 'delegates to ProcessDefinitions' do
       block = Proc.new {}
-      Bumbleworks::ProcessDefinition.should_receive(:define).with('name', {}, &block)
-      Bumbleworks.define('name', {}, &block)
+      Bumbleworks::ProcessDefinition.should_receive(:define_process).with('name', {}, &block)
+      Bumbleworks.define_process('name', {}, &block)
     end
   end
 

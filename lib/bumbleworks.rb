@@ -48,8 +48,8 @@ module Bumbleworks
       @engine ||= Ruote::Dashboard.new(ruote_storage)
     end
 
-    def define(name, *args, &block)
-      ProcessDefinition.define(name, *args, &block)
+    def define_process(name, *args, &block)
+      ProcessDefinition.define_process(name, *args, &block)
     end
 
     def reset!
