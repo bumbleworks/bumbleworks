@@ -43,7 +43,7 @@ describe Bumbleworks do
 
       described_class.storage = {}
       described_class.register_participants &participant_block
-      described_class.engine.should_receive(:register).with(&participant_block)
+      described_class.dashboard.should_receive(:register).with(&participant_block)
       described_class.start!
     end
 
@@ -54,32 +54,33 @@ describe Bumbleworks do
 
       described_class.storage = {}
       described_class.register_participants &participant_block
-      described_class.engine.should_receive(:register).and_call_original
+      described_class.dashboard.should_receive(:register).and_call_original
       described_class.start!
-      described_class.engine.participant_list.first.should be_an_instance_of(Ruote::ParticipantEntry)
+      described_class.dashboard.participant_list.first.should be_an_instance_of(Ruote::ParticipantEntry)
     end
 
-    it 'registers process definitions with engine' do
+    it 'registers process definitions with dashboard' do
+      described_class.stub(:register_participant_list)
       described_class.storage = {}
       described_class.should_receive(:registered_process_definitions).and_return({'compile' => 'some definition'})
       described_class.start!
-      described_class.engine.variables['compile'].should == 'some definition'
+      described_class.dashboard.variables['compile'].should == 'some definition'
     end
   end
 
-  describe '.engine' do
+  describe '.dashboard' do
     before :each do
       described_class.reset!
     end
 
     it 'raises an error if no storage is defined' do
       described_class.storage = nil
-      expect{described_class.engine}.to raise_error Bumbleworks::UndefinedSetting
+      expect{described_class.dashboard}.to raise_error Bumbleworks::UndefinedSetting
     end
 
-    it 'creates a new engine' do
+    it 'creates a new dashboard' do
       described_class.storage = {}
-      described_class.engine.should be_an_instance_of(Ruote::Dashboard)
+      described_class.dashboard.should be_an_instance_of(Ruote::Dashboard)
     end
   end
 

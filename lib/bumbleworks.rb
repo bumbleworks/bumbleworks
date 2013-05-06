@@ -45,8 +45,8 @@ module Bumbleworks
       register_process_definitions
     end
 
-    def engine
-      @engine ||= Ruote::Dashboard.new(ruote_storage)
+    def dashboard
+      @dashboard ||= Ruote::Dashboard.new(ruote_storage)
     end
 
     def define_process(name, *args, &block)
@@ -60,19 +60,19 @@ module Bumbleworks
     def reset!
       @configuration = nil
       @participant_block = nil
-      shutdown_engine
+      shutdown_dashboard
     end
 
     private
     # managing participants
     def register_participant_list
       if @participant_block.is_a? Proc
-        engine.register &@participant_block
+        dashboard.register &@participant_block
       end
 
-      unless engine.participant_list.any? {|pl| pl.regex == "^.+$"}
+      unless dashboard.participant_list.any? {|pl| pl.regex == "^.+$"}
         catchall = Ruote::ParticipantEntry.new(["^.+$", ["Ruote::StorageParticipant", {}]])
-        engine.participant_list = engine.participant_list.push(catchall)
+        dashboard.participant_list = dashboard.participant_list.push(catchall)
       end
     end
 
@@ -95,13 +95,13 @@ module Bumbleworks
 
     def register_process_definitions
       registered_process_definitions.each do |name,process_definition|
-        engine.variables[name] = process_definition
+        dashboard.variables[name] = process_definition
       end
     end
 
     def clear_process_definitons
       registered_process_definitions.keys.each do |k|
-        engine.variables[name] = nil
+        dashboard.variables[name] = nil
       end
       @registered_process_definitions = nil
     rescue UndefinedSetting  # storage might not be setup yet
@@ -126,10 +126,10 @@ module Bumbleworks
       end
     end
 
-    def shutdown_engine
+    def shutdown_dashboard
       clear_process_definitons
-      @engine.shutdown if @engine && @engine.respond_to?(:shutdown)
-      @engine = nil
+      @dashboard.shutdown if @dashboard && @dashboard.respond_to?(:shutdown)
+      @dashboard = nil
     end
   end
 end

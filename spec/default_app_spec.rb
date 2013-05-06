@@ -28,8 +28,8 @@ describe DefaultApp do
 
     it 'loads participants and adds the catchall at the end if not defined' do
       Bumbleworks.root = File.join(app_root, 'app')
-      Bumbleworks.engine.participant_list.should have(3).items
-      Bumbleworks.engine.participant_list.map(&:classname).should =~ ['HoneyParticipant', 'MolassesParticipant', 'Ruote::StorageParticipant']
+      Bumbleworks.dashboard.participant_list.should have(3).items
+      Bumbleworks.dashboard.participant_list.map(&:classname).should =~ ['HoneyParticipant', 'MolassesParticipant', 'Ruote::StorageParticipant']
     end
 
     it 'loads participants and and does not add catchall' do
@@ -43,16 +43,16 @@ describe DefaultApp do
 
       described_class.new
       Bumbleworks.root = File.join(app_root, 'app')
-      Bumbleworks.engine.participant_list.should have(3).items
-      Bumbleworks.engine.participant_list.map(&:classname).should =~ ['BeesHoney', 'MapleSyrup', 'NewCatchall']
+      Bumbleworks.dashboard.participant_list.should have(3).items
+      Bumbleworks.dashboard.participant_list.map(&:classname).should =~ ['BeesHoney', 'MapleSyrup', 'NewCatchall']
     end
 
     it 'loads process definitions' do
       Bumbleworks.root = File.join(app_root, 'app')
-      Bumbleworks.engine.variables['make_honey'].should == ["define", {"name"=>"make_honey"}, [["dave", {"ref"=>"honey maker"}, []]]]
-      Bumbleworks.engine.variables['garbage_collector'].should == ["define", {"name"=>"garbage_collector"}, [["george", {"ref"=>"garbage collector"}, []]]]
+      Bumbleworks.dashboard.variables['make_honey'].should == ["define", {"name"=>"make_honey"}, [["dave", {"ref"=>"honey maker"}, []]]]
+      Bumbleworks.dashboard.variables['garbage_collector'].should == ["define", {"name"=>"garbage_collector"}, [["george", {"ref"=>"garbage collector"}, []]]]
 
-      Bumbleworks.engine.variables['make_molasses'].should == ["define", {"name"=>"make_molasses", "ref"=>"good stuff"}, [["first", {"cook it"=>nil}, []], ["second", {"eat it"=>nil}, []]]]
+      Bumbleworks.dashboard.variables['make_molasses'].should == ["define", {"name"=>"make_molasses", "ref"=>"good stuff"}, [["first", {"cook it"=>nil}, []], ["second", {"eat it"=>nil}, []]]]
     end
   end
 end
