@@ -57,6 +57,12 @@ describe Bumbleworks do
       Bumbleworks.engine.should_receive(:register).and_call_original
       Bumbleworks.start!
       Bumbleworks.engine.participant_list.first.should be_an_instance_of(Ruote::ParticipantEntry)
+
+    it 'registers process definitions with engine' do
+      described_class.storage = {}
+      described_class.should_receive(:registered_process_definitions).and_return({'compile' => 'some definition'})
+      described_class.start!
+      described_class.engine.variables['compile'].should == 'some definition'
     end
   end
 
@@ -80,21 +86,32 @@ describe Bumbleworks do
     it 'delegates to ProcessDefinitions' do
       block = Proc.new {}
       Bumbleworks::ProcessDefinition.should_receive(:define_process).with('name', {}, &block)
-      Bumbleworks.define_process('name', {}, &block)
+      described_class.define_process('name', {}, &block)
+    end
+
+
+    it 'should raise an error when duplicate process names are detected' do
+      described_class.define_process('foot-traffic') do
+      end
+
+      expect do
+        described_class.define_process('foot-traffic') do
+        end
+      end.to raise_error
     end
   end
 
   describe '.participant_block' do
     it 'raises error if not in test mode' do
-      Bumbleworks.env = 'not-in-test-mode'
-      expect{Bumbleworks.participant_block}.to raise_error Bumbleworks::UnsupportedMode
-      Bumbleworks.env = 'test'
+      described_class.env = 'not-in-test-mode'
+      expect{described_class.participant_block}.to raise_error Bumbleworks::UnsupportedMode
+      described_class.env = 'test'
     end
 
     it 'returns the registered block' do
       participant_block = lambda {}
-      Bumbleworks.register_participants &participant_block
-      Bumbleworks.participant_block.should == participant_block
+      described_class.register_participants &participant_block
+      described_class.participant_block.should == participant_block
     end
   end
 

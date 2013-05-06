@@ -42,6 +42,7 @@ module Bumbleworks
       load_participants
       register_participant_list
       load_process_definitions
+      register_process_definitions
     end
 
     def engine
@@ -49,7 +50,11 @@ module Bumbleworks
     end
 
     def define_process(name, *args, &block)
-      ProcessDefinition.define_process(name, *args, &block)
+      if registered_process_definitions[name]
+        raise DefinitionDuplicate, "the process '#{name}' has already been defined"
+      end
+
+      registered_process_definitions[name] = ProcessDefinition.define_process(name, *args, &block)
     end
 
     def reset!
@@ -59,6 +64,7 @@ module Bumbleworks
     end
 
     private
+    # managing participants
     def register_participant_list
       if @participant_block.is_a? Proc
         engine.register &@participant_block
@@ -76,10 +82,29 @@ module Bumbleworks
       end
     end
 
+    # managing process definition
     def load_process_definitions
       all_files(definitions_directory) do |_, path|
         ProcessDefinition.create!(path)
       end
+    end
+
+    def registered_process_definitions
+      @registered_process_definitions ||= {}
+    end
+
+    def register_process_definitions
+      registered_process_definitions.each do |name,process_definition|
+        engine.variables[name] = process_definition
+      end
+    end
+
+    def clear_process_definitons
+      registered_process_definitions.keys.each do |k|
+        engine.variables[name] = nil
+      end
+      @registered_process_definitions = nil
+    rescue UndefinedSetting  # storage might not be setup yet
     end
 
     def all_files(directory)
@@ -90,6 +115,7 @@ module Bumbleworks
       end
     end
 
+    # managing ruote
     def ruote_storage
       raise UndefinedSetting, "Storage must be set" unless storage
 
@@ -100,6 +126,7 @@ module Bumbleworks
     end
 
     def shutdown_engine
+      clear_process_definitons
       @engine.shutdown if @engine && @engine.respond_to?(:shutdown)
       @engine = nil
     end

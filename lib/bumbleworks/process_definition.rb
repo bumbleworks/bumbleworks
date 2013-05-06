@@ -9,13 +9,8 @@ module Bumbleworks
 
     class << self
       def define_process(name, *args, &block)
-        if Bumbleworks.engine.variables[name]
-          raise DefinitionDuplicate, "the process '#{name}' has already been defined"
-        end
-
         args.unshift({:name => name})
-        pdef = Ruote.define *args, &block
-        Bumbleworks.engine.variables[name] = pdef
+        Ruote.define *args, &block
       end
 
       def create!(filename = nil)
