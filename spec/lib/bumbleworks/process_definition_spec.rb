@@ -5,7 +5,7 @@ describe Bumbleworks::ProcessDefinition do
     end
 
     it 'loads the process defintion from the file' do
-      fixture_file = File.expand_path('../../fixture_app/lib/process_definitions/make_honey.rb', __FILE__)
+      fixture_file = File.expand_path('../../../fixture_app/lib/process_definitions/make_honey.rb', __FILE__)
       described_class.should_receive(:load).with(fixture_file)
       described_class.create!(fixture_file)
     end
