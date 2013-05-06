@@ -67,6 +67,7 @@ GEM
       ruby2ruby (>= 1.2.5)
       ruby_parser (>= 2.0.5)
       sexp_processor (>= 3.0.5)
+    sqlite3 (1.3.7)
     tins (0.7.2)
     tzinfo (0.3.37)
     watchr (0.7)
@@ -83,4 +84,5 @@ DEPENDENCIES
   ruote
   ruote-redis
   ruote-sequel
+  sqlite3
   watchr

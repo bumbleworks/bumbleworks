@@ -126,4 +126,32 @@ describe Bumbleworks do
       described_class.configuration.should == configuration
     end
   end
+
+  describe '.ruote_storage' do
+    it 'raise error when storage is not defined' do
+      described_class.storage = nil
+      expect{described_class.send(:ruote_storage)}.to raise_error Bumbleworks::UndefinedSetting
+    end
+
+    it 'handles Hash storage' do
+      storage = {}
+      described_class.storage = storage
+      Ruote::HashStorage.should_receive(:new).with(storage)
+      described_class.send(:ruote_storage)
+    end
+
+    it 'handles Redis storage' do
+      storage = Redis.new
+      described_class.storage = storage
+      Ruote::Redis::Storage.should_receive(:new).with(storage)
+      described_class.send(:ruote_storage)
+    end
+
+    it 'handles Sequel storage' do
+      storage = Sequel.sqlite
+      described_class.storage = storage
+      Ruote::Sequel::Storage.should_receive(:new).with(storage)
+      described_class.send(:ruote_storage)
+    end
+  end
 end

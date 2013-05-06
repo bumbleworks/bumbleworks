@@ -11,5 +11,6 @@ group :development, :test do
   gem 'rspec'
   gem 'watchr'
   gem 'debugger'
+	gem 'sqlite3'
 end
 

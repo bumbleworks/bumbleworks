@@ -119,9 +119,10 @@ module Bumbleworks
     def ruote_storage
       raise UndefinedSetting, "Storage must be set" unless storage
 
-      case storage
-        when Redis then Ruote::Redis::Storage.new(storage)
-        when Hash then Ruote::HashStorage.new(storage)
+      case storage.class.name
+        when /^Redis/  then Ruote::Redis::Storage.new(storage)
+        when /^Hash/   then Ruote::HashStorage.new(storage)
+        when /^Sequel/ then Ruote::Sequel::Storage.new(storage)
       end
     end
 
@@ -130,6 +131,5 @@ module Bumbleworks
       @engine.shutdown if @engine && @engine.respond_to?(:shutdown)
       @engine = nil
     end
-
   end
 end
