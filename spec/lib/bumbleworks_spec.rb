@@ -33,18 +33,18 @@ describe Bumbleworks do
 
   describe '.start!' do
     before :each do
-      Bumbleworks.stub(:load_participants)
-      Bumbleworks.stub(:load_process_definitions)
+      described_class.stub(:load_participants)
+      described_class.stub(:load_process_definitions)
     end
 
     it 'loads and registers the participants' do
       participant_block = Proc.new do
       end
 
-      Bumbleworks.storage = {}
-      Bumbleworks.register_participants &participant_block
-      Bumbleworks.engine.should_receive(:register).with(&participant_block)
-      Bumbleworks.start!
+      described_class.storage = {}
+      described_class.register_participants &participant_block
+      described_class.engine.should_receive(:register).with(&participant_block)
+      described_class.start!
     end
 
     it 'calls participant block to register them' do
@@ -52,11 +52,12 @@ describe Bumbleworks do
         catchall
       end
 
-      Bumbleworks.storage = {}
-      Bumbleworks.register_participants &participant_block
-      Bumbleworks.engine.should_receive(:register).and_call_original
-      Bumbleworks.start!
-      Bumbleworks.engine.participant_list.first.should be_an_instance_of(Ruote::ParticipantEntry)
+      described_class.storage = {}
+      described_class.register_participants &participant_block
+      described_class.engine.should_receive(:register).and_call_original
+      described_class.start!
+      described_class.engine.participant_list.first.should be_an_instance_of(Ruote::ParticipantEntry)
+    end
 
     it 'registers process definitions with engine' do
       described_class.storage = {}
@@ -68,17 +69,17 @@ describe Bumbleworks do
 
   describe '.engine' do
     before :each do
-      Bumbleworks.reset!
+      described_class.reset!
     end
 
     it 'raises an error if no storage is defined' do
-      Bumbleworks.storage = nil
-      expect{Bumbleworks.engine}.to raise_error Bumbleworks::UndefinedSetting
+      described_class.storage = nil
+      expect{described_class.engine}.to raise_error Bumbleworks::UndefinedSetting
     end
 
     it 'creates a new engine' do
-      Bumbleworks.storage = {}
-      Bumbleworks.engine.should be_an_instance_of(Ruote::Dashboard)
+      described_class.storage = {}
+      described_class.engine.should be_an_instance_of(Ruote::Dashboard)
     end
   end
 
