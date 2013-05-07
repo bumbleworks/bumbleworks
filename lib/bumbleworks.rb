@@ -2,6 +2,7 @@ require "bumbleworks/version"
 require "bumbleworks/configuration"
 require "bumbleworks/support"
 require "bumbleworks/process_definition"
+require "bumbleworks/task"
 require "ruote"
 require "ruote/reader"
 require "ruote-redis"
@@ -38,15 +39,22 @@ module Bumbleworks
       @participant_block
     end
 
-    def start!(options = {:autostart_worker => true})
+    def start!
       load_participants
       register_participant_list
       load_process_definitions
       register_process_definitions
     end
 
+    def launch!(process_definition_name, options = {})
+      register_process_definitions
+      autostart = options.delete(:autostart_worker)
+
+      dashboard.launch(dashboard.variables[process_definition_name], options)
+    end
+
     def dashboard
-      @dashboard ||= Ruote::Dashboard.new(ruote_storage)
+      @dashboard ||= Ruote::Dashboard.new(Ruote::Worker.new(ruote_storage))
     end
 
     def define_process(name, *args, &block)
@@ -63,7 +71,7 @@ module Bumbleworks
       shutdown_dashboard
     end
 
-    private
+
     # managing participants
     def register_participant_list
       if @participant_block.is_a? Proc
@@ -76,6 +84,7 @@ module Bumbleworks
       end
     end
 
+    private
     def load_participants
       all_files(participants_directory) do |name, path|
         Object.autoload name.to_sym, path
@@ -117,18 +126,23 @@ module Bumbleworks
 
     # managing ruote
     def ruote_storage
-      raise UndefinedSetting, "Storage must be set" unless storage
-
-      case storage.class.name
+      @ruote_storage ||= case storage.class.name
         when /^Redis/  then Ruote::Redis::Storage.new(storage)
         when /^Hash/   then Ruote::HashStorage.new(storage)
         when /^Sequel/ then Ruote::Sequel::Storage.new(storage)
+        else
+          raise UndefinedSetting, "Storage is missing or not supported. Redis, Sequel or Hash are the only supported storge adapters" unless storage
       end
     end
 
     def shutdown_dashboard
       clear_process_definitons
+      if @ruote_storage
+        @ruote_storage.purge!
+        @ruote_storage.shutdown
+      end
       @dashboard.shutdown if @dashboard && @dashboard.respond_to?(:shutdown)
+      @ruote_storage = nil
       @dashboard = nil
     end
   end

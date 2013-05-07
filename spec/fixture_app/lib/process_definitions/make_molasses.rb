@@ -1,4 +1,6 @@
-Bumbleworks.define_process 'make_molasses', :ref => 'good stuff' do
-  first 'cook it'
-  second 'eat it'
+Bumbleworks.define_process 'make_molasses' do
+  concurrence do
+    dave :ref => 'maker'
+    sam :ref => 'taster'
+  end
 end

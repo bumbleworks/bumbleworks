@@ -15,13 +15,14 @@ class DefaultApp
 
   def register_participants
     Bumbleworks.register_participants do
-      make_honey HoneyParticipant
-      make_molasses MolassesParticipant
+      honey_maker    HoneyParticipant
+      molasses_maker MolassesParticipant
     end
   end
 
   def goto_work
     Bumbleworks.start!
+    Bumbleworks.launch!('make_honey')
   end
 end
 

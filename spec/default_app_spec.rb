@@ -49,10 +49,33 @@ describe DefaultApp do
 
     it 'loads process definitions' do
       Bumbleworks.root = File.join(app_root, 'app')
-      Bumbleworks.dashboard.variables['make_honey'].should == ["define", {"name"=>"make_honey"}, [["dave", {"ref"=>"honey maker"}, []]]]
-      Bumbleworks.dashboard.variables['garbage_collector'].should == ["define", {"name"=>"garbage_collector"}, [["george", {"ref"=>"garbage collector"}, []]]]
+      Bumbleworks.dashboard.variables['make_honey'].should == ["define",
+        {"name"=>"make_honey"}, [["dave", {"ref"=>"honey maker"}, []]]]
+      Bumbleworks.dashboard.variables['garbage_collector'].should == ["define",
+        {"name"=>"garbage_collector"}, [["george", {"ref"=>"garbage collector"}, []]]]
 
-      Bumbleworks.dashboard.variables['make_molasses'].should == ["define", {"name"=>"make_molasses", "ref"=>"good stuff"}, [["first", {"cook it"=>nil}, []], ["second", {"eat it"=>nil}, []]]]
+      Bumbleworks.dashboard.variables['make_molasses'].should == ["define",
+        {"name"=>"make_molasses"},
+        [["concurrence",
+          {},
+          [["dave", {"ref"=>"maker"}, []], ["sam", {"ref"=>"taster"}, []]]]]]
+    end
+
+    it 'automatically starts engine and waits for first task in catchall participant' do
+      Bumbleworks.dashboard.wait_for(:dave)
+      Bumbleworks::Task.all.should have(1).item
+    end
+
+    it 'automatically starts engine and waits for first task in catchall participant' do
+      described_class.any_instance.should_receive(:goto_work) do
+        Bumbleworks.start!
+        Bumbleworks.launch!('make_molasses')
+      end
+      described_class.new
+      Bumbleworks.dashboard.wait_for(:dave)
+      Bumbleworks::Task.all.should have(2).item
+      Bumbleworks::Task.for_role('dave').should have(1).item
+      Bumbleworks::Task.for_role('sam').should have(1).item
     end
   end
 end

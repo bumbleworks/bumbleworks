@@ -129,8 +129,11 @@ describe Bumbleworks do
   end
 
   describe '.ruote_storage' do
+    before :each do
+      described_class.reset!
+    end
+
     it 'raise error when storage is not defined' do
-      described_class.storage = nil
       expect{described_class.send(:ruote_storage)}.to raise_error Bumbleworks::UndefinedSetting
     end
 
