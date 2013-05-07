@@ -1,7 +1,7 @@
 module Bumbleworks
   module Helpers
     module Participant
-      # managing participants
+      # @private
       def register_participant_list
         if @participant_block.is_a? Proc
           dashboard.register &@participant_block
@@ -13,12 +13,14 @@ module Bumbleworks
         end
       end
 
+      # @private
       def load_participants
         all_files(participants_directory) do |name, path|
           Object.autoload name.to_sym, path
         end
       end
 
+      # @private
       def participant_block
         raise UnsupportedMode unless @env == 'test'
         @participant_block

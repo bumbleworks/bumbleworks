@@ -23,15 +23,44 @@ module Bumbleworks
       def_delegators :configuration, setting, "#{setting.to_s}="
     end
 
+    # @public
+    # Yields the global configurtion to a block.
+    # @yield [configuration] global configuration
+    #
+    # @example
+    #   Bumbleworks.configure do |c|
+    #     c.root = 'path/to/ruote/assets'
+    #   end
+    # @see Bumbleworks::Configuration
     def configure
       reset!
       yield configuration if block_given?
     end
 
+    # @public
+    # Accepts a block for registering participants which
+    # is envoked when start! is called. Notice that a
+    # 'catchall' storage participant is always added to
+    # the end of the list (unless it is defined in the block).
+    #
+    # @example
+    #   Bumbleworks.register_participants do
+    #     painter PainterClass
+    #     builder BuilderClass
+    #     plumber PlumberClass
+    #   end
     def register_participants(&block)
       @participant_block = block
     end
 
+    # @public
+    # Adds the process name and definition to the registraton queue.
+    # Raises an error if the process name has already been encountered.
+    #
+    # @example
+    #   Bumbleworks.define_process 'build_house' do
+    #     contractor :task => 'schedule'
+    #   end
     def define_process(name, *args, &block)
       if registered_process_definitions[name]
         raise DefinitionDuplicate, "the process '#{name}' has already been defined"
@@ -40,6 +69,9 @@ module Bumbleworks
       registered_process_definitions[name] = ProcessDefinition.define_process(name, *args, &block)
     end
 
+    # @public
+    # Starts a Ruote engine, sets up the storage and registers participants
+    # and process_definitions with the Ruote engine.
     def start!
       load_participants
       register_participant_list
@@ -47,6 +79,10 @@ module Bumbleworks
       register_process_definitions
     end
 
+    # @public
+    # Launches the workflow engine with the specified process name.
+    # The process_definiton_name should already be registered with
+    # Bumbleworks.
     def launch!(process_definition_name, options = {})
       register_process_definitions
       autostart = options.delete(:autostart_worker)

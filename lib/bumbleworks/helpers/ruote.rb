@@ -1,10 +1,12 @@
 module Bumbleworks
   module Helpers
     module Ruote
+      # @public
       def dashboard
         @dashboard ||= ::Ruote::Dashboard.new(::Ruote::Worker.new(ruote_storage))
       end
 
+      # @private
       def ruote_storage
         @ruote_storage ||= case storage.class.name
           when /^Redis/  then ::Ruote::Redis::Storage.new(storage)
@@ -15,6 +17,7 @@ module Bumbleworks
         end
       end
 
+      # @private
       def shutdown_dashboard
         clear_process_definitons
         if @ruote_storage
