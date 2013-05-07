@@ -60,7 +60,7 @@ describe Bumbleworks do
     end
 
     it 'registers process definitions with dashboard' do
-      described_class.stub(:register_participant_list)
+      described_class.should_receive(:register_participant_list)
       described_class.storage = {}
       described_class.should_receive(:registered_process_definitions).and_return({'compile' => 'some definition'})
       described_class.start!
