@@ -43,6 +43,7 @@ Okay, now do this in a shell:
 A bunch of crazy words will show up on your screen, probably in green text against a black background, unless you're lame.  Congratulations!  You know how to copy and paste.
 
 #### Adding the Bumbleworks Gem
+
 The first thing we need to do is corrupt our fresh Rails install with the Bumbleworks gem.  Edit `Gemfile` and add:
 
 ```ruby
@@ -61,8 +62,20 @@ Bumbleworks needs its own data store, used only for process state.  We'll explor
 
 Out of the box, Bumbleworks supports three storage types - [Redis](http://redis.io), [Sequel](http://sequel.rubyforge.org), and a simple Ruby Hash.  We're going to use the latter for now, since it requires no setup.  You would never use the Hash storage type for production - it's in-memory and in-process, so it won't survive a restart and you can't run multiple workers.  But for testing, it's ideal.
 
-### Writing a Process Definition
+#### Initializing Bumbleworks
 
+Put the following in a `config/initializers/bumbleworks.rb` file:
+
+```ruby
+
+Bumbleworks.configure do |c|
+  c.storage = {}
+end
+
+Bumbleworks.start!
+```
+
+### Writing a Process Definition
 
 In Bumbleworks, our plan above (for now, we'll ignore steps 5 and 6, mostly because we're in denial) might look something like this:
 
