@@ -1,5 +1,7 @@
 # Bumbleworks
 
+**NOTE**: This product is still pre-release, and implementation is *not* in sync with documentation yet - hence the pre-release version.  We'll follow [the Semantic Versioning Specification (Semver)](http://semver.org/), so you can assume anything at 0.x.x still has an unstable API.  But we *are* actively developing this.
+
 Bumbleworks is a gem that adds a workflow engine (via [ruote](http://github.com/jmettraux/ruote)) to your Ruby application, and adds tools for task authorization and locking.  It also establishes conventions for easily loading process definitions and registering participant classes based on configurable file locations.
 
 Bumbleworks itself does not include a presentation layer; however, it is easily integrated into your application, and we're working on concocting several examples of how to integrate into different frameworks.

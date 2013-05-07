@@ -1,5 +1,7 @@
 # Bumbleworks
 
+**NOTE**: This product is still pre-release, and implementation is *not* in sync with documentation yet - hence the pre-release version.  We'll follow [the Semantic Versioning Specification (Semver)](http://semver.org/), so you can assume anything at 0.x.x still has an unstable API.  But we *are* actively developing this.
+
 ## The Zen Clock
 
 Imagine you just got your MBA.
