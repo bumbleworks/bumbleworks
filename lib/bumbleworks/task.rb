@@ -7,8 +7,8 @@ module Bumbleworks
     alias_method :id, :sid
 
     class << self
-      def for_role(role)
-        storage_participant.by_participant(role).map(&to_task)
+      def for_actor(identifier)
+        storage_participant.by_participant(identifier).map(&to_task)
       end
 
       def all
@@ -38,7 +38,7 @@ module Bumbleworks
     end
 
     def nickname
-      params['task']
+      params['task'] || 'unspecified'
     end
 
     # update workitem with changes to params

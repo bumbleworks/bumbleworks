@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Bumbleworks::Task do
   let(:workflow_item) {Ruote::Workitem.new('fields' => {'params' => {'task' => 'go_to_work'} })}
+  let(:unnamed_workflow_item) {Ruote::Workitem.new('fields' => {'params' => {} })}
 
   before :each do
     Bumbleworks.reset!
@@ -14,27 +15,37 @@ describe Bumbleworks::Task do
     Bumbleworks.register_participant_list
   end
 
-  describe '.for_role' do
+  describe '.for_actor' do
     before :each do
       Bumbleworks.define_process 'cat-lifecycle' do
-        eat
-        nap
-        eat
-        nap
+        concurrence do
+          human :task => 'pet'
+          cat :task => 'purr'
+        end
+        human :task => 'feed'
+        cat :task => 'eat'
+        cat :task => 'nap'
       end
       Bumbleworks.launch!('cat-lifecycle')
     end
 
-    it 'returns tasks waiting to be handled by participant (role)' do
-      Bumbleworks.dashboard.wait_for(:eat)
-      tasks = described_class.for_role('eat')
-      tasks.should have(1).item
+    it 'returns tasks waiting to be handled by actor' do
+      Bumbleworks.dashboard.wait_for(:cat)
+
+      tasks = described_class.for_actor('human')
+      tasks.should have(1).items
+      tasks.first.nickname.should == 'pet'
+      tasks.first.wf_name.should == 'cat-lifecycle'
+
+      tasks = described_class.for_actor('cat')
+      tasks.should have(1).items
+      tasks.first.nickname.should == 'purr'
       tasks.first.wf_name.should == 'cat-lifecycle'
     end
 
     it 'returns empty array if none found' do
-      Bumbleworks.dashboard.wait_for(:eat, :timeout => 10)
-      described_class.for_role('bob').should == []
+      Bumbleworks.dashboard.wait_for(:cat, :timeout => 10)
+      described_class.for_actor('bob').should == []
     end
   end
 
@@ -71,9 +82,12 @@ describe Bumbleworks::Task do
   end
 
   describe 'nickname' do
-    subject{described_class.new(workflow_item)}
     it 'uses the "task" param as the nickname of the task' do
-      subject.nickname.should == 'go_to_work'
+      described_class.new(workflow_item).nickname.should == 'go_to_work'
+    end
+
+    it 'returns "unspecified" if process definition doesn\'t specify :task => "name"' do
+      described_class.new(unnamed_workflow_item).nickname.should == 'unspecified'
     end
   end
 
@@ -137,7 +151,7 @@ describe Bumbleworks::Task do
     describe '#save' do
       it 'updates storage participant' do
         event = Bumbleworks.dashboard.wait_for :eat
-        task = described_class.for_role('eat').first
+        task = described_class.for_actor('eat').first
         task['dinner'] = 'is ready'
         task.save
         wi = Bumbleworks.dashboard.storage_participant.by_wfid(task.id).first
@@ -148,7 +162,7 @@ describe Bumbleworks::Task do
     describe '#complete' do
       it 'releases the participant and allows engine to proceed to next item in the process' do
         event = Bumbleworks.dashboard.wait_for :eat
-        task = described_class.for_role('eat').first
+        task = described_class.for_actor('eat').first
         task.complete
         event = Bumbleworks.dashboard.wait_for :nap
         event['participant_name'].should == 'nap'

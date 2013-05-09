@@ -2,6 +2,9 @@ PATH
   remote: .
   specs:
     bumbleworks (0.0.1)
+      ruote
+      ruote-redis
+      ruote-sequel
 
 GEM
   remote: https://rubygems.org/
