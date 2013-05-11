@@ -15,7 +15,40 @@ describe Bumbleworks::Task do
     Bumbleworks.register_participant_list
   end
 
-  describe '.for_actor' do
+  describe '.for_roles' do
+    before :each do
+      Bumbleworks.define_process 'lowering_penguin_self_esteem' do
+        concurrence do
+          heckler :task => 'comment_on_dancing_ability'
+          mother :task => 'ignore_pleas_for_attention'
+          father :task => 'sit_around_watching_penguin_tv'
+        end
+      end
+      Bumbleworks.launch!('lowering_penguin_self_esteem')
+    end
+
+    it 'returns tasks for all given roles' do
+      Bumbleworks.dashboard.wait_for(:father)
+      tasks = described_class.for_roles(['heckler', 'mother'])
+      tasks.should have(2).items
+      tasks.map(&:nickname).should == [
+        'comment_on_dancing_ability',
+        'ignore_pleas_for_attention'
+      ]
+    end
+
+    it 'returns empty array if given empty array' do
+      Bumbleworks.dashboard.wait_for(:father)
+      described_class.for_roles([]).should be_empty
+    end
+
+    it 'returns empty array if given nil' do
+      Bumbleworks.dashboard.wait_for(:father)
+      described_class.for_roles(nil).should be_empty
+    end
+  end
+
+  describe '.for_role' do
     before :each do
       Bumbleworks.define_process 'cat-lifecycle' do
         concurrence do
@@ -32,12 +65,12 @@ describe Bumbleworks::Task do
     it 'returns tasks waiting to be handled by actor' do
       Bumbleworks.dashboard.wait_for(:cat)
 
-      tasks = described_class.for_actor('human')
+      tasks = described_class.for_role('human')
       tasks.should have(1).items
       tasks.first.nickname.should == 'pet'
       tasks.first.wf_name.should == 'cat-lifecycle'
 
-      tasks = described_class.for_actor('cat')
+      tasks = described_class.for_role('cat')
       tasks.should have(1).items
       tasks.first.nickname.should == 'purr'
       tasks.first.wf_name.should == 'cat-lifecycle'
@@ -45,7 +78,12 @@ describe Bumbleworks::Task do
 
     it 'returns empty array if none found' do
       Bumbleworks.dashboard.wait_for(:cat, :timeout => 10)
-      described_class.for_actor('bob').should == []
+      described_class.for_role('bob').should == []
+    end
+
+    it 'returns empty array if given nil' do
+      Bumbleworks.dashboard.wait_for(:cat)
+      described_class.for_role(nil).should be_empty
     end
   end
 
@@ -64,7 +102,7 @@ describe Bumbleworks::Task do
 
     it 'returns all tasks waiting for anyone to do them in the queue' do
       Bumbleworks.dashboard.wait_for(:skip_and_jump)
-      described_class.all.map(&:actor).should == %w(eat bark skip_and_jump)
+      described_class.all.map(&:role).should == %w(eat bark skip_and_jump)
     end
   end
 
@@ -91,14 +129,14 @@ describe Bumbleworks::Task do
     end
   end
 
-  describe '#actor' do
+  describe '#role' do
     it 'returns the workitem participant_name' do
       Bumbleworks.define_process 'planting_a_noodle' do
         noodle_gardener :task => 'plant_noodle_seed'
       end
       Bumbleworks.launch!('planting_a_noodle')
       Bumbleworks.dashboard.wait_for(:noodle_gardener)
-      described_class.all.first.actor.should == 'noodle_gardener'
+      described_class.all.first.role.should == 'noodle_gardener'
     end
   end
 
@@ -162,7 +200,7 @@ describe Bumbleworks::Task do
     describe '#save' do
       it 'updates storage participant' do
         event = Bumbleworks.dashboard.wait_for :eat
-        task = described_class.for_actor('eat').first
+        task = described_class.for_role('eat').first
         task['dinner'] = 'is ready'
         task.save
         wi = Bumbleworks.dashboard.storage_participant.by_wfid(task.id).first
@@ -173,7 +211,7 @@ describe Bumbleworks::Task do
     describe '#complete' do
       it 'releases the participant and allows engine to proceed to next item in the process' do
         event = Bumbleworks.dashboard.wait_for :eat
-        task = described_class.for_actor('eat').first
+        task = described_class.for_role('eat').first
         task.complete
         event = Bumbleworks.dashboard.wait_for :nap
         event['participant_name'].should == 'nap'

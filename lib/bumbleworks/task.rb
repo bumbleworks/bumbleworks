@@ -7,8 +7,15 @@ module Bumbleworks
     alias_method :id, :sid
 
     class << self
-      def for_actor(identifier)
-        storage_participant.by_participant(identifier).map(&to_task)
+      def for_role(identifier)
+        for_roles([identifier])
+      end
+
+      def for_roles(identifiers)
+        return [] unless identifiers.is_a?(Array)
+        identifiers.collect { |identifier|
+          storage_participant.by_participant(identifier)
+        }.flatten.uniq.map(&to_task)
       end
 
       def all
@@ -41,7 +48,7 @@ module Bumbleworks
       params['task'] || 'unspecified'
     end
 
-    def actor
+    def role
       participant_name
     end
 

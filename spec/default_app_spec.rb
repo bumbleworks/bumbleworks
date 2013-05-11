@@ -74,8 +74,8 @@ describe DefaultApp do
       described_class.new
       Bumbleworks.dashboard.wait_for(:dave)
       Bumbleworks::Task.all.should have(2).item
-      Bumbleworks::Task.for_actor('dave').should have(1).item
-      Bumbleworks::Task.for_actor('sam').should have(1).item
+      Bumbleworks::Task.for_role('dave').should have(1).item
+      Bumbleworks::Task.for_role('sam').should have(1).item
     end
   end
 end
