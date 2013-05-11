@@ -64,11 +64,11 @@ describe Bumbleworks::Task do
 
     it 'returns all tasks waiting for anyone to do them in the queue' do
       Bumbleworks.dashboard.wait_for(:skip_and_jump)
-      described_class.all.map(&:participant_name).should == %w(eat bark skip_and_jump)
+      described_class.all.map(&:actor).should == %w(eat bark skip_and_jump)
     end
   end
 
-  describe '[], []=' do
+  describe '#[], #[]=' do
     subject{described_class.new(workflow_item)}
     it 'sets values on workitem params' do
       subject['hive'] = 'bees at work'
@@ -81,13 +81,24 @@ describe Bumbleworks::Task do
     end
   end
 
-  describe 'nickname' do
+  describe '#nickname' do
     it 'uses the "task" param as the nickname of the task' do
       described_class.new(workflow_item).nickname.should == 'go_to_work'
     end
 
     it 'returns "unspecified" if process definition doesn\'t specify :task => "name"' do
       described_class.new(unnamed_workflow_item).nickname.should == 'unspecified'
+    end
+  end
+
+  describe '#actor' do
+    it 'returns the workitem participant_name' do
+      Bumbleworks.define_process 'planting_a_noodle' do
+        noodle_gardener :task => 'plant_noodle_seed'
+      end
+      Bumbleworks.launch!('planting_a_noodle')
+      Bumbleworks.dashboard.wait_for(:noodle_gardener)
+      described_class.all.first.actor.should == 'noodle_gardener'
     end
   end
 

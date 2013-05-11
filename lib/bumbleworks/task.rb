@@ -41,6 +41,10 @@ module Bumbleworks
       params['task'] || 'unspecified'
     end
 
+    def actor
+      participant_name
+    end
+
     # update workitem with changes to params
     def save
       storage_participant.update(@workitem)
