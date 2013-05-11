@@ -37,10 +37,10 @@ First, let's start a new [Rails](http://rubyonrails.org) app.  You'll need, um, 
 
 #### Rails
 
-Okay, now do this in a shell:
+Do this in a shell:
 
-    $ rails new zen_clock
-    $ cd zen_clock
+    $ rails new zen_clock_factory
+    $ cd zen_clock_factory
 
 A bunch of crazy words will show up on your screen, probably in green text against a black background, unless you're lame.  Congratulations!  You know how to copy and paste.
 
@@ -77,9 +77,11 @@ end
 Bumbleworks.start!
 ```
 
-### Writing a Process Definition
+### Writing our First Process Definition
 
-In Bumbleworks, our plan above (for now, we'll ignore steps 5 and 6, mostly because we're in denial) might look something like this:
+Bumbleworks, by default, will load all files in `lib/process_definitions`.  Go ahead and create that directory, and we'll put our first process definition in there.
+
+In Bumbleworks, our plan above (for now, we'll ignore steps 5 and 6, mostly because we're in denial) might look something like the following (save this to `lib/process_definitions/build_zen_clock.rb`):
 
 ```ruby
 Bumbleworks.define_process 'build_zen_clock' do
@@ -88,7 +90,32 @@ Bumbleworks.define_process 'build_zen_clock' do
 end
 ```
 
-Hang on, where are steps 1 and 2 ("Receive an order" and "Place box of parts on conveyor belt")?  Good question!  You're really paying attention, here.  Has anyone ever told you you're very detail-oriented?
+#### Running the Process
+
+Open a rails console:
+
+    $ rails console
+
+And then, at the console prompt:
+
+```ruby
+>> Bumbleworks.launch!('build_zen_clock')
+# => "20130511-0257-rokigiza-kanenaju"
+```
+
+Bumbleworks will return a seemingly random string of characters (assembled by tapping into the collective unconscious and salted with your own Qi) - this is the unique ID for the process instance you just launched.
+
+You did it!  Bumbleworks now has a running instance of the `build_zen_clock` process, though it stopped at the `make` step, since it doesn't know what that means.  Go ahead and exit the rails console.
+
+> Technically, when Bumbleworks encounters the `make` step, it does the following:
+
+> 1. Check to see if it knows about any process definitions named `make`, and if found, launch a subprocess using that definition
+> 1. If no process definition was found, find the first registered participant in the participant list whose regex matches `make`, and if found, send the workitem to an instance of that participant
+> 1. Finally, if neither a definition or participant was found, drop the workitem into the storage participant, where it will have to be fetched and proceeded manually
+
+> In this case, we fell through to the third step, and the workitem was dropped into the storage.  Since we're using a hash, the storage gets cleared when we exit the Rails console, so you don't need to worry about orphaned processes.
+
+Hold on a second, though - where are steps 1 and 2 from our original plan ("Receive an order" and "Place box of parts on conveyor belt")?  Good question!  You're really paying attention, here.  Has anyone ever told you you're very detail-oriented?
 
 ## Starting the Process
 
@@ -100,16 +127,29 @@ Our bleary-eyed customer (we'll call him Roanoke, after the similarly ill-fated 
 
 A Zen Clock comes into existence the moment someone places an order, even before it is tangible in the physical realm.  How very like a Zen Clock.
 
+### Modeling the Zen Clock
+
+Let's create a class for the Zen Clock.  We're not using ActiveRecord yet, because, well, we don't have to.  Put the following in `app/models/zen_clock.rb`:
+
 ```ruby
 class ZenClock
+  attr_reader :customer
+
   def initialize(customer)
     @customer = customer
   end
 end
 
-# When our customer places an order:
-zen_clock = ZenClock.new(:roanoke)
+Now we can accomplish step 1 ("Receive an order") of our original plan.  When the order comes in, we instantiate a new ZenClock to prepare for building it:
+
+```ruby
+>> zen_clock = ZenClock.new('Roanoke')
+# => #<ZenClock:0x007f90b17dcb40 @customer="Roanoke">
+>> zen_clock.customer
+# => "Roanoke"
 ```
+
+(You can try this in a Rails console if you want, but by now I'd think you'd just trust everything we say.)
 
 We've created a ZenClock class, and given it an initializer method.  The initializer takes, as its single argument, the customer who ordered it, and sets this as an instance variable.  We've gone ahead and instantiated our first ZenClock, for our insomniac friend Roanoke.
 
@@ -120,13 +160,24 @@ class ZenClock
   # ...
 
   def build!
-    Bumbleworks.launch!('build_zen_clock', :parts => [:essence_of_time, :the_waterless_waterfall])
+    Bumbleworks.launch!('build_zen_clock',
+      :parts => [
+        :essence_of_time,
+        :the_waterless_waterfall
+      ]
+    )
   end
 end
+```
 
+Try this in a new Rails console:
+
+```ruby
 # Receive the new order, and start the build process:
-zen_clock = ZenClock.new(:roanoke)
-zen_clock.build!
+>> zen_clock = ZenClock.new('Roanoke')
+# => #<ZenClock:0x007f90b17dcb40 @customer="Roanoke">
+>> zen_clock.build!
+# => "20130511-0259-nurejipo-musonaso"
 ```
 
 Now there's a `#build!` method, which is where we finally launch the process we defined earlier.  This `#build!` method, conceptually, "places a box of parts on the conveyor belt" (which, as you may recall, is step 2 in our original plan).  The second argument to `Bumbleworks.launch!` takes a hash, which ends up being the initial "payload" for the process.  In this case, we're providing the box of parts we'll need for assembling a Zen Clock.
@@ -135,7 +186,7 @@ We're doing great!  We received an order, and we placed a box of parts on the co
 
 ## Hiring the Staff
 
-The Zen Clock, being at once a highly technical affair and a pseudo-spiritual scam, will require both robots and real humans to build it.  Let's flesh out the `build_zen_clock` process by expanding our previous `make` step:
+The Zen Clock, being at once a highly technical affair and a pseudo-spiritual scam, will require both robots and real humans to build it.  Let's flesh out the `build_zen_clock` process by expanding our previous `make` step (go ahead and change your `lib/process_definitions/build_zen_clock.rb` file to look like this):
 
 ```ruby
 Bumbleworks.define_process 'build_zen_clock' do
@@ -153,7 +204,7 @@ What's all this `:task => ...` nonsense?  In a Bumbleworks process plan, assigni
 role :task => 'task_name'
 ```
 
-When Bumbleworks is running a plan and encounters a line like this, it will place a Task in the queue, name it 'task_name', and make it available to any Users who possess the relevant role.  For those of you who pay attention to capitalization, you'll notice we introduced two concepts: Tasks and Users.  We'll look at Tasks first.
+When Bumbleworks is running a plan and encounters a line like this, it will place a Task in the queue, name it 'task_name', and make it available to any users who possess the relevant role.  For those of you who pay attention to capitalization, you'll notice we introduced a new concepts: the Task.
 
 ### The Bumbleworks Task
 
@@ -161,12 +212,12 @@ A Task (actually, Bumbleworks::Task) instance is a representation of a step on t
 
 If we were building something useful, this might be something like carving, painting, cleaning, filling, soldering, et cetera.  In the case of the Zen Clock, the assembly line works like this:
 
-  ```ruby
+```ruby
 1.  any_human :task => 'check_essence_of_time_for_leaks'
 2.  smart_human :task => 'contemplate_solitude_of_static_universe'
 3.  any_human :task => 'glue_parts_together'
 4.  robot :task => 'add_batteries'
-  ```
+```
 
 1. The box of parts stops at a staffed workstation, where a lowly peon checks the Essence of Time part for leaks.  After verifying the part is intact, this peon pushes a button that starts the belt back up, moving the box of parts on to..
 
@@ -182,7 +233,69 @@ When a Bumbleworks process runs, it steps through the process definition sequent
 1. Waits for someone with that role to complete the task, and
 1. Moves on to the next line
 
-Remember when we added a `#build!` method to our ZenClock class, which in turn called `Bumbleworks.launch!` to start the build_zen_clock process?  As soon as that process starts, and the Bumbleworks parser hits the first line, a task (named "check_essence_of_time_for_leaks") is generated for the given role ("any_human") and dropped in the queue.  But who completes it?  Who is this mythical "any_human"?
+Remember when we added a `#build!` method to our ZenClock class, which in turn called `Bumbleworks.launch!` to start the build_zen_clock process?  As soon as that process starts, and the Bumbleworks parser hits the first line, a Task ("check_essence_of_time_for_leaks") is generated for the given Role ("any_human") and dropped in the queue.
 
-### The Bumbleworks Role
+You can see it for yourself.  In a new Rails console:
 
+```ruby
+>> tasks = Bumbleworks::Task.all
+# => []
+>> zen_clock = ZenClock.new('Roanoke')
+# => #<ZenClock:0x007f90b17dcb40 @customer="Roanoke">
+>> zen_clock.build!
+# => "20130511-0259-nurejipo-musonaso"
+>> tasks = Bumbleworks::Task.all
+# => [#<Bumbleworks::Task:0x007faf9d08be30...>]
+>> tasks.count
+# => 1
+>> tasks.first.nickname
+# => "check_essence_of_time_for_leaks"
+>> tasks.first.role
+# => "any_human"
+```
+
+But who completes it?  Who is this mythical "any_human"?
+
+### Bumbleworks Doesn't Care About Users
+
+Bumbleworks itself has no idea what a "user" is, nor does it care.  It won't do any authentication or authorization for you.  Instead, it assumes you've determined what roles a given user is authorized for, and you just want to know what tasks are available to those roles.
+
+#### Looking Up Tasks By Roles
+
+Let's pretend we have three users - a peon, a guru, and a robot.  The peon and the robot only have one role each: "any_human" and "robot," respectively. The guru has two roles: "any_human" and "smart_human."
+
+```ruby
+>> zen_clock = ZenClock.new('Roanoke')
+# => #<ZenClock:0x007f90b17dcb40 @customer="Roanoke">
+>> zen_clock.build!
+# => "20130511-0259-nurejipo-musonaso"
+>> Bumbleworks::Task.for_role('any_human') # get tasks for peon
+# => [#<Bumbleworks::Task:0x007faf9d08be30...>]
+>> Bumbleworks::Task.for_role('robot') # get tasks for robot
+# => []
+>> Bumbleworks::Task.for_roles(['any_human', 'smart_human']) # get tasks for guru
+# => [#<Bumbleworks::Task:0x007faf9d08be30...>]
+```
+
+Because only one task is in the queue when we first launch the process (`any_human :task => 'check_essence_of_time_for_leaks'`), the robot has no available tasks.  The peon and the guru both see the task, since both of them have the role of 'any_human'.
+
+Let's see what happens when we complete the task:
+
+```ruby
+>> zen_clock = ZenClock.new('Roanoke'); zen_clock.build!
+# => "20130511-0259-nurejipo-musonaso"
+>> task = Bumbleworks::Task.for_role('any_human').first # get first task for peon
+# => #<Bumbleworks::Task:0x007faf9d08be30...>
+>> task.complete
+# => nil
+>> Bumbleworks::Task.for_role('any_human') # any any_human tasks left?
+# => [] # nope
+>> task = Bumbleworks::Task.for_roles(['any_human', 'smart_human']).first # get first task for guru
+# => #<Bumbleworks::Task:0x007ffef337dd00...> # look, a different task!
+>> task.nickname
+# => "contemplate_solitude_of_static_universe"
+>> task.role
+# => "smart_human"
+```
+
+Hey, look - now our peon has no tasks available, and can finally get back to that sudoku on the last page of the latest Delta Airlines in-flight magazine.  Our guru, however, now has a new task available - one that only shows up for smart humans (it's sort of the opposite of the Emperor's New Clothing).
