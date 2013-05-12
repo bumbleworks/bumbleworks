@@ -8,6 +8,7 @@ require "ruote"
 require "ruote/reader"
 require "ruote-redis"
 require "ruote-sequel"
+require "forwardable"
 
 module Bumbleworks
   class UnsupportedMode < StandardError; end
