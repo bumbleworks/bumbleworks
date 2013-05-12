@@ -4,6 +4,7 @@ module Bumbleworks
   class Task
     extend Forwardable
     delegate [:sid, :fei, :fields, :params, :participant_name, :wfid, :wf_name] => :@workitem
+    attr_reader :nickname
     alias_method :id, :sid
 
     class << self
@@ -33,31 +34,29 @@ module Bumbleworks
 
     def initialize(workitem)
       @workitem = workitem
+      @nickname = params['task']
     end
 
-    # alias for params[]
+    # alias for fields[] (fields delegated to workitem)
     def [](key)
-      params[key]
+      fields[key]
     end
 
+    # alias for fields[]= (fields delegated to workitem)
     def []=(key, value)
-      params[key] = value
-    end
-
-    def nickname
-      params['task'] || 'unspecified'
+      fields[key] = value
     end
 
     def role
       participant_name
     end
 
-    # update workitem with changes to params
+    # update workitem with changes to fields & params
     def save
       storage_participant.update(@workitem)
     end
 
-    # proceed workitem
+    # proceed workitem (saving changes to fields)
     def complete
       storage_participant.proceed(@workitem)
     end

@@ -108,24 +108,27 @@ describe Bumbleworks::Task do
 
   describe '#[], #[]=' do
     subject{described_class.new(workflow_item)}
-    it 'sets values on workitem params' do
+    it 'sets values on workitem fields' do
       subject['hive'] = 'bees at work'
-      workflow_item.params['hive'].should == 'bees at work'
+      workflow_item.fields['hive'].should == 'bees at work'
     end
 
     it 'retuns value from workitem params' do
-      workflow_item.params['nest'] = 'queen resting'
+      workflow_item.fields['nest'] = 'queen resting'
       subject['nest'].should == 'queen resting'
     end
   end
 
   describe '#nickname' do
-    it 'uses the "task" param as the nickname of the task' do
+    it 'returns the "task" param' do
       described_class.new(workflow_item).nickname.should == 'go_to_work'
     end
 
-    it 'returns "unspecified" if process definition doesn\'t specify :task => "name"' do
-      described_class.new(unnamed_workflow_item).nickname.should == 'unspecified'
+    it 'is immutable; cannot be changed by modified the param' do
+      task = described_class.new(workflow_item)
+      task.nickname.should == 'go_to_work'
+      task.params['task'] = 'what_is_wrong_with_you?'
+      task.nickname.should == 'go_to_work'
     end
   end
 
