@@ -18,9 +18,14 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_development_dependency "bundler", "~> 1.3"
-  spec.add_development_dependency "rake"
   spec.add_runtime_dependency "ruote"
   spec.add_runtime_dependency "ruote-redis"
   spec.add_runtime_dependency "ruote-sequel"
+
+  spec.add_development_dependency "bundler", "~> 1.3"
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency 'rspec'
+  spec.add_development_dependency 'watchr'
+  spec.add_development_dependency 'debugger'
+  spec.add_development_dependency 'sqlite3'
 end

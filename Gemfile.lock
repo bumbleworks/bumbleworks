@@ -84,8 +84,5 @@ DEPENDENCIES
   debugger
   rake
   rspec
-  ruote
-  ruote-redis
-  ruote-sequel
   sqlite3
   watchr
