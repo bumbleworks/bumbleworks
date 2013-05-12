@@ -5,6 +5,7 @@ describe 'Bumbleworks Sample Application' do
     }
 
     before :each do
+      Bumbleworks.reset!
       load File.join(app_root, 'full_initializer.rb')
     end
 

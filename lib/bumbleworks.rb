@@ -1,5 +1,7 @@
 require "bumbleworks/version"
-require "bumbleworks/helpers"
+require "bumbleworks/helpers/ruote"
+require "bumbleworks/helpers/participant"
+require "bumbleworks/helpers/definition"
 require "bumbleworks/configuration"
 require "bumbleworks/support"
 require "bumbleworks/process_definition"
@@ -18,10 +20,19 @@ module Bumbleworks
   class << self
     extend Forwardable
     attr_accessor :env
-    include Helpers
+    include Helpers::Ruote
+    include Helpers::Participant
+    include Helpers::Definition
 
     Configuration.defined_settings.each do |setting|
       def_delegators :configuration, setting, "#{setting.to_s}="
+    end
+
+    # @public
+    # Returns the global configuration, or initializes a new
+    # configuration object if it doesn't exist yet.
+    def configuration
+      @configuration ||= Bumbleworks::Configuration.new
     end
 
     # @public
@@ -33,9 +44,21 @@ module Bumbleworks
     #     c.root = 'path/to/ruote/assets'
     #   end
     # @see Bumbleworks::Configuration
-    def configure
-      reset!
-      yield configuration if block_given?
+    def configure(&block)
+      unless block
+        raise ArgumentError.new("You tried to .configure without a block!")
+      end
+      yield configuration
+    end
+
+    # @public
+    # Same as .configure, but clears all existing configuration
+    # settings first.
+    # @yield [configuration] global configuration
+    # @see Bumbleworks.configure
+    def configure!(&block)
+      @configuration = nil
+      configure(&block)
     end
 
     # @public
@@ -78,6 +101,15 @@ module Bumbleworks
       register_participant_list
       load_process_definitions
       register_process_definitions
+    end
+
+    # @public
+    # Resets Bumbleworks - clears configuration and setup variables, and
+    # shuts down the dashboard.
+    def reset!
+      @configuration = nil
+      @participant_block = nil
+      shutdown_dashboard
     end
 
     # @public

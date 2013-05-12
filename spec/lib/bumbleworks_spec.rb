@@ -1,7 +1,32 @@
 describe Bumbleworks do
   describe ".configure" do
     it 'yields the current configuration' do
+      existing_configuration = described_class.configuration
       described_class.configure do |c|
+        expect(c).to equal(existing_configuration)
+      end
+    end
+
+    it 'allows multiple cumulative configuration blocks' do
+      described_class.configure do |c|
+        c.root = 'pickles'
+        c.autostart_worker = false
+      end
+
+      described_class.configure do |c|
+        c.autostart_worker = true
+      end
+
+      described_class.configuration.root.should == 'pickles'
+      described_class.configuration.autostart_worker.should == true
+    end
+  end
+
+  describe ".configure!" do
+    it 'resets configuration and yields new configuration' do
+      existing_configuration = described_class.configuration
+      described_class.configure! do |c|
+        expect(c).not_to equal(existing_configuration)
         expect(c).to equal(described_class.configuration)
       end
     end

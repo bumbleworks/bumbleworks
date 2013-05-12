@@ -1,4 +1,4 @@
-Bumbleworks.configure do |c|
+Bumbleworks.configure! do |c|
   c.root = File.dirname(__FILE__)
   c.storage = {}
   c.autostart_worker = true
