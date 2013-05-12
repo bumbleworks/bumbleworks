@@ -198,7 +198,7 @@ Bumbleworks.define_process 'build_zen_clock' do
 end
 ```
 
-What's all this `:task => ...` nonsense?  In a Bumbleworks process plan, assigning an activity to a participant takes the following syntax:
+What's all this `:task => ...` nonsense?  In a Bumbleworks process plan, specifying a task that needs to be performed takes the following syntax:
 
 ```ruby
 role :task => 'task_name'
@@ -279,7 +279,7 @@ Let's pretend we have three users - a peon, a guru, and a robot.  The peon and t
 
 Because only one task is in the queue when we first launch the process (`any_human :task => 'check_essence_of_time_for_leaks'`), the robot has no available tasks.  The peon and the guru both see the task, since both of them have the role of 'any_human'.
 
-Let's see what happens when we complete the task:
+Let's see what happens when we `#complete` the task:
 
 ```ruby
 >> zen_clock = ZenClock.new('Roanoke'); zen_clock.build!
@@ -292,10 +292,33 @@ Let's see what happens when we complete the task:
 # => [] # nope
 >> task = Bumbleworks::Task.for_roles(['any_human', 'smart_human']).first # get first task for guru
 # => #<Bumbleworks::Task:0x007ffef337dd00...> # look, a different task!
->> task.nickname
-# => "contemplate_solitude_of_static_universe"
->> task.role
-# => "smart_human"
+>> [task.nickname, task.role]
+# => ["contemplate_solitude_of_static_universe", "smart_human"]
+
+# (continued below)
 ```
 
-Hey, look - now our peon has no tasks available, and can finally get back to that sudoku on the last page of the latest Delta Airlines in-flight magazine.  Our guru, however, now has a new task available - one that only shows up for smart humans (it's sort of the opposite of the Emperor's New Clothing).
+Hey, look - now our peon has no tasks available, and can finally get back to whittling a scale model of the Library of Congress.  Our guru, however, now has a new task available - one that only shows up for smart humans (it's sort of the opposite of the Emperor's New Clothing).
+
+We'll go ahead and complete this task, then walk through the remaining two tasks (`glue_parts_together` and `add_batteries`):
+
+```ruby
+# (continued from before)
+
+>> task.complete
+# => nil
+>> task = Bumbleworks::Task.for_roles(['any_human']).first
+# => #<Bumbleworks::Task:0x007fbed991ab33...> # `glue_parts_together`
+>> [task.nickname, task.role]
+# => ["glue_parts_together", "any_human"]
+>> task.complete
+# => nil
+>> task = Bumbleworks::Task.for_roles(['robot']).first
+# => #<Bumbleworks::Task:0x007fbed991ab33...> # `add_batteries`
+>> [task.nickname, task.role]
+# => ["add_batteries", "robot"]
+>> task.complete
+# => nil
+>> Bumbleworks::Task.all
+# => [] # all tasks are done!
+```
