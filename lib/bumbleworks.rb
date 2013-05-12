@@ -1,3 +1,4 @@
+require "forwardable"
 require "bumbleworks/version"
 require "bumbleworks/helpers/ruote"
 require "bumbleworks/helpers/participant"
@@ -10,7 +11,6 @@ require "ruote"
 require "ruote/reader"
 require "ruote-redis"
 require "ruote-sequel"
-require "forwardable"
 
 module Bumbleworks
   class UnsupportedMode < StandardError; end
