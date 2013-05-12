@@ -35,7 +35,7 @@ First, let's start a new [Rails](http://rubyonrails.org) app.  You'll need, um, 
 
 > Look, I know you just wrote your own web framework for Ruby, and it uses DCI, and Octagonal Composition, and the Observitating De-executor Pattern from Lowland & Michael's PTTD 7th Edition, and your eyelashes literally pucker in disgust when someone suggests you use "off the shelf software."  But we're still going to use Rails for our tutorial, because we're too good for elitists like you.
 
-#### Rails
+### Rails
 
 Do this in a shell:
 
@@ -44,7 +44,7 @@ Do this in a shell:
 
 A bunch of crazy words will show up on your screen, probably in green text against a black background, unless you're lame.  Congratulations!  You know how to copy and paste.
 
-#### Adding the Bumbleworks Gem
+### Adding the Bumbleworks Gem
 
 The first thing we need to do is corrupt our fresh Rails install with the Bumbleworks gem.  Edit `Gemfile` and add:
 
@@ -58,13 +58,7 @@ And then, back in your shell:
 
 Once again, your screen will fill up with nonsense words, making you appear esoterically smart.  Men and/or women (choose which one(s) you want to impress) love that.
 
-#### The Bumbleworks Data Store
-
-Bumbleworks needs its own data store, used only for process state.  We'll explore why this is important later, but for now, just accept that Bumbleworks had neglectful parents and is bad at sharing.
-
-Out of the box, Bumbleworks supports three storage types - [Redis](http://redis.io), [Sequel](http://sequel.rubyforge.org), and a simple Ruby Hash.  We're going to use the latter for now, since it requires no setup.  You would never use the Hash storage type for production - it's in-memory and in-process, so it won't survive a restart and you can't run multiple workers.  But for testing, it's ideal.
-
-#### Initializing Bumbleworks
+### Initializing Bumbleworks
 
 Put the following in a `config/initializers/bumbleworks.rb` file:
 
@@ -72,12 +66,31 @@ Put the following in a `config/initializers/bumbleworks.rb` file:
 
 Bumbleworks.configure do |c|
   c.storage = {}
+  c.autostart_worker = true
 end
 
 Bumbleworks.start!
 ```
 
-### Writing our First Process Definition
+#### The Bumbleworks Data Store
+
+*What does `c.storage = {}` do?*
+
+It tells Bumbleworks to use a Hash for its process storage.
+
+Bumbleworks needs its own data store, used only for process state.  We'll explore why this is important later, but for now, just accept that Bumbleworks had neglectful parents and is bad at sharing.
+
+Out of the box, Bumbleworks supports three storage types - [Redis](http://redis.io), [Sequel](http://sequel.rubyforge.org), and a simple Ruby Hash.  We're using the latter for now, since it requires no setup.  You would never use the Hash storage type for production - it's in-memory and in-process, so it won't survive a restart and you can't run multiple workers.  But for testing, it's ideal.
+
+#### Auto-starting Workers
+
+*Okay, intelligent pants.  What about `c.autostart_worker = true`?*
+
+In a production environment, your "workers" - Ruby processes that actually run the workflow, stepping through your process definitions and generating task queues, etc. - should be instantiated in separate daemon processes.
+
+To support this best practice, we don't run a worker by default when you call `Bumbleworks.start!`.  This means launching processes won't actually do anything, and you'll slowly succumb to a suffocating despair.  For ease of development and testing, you can set `autostart_worker` to true, which will (surprisingly) automatically start a worker when you call `Bumbleworks.start!`.
+
+## Writing our First Process Definition
 
 Bumbleworks, by default, will load all files in `lib/process_definitions`.  Go ahead and create that directory, and we'll put our first process definition in there.
 
@@ -117,7 +130,7 @@ You did it!  Bumbleworks now has a running instance of the `build_zen_clock` pro
 
 Hold on a second, though - where are steps 1 and 2 from our original plan ("Receive an order" and "Place box of parts on conveyor belt")?  Good question!  You're really paying attention, here.  Has anyone ever told you you're very detail-oriented?
 
-## Starting the Process
+## The Lifecycle of a Zen Clock
 
 Let's take a step back, and think about the life cycle of a Zen Clock.  To simplify things (and because we're admittedly not that business-savvy), we're not going to concern ourselves with inventory or volume or anything like that.  We're selling one clock at a time.
 
