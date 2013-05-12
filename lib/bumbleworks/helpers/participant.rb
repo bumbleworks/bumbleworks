@@ -15,7 +15,7 @@ module Bumbleworks
 
       # @private
       def load_participants
-        all_files(participants_directory) do |name, path|
+        Bumbleworks::Support.all_files(participants_directory) do |path, name|
           Object.autoload name.to_sym, path
         end
       end

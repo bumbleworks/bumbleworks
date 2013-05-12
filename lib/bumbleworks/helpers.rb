@@ -16,14 +16,6 @@ module Bumbleworks
       @configuration ||= Bumbleworks::Configuration.new
     end
 
-    def all_files(directory)
-      Dir["#{directory}/**/*.rb"].each do |path|
-        name = File.basename(path, '.rb')
-        name = Bumbleworks::Support.camelize(name)
-        yield name, path
-      end
-    end
-
     def reset!
       @configuration = nil
       @participant_block = nil

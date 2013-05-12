@@ -3,7 +3,7 @@ module Bumbleworks
     module Definition
       # @private
       def load_process_definitions
-        all_files(definitions_directory) do |_, path|
+        Bumbleworks::Support.all_files(definitions_directory) do |path|
           ProcessDefinition.create!(path)
         end
       end

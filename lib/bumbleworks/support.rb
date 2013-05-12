@@ -8,5 +8,13 @@ module Bumbleworks
       string = string.sub(/^[a-z\d]*/) { $&.capitalize }
       string = string.gsub(/(?:_|(\/))([a-z\d]*)/) { "#{$1}#{$2.capitalize}" }.gsub('/', '::')
     end
+
+    def all_files(directory)
+      Dir["#{directory}/**/*.rb"].each do |path|
+        name = File.basename(path, '.rb')
+        name = camelize(name)
+        yield path, name
+      end
+    end
   end
 end
