@@ -3,7 +3,14 @@ module Bumbleworks
     module Ruote
       # @public
       def dashboard
-        @dashboard ||= ::Ruote::Dashboard.new(::Ruote::Worker.new(ruote_storage))
+        @dashboard ||= begin
+          context = if autostart_worker
+            ::Ruote::Worker.new(ruote_storage)
+          else
+            ruote_storage
+          end
+          ::Ruote::Dashboard.new(context)
+        end
       end
 
       # @private

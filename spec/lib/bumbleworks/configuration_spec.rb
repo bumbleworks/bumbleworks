@@ -107,6 +107,21 @@ describe Bumbleworks::Configuration do
     end
   end
 
+  describe '#autostart_worker' do
+    it 'returns false by default' do
+      configuration.autostart_worker.should be_false
+    end
+
+    it 'only returns true if set explicitly to true' do
+      configuration.autostart_worker = 'yes'
+      configuration.autostart_worker.should be_false
+      configuration.autostart_worker = 1
+      configuration.autostart_worker.should be_false
+      configuration.autostart_worker = true
+      configuration.autostart_worker.should be_true
+    end
+  end
+
   describe '#clear!' do
     it 'resets #root' do
       configuration.root = '/Root'

@@ -33,30 +33,33 @@ describe Bumbleworks do
 
   describe '.start!' do
     before :each do
+      described_class.reset!
       described_class.stub(:load_participants)
       described_class.stub(:load_process_definitions)
     end
 
-    it 'loads and registers the participants' do
-      participant_block = Proc.new do
+    it 'loads participants registered using #register_participants' do
+      described_class.register_participants do
+        bees_honey 'BeesHoney'
+        maple_syrup 'MapleSyrup'
+        catchall 'NewCatchall'
       end
 
       described_class.storage = {}
-      described_class.register_participants &participant_block
-      described_class.dashboard.should_receive(:register).with(&participant_block)
       described_class.start!
+      described_class.dashboard.participant_list.should have(3).items
+      described_class.dashboard.participant_list.map(&:classname).should =~ ['BeesHoney', 'MapleSyrup', 'NewCatchall']
     end
 
-    it 'calls participant block to register them' do
-      participant_block = Proc.new do
-        catchall
+    it 'adds catchall participant if not in list' do
+      described_class.register_participants do
+        knuckle_sandwich 'KnuckleSandwich'
       end
 
       described_class.storage = {}
-      described_class.register_participants &participant_block
-      described_class.dashboard.should_receive(:register).and_call_original
       described_class.start!
-      described_class.dashboard.participant_list.first.should be_an_instance_of(Ruote::ParticipantEntry)
+      described_class.dashboard.participant_list.should have(2).items
+      described_class.dashboard.participant_list.map(&:classname).should =~ ['KnuckleSandwich', 'Ruote::StorageParticipant']
     end
 
     it 'registers process definitions with dashboard' do
@@ -65,6 +68,21 @@ describe Bumbleworks do
       described_class.should_receive(:registered_process_definitions).and_return({'compile' => 'some definition'})
       described_class.start!
       described_class.dashboard.variables['compile'].should == 'some definition'
+    end
+
+    it 'does not automatically start a worker by default' do
+      described_class.stub(:register_participant_list)
+      described_class.storage = {}
+      described_class.start!
+      described_class.dashboard.worker.should be_nil
+    end
+
+    it 'starts a worker if autostart_worker config setting is true' do
+      described_class.stub(:register_participant_list)
+      described_class.storage = {}
+      described_class.autostart_worker = true
+      described_class.start!
+      described_class.dashboard.worker.should_not be_nil
     end
   end
 

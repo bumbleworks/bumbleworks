@@ -1,10 +1,9 @@
-require 'spec_helper'
-
 describe Bumbleworks::Task do
   let(:workflow_item) {Ruote::Workitem.new('fields' => {'params' => {'task' => 'go_to_work'} })}
 
   before :each do
     Bumbleworks.reset!
+    Bumbleworks.autostart_worker = true
     Bumbleworks.storage = {}
 
     Bumbleworks.register_participants do

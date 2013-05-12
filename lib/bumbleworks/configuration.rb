@@ -66,6 +66,15 @@ module Bumbleworks
     #
     define_setting :storage
 
+    # By default, a worker will NOT be started when the storage is initialized;
+    # this is the recommended practice since workers should be instantiated in
+    # their own threads, and multiple workers (even on different hosts) can run
+    # simultaneously.  However, if you want a worker to start up immediately
+    # (useful for testing or development), set autostart_worker to true.
+    #
+    # default: false
+    define_setting :autostart_worker
+
     def initialize
       @defined_settings = []
     end
@@ -106,6 +115,13 @@ module Bumbleworks
       else
         raise UndefinedSetting.new("Bumbleworks.root must be set") unless @root
       end
+    end
+
+    # Whether or not we should start a worker when initializing the dashboard
+    # and storage.  Only returns true if set explicitly to true.
+    #
+    def autostart_worker
+      @autostart_worker == true
     end
 
     # Clears all memoize variables and configuration settings
