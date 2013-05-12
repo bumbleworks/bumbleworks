@@ -42,7 +42,7 @@ GEM
     rufus-dollar (1.0.4)
     rufus-json (1.0.4)
     rufus-mnemo (1.2.3)
-    rufus-scheduler (2.0.18)
+    rufus-scheduler (2.0.19)
       tzinfo (>= 0.3.23)
     rufus-treechecker (1.0.8)
       ruby_parser (>= 2.0.5)
@@ -71,7 +71,7 @@ GEM
       ruby_parser (>= 2.0.5)
       sexp_processor (>= 3.0.5)
     sqlite3 (1.3.7)
-    tins (0.7.2)
+    tins (0.8.0)
     tzinfo (0.3.37)
     watchr (0.7)
 
