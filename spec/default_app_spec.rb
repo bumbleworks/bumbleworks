@@ -50,7 +50,7 @@ describe DefaultApp do
     it 'loads process definitions' do
       Bumbleworks.root = File.join(app_root, 'app')
       Bumbleworks.dashboard.variables['make_honey'].should == ["define",
-        {"name"=>"make_honey"}, [["dave", {"ref"=>"honey maker"}, []]]]
+        {"name"=>"make_honey"}, [["dave", {"task"=>"make_some_honey"}, []]]]
       Bumbleworks.dashboard.variables['garbage_collector'].should == ["define",
         {"name"=>"garbage_collector"}, [["george", {"ref"=>"garbage collector"}, []]]]
 
@@ -58,7 +58,7 @@ describe DefaultApp do
         {"name"=>"make_molasses"},
         [["concurrence",
           {},
-          [["dave", {"ref"=>"maker"}, []], ["sam", {"ref"=>"taster"}, []]]]]]
+          [["dave", {"task"=>"make_some_molasses"}, []], ["sam", {"task"=>"taste_that_molasses"}, []]]]]]
     end
 
     it 'automatically starts engine and waits for first task in catchall participant' do

@@ -2,7 +2,6 @@ require 'spec_helper'
 
 describe Bumbleworks::Task do
   let(:workflow_item) {Ruote::Workitem.new('fields' => {'params' => {'task' => 'go_to_work'} })}
-  let(:unnamed_workflow_item) {Ruote::Workitem.new('fields' => {'params' => {} })}
 
   before :each do
     Bumbleworks.reset!
@@ -20,6 +19,7 @@ describe Bumbleworks::Task do
       Bumbleworks.define_process 'lowering_penguin_self_esteem' do
         concurrence do
           heckler :task => 'comment_on_dancing_ability'
+          mother :oh_no => 'this_is_not_a_task'
           mother :task => 'ignore_pleas_for_attention'
           father :task => 'sit_around_watching_penguin_tv'
         end
@@ -37,6 +37,11 @@ describe Bumbleworks::Task do
       ]
     end
 
+    it 'returns empty array if no tasks found for given roles' do
+      Bumbleworks.dashboard.wait_for(:father)
+      described_class.for_roles(['elephant']).should be_empty
+    end
+
     it 'returns empty array if given empty array' do
       Bumbleworks.dashboard.wait_for(:father)
       described_class.for_roles([]).should be_empty
@@ -49,41 +54,9 @@ describe Bumbleworks::Task do
   end
 
   describe '.for_role' do
-    before :each do
-      Bumbleworks.define_process 'cat-lifecycle' do
-        concurrence do
-          human :task => 'pet'
-          cat :task => 'purr'
-        end
-        human :task => 'feed'
-        cat :task => 'eat'
-        cat :task => 'nap'
-      end
-      Bumbleworks.launch!('cat-lifecycle')
-    end
-
-    it 'returns tasks waiting to be handled by actor' do
-      Bumbleworks.dashboard.wait_for(:cat)
-
-      tasks = described_class.for_role('human')
-      tasks.should have(1).items
-      tasks.first.nickname.should == 'pet'
-      tasks.first.wf_name.should == 'cat-lifecycle'
-
-      tasks = described_class.for_role('cat')
-      tasks.should have(1).items
-      tasks.first.nickname.should == 'purr'
-      tasks.first.wf_name.should == 'cat-lifecycle'
-    end
-
-    it 'returns empty array if none found' do
-      Bumbleworks.dashboard.wait_for(:cat, :timeout => 10)
-      described_class.for_role('bob').should == []
-    end
-
-    it 'returns empty array if given nil' do
-      Bumbleworks.dashboard.wait_for(:cat)
-      described_class.for_role(nil).should be_empty
+    it 'delegates to #for_roles with single-item array' do
+      described_class.should_receive(:for_roles).with(['mister_mystery'])
+      described_class.for_role('mister_mystery')
     end
   end
 
@@ -91,18 +64,27 @@ describe Bumbleworks::Task do
     before :each do
       Bumbleworks.define_process 'dog-lifecycle' do
         concurrence do
-          eat
-          bark
-          skip_and_jump
+          dog_teeth :task => 'eat'
+          dog_mouth :task => 'bark'
+          everyone :task => 'pet_dog'
+          the_universe_is_wonderful
+          dog_legs :task => 'skip_and_jump'
         end
-        nap
+        dog_brain :task => 'nap'
       end
       Bumbleworks.launch!('dog-lifecycle')
     end
 
-    it 'returns all tasks waiting for anyone to do them in the queue' do
-      Bumbleworks.dashboard.wait_for(:skip_and_jump)
-      described_class.all.map(&:role).should == %w(eat bark skip_and_jump)
+    it 'returns all tasks (with task param) in queue regardless of role' do
+      Bumbleworks.dashboard.wait_for(:dog_legs)
+      tasks = described_class.all
+      tasks.should have(4).items
+      tasks.map { |t| [t.role, t.nickname] }.should == [
+        ['dog_teeth', 'eat'],
+        ['dog_mouth', 'bark'],
+        ['everyone', 'pet_dog'],
+        ['dog_legs', 'skip_and_jump']
+      ]
     end
   end
 
@@ -184,9 +166,9 @@ describe Bumbleworks::Task do
 
     describe '#release' do
       it "release claim on workitem" do
-        subject.claimed?.should be_true
+        subject.should be_claimed
         subject.release
-        subject.claimed?.should be_false
+        subject.should_not be_claimed
       end
     end
   end
@@ -194,30 +176,37 @@ describe Bumbleworks::Task do
   context 'updating workflow engine' do
     before :each do
       Bumbleworks.define_process 'dog-lifecycle' do
-        eat :dinner => 'still cooking'
-        nap :task => 'cat_nap', :by => 'midnight'
+        dog_mouth :task => 'eat_dinner', :state => 'still cooking'
+        dog_brain :task => 'cat_nap', :by => 'midnight'
       end
       Bumbleworks.launch!('dog-lifecycle')
     end
 
     describe '#save' do
-      it 'updates storage participant' do
-        event = Bumbleworks.dashboard.wait_for :eat
-        task = described_class.for_role('eat').first
-        task['dinner'] = 'is ready'
+      it 'saves fields and params, but does not proceed process' do
+        event = Bumbleworks.dashboard.wait_for :dog_mouth
+        task = described_class.for_role('dog_mouth').first
+        task.params['state'] = 'is ready'
+        task.fields['meal'] = 'salted_rhubarb'
         task.save
-        wi = Bumbleworks.dashboard.storage_participant.by_wfid(task.id).first
-        wi.params['dinner'].should == 'is ready'
+        task = described_class.for_role('dog_mouth').first
+        task.params['state'].should == 'is ready'
+        task.fields['meal'].should == 'salted_rhubarb'
       end
     end
 
     describe '#complete' do
-      it 'releases the participant and allows engine to proceed to next item in the process' do
-        event = Bumbleworks.dashboard.wait_for :eat
-        task = described_class.for_role('eat').first
+      it 'saves fields and proceeds to next expression' do
+        event = Bumbleworks.dashboard.wait_for :dog_mouth
+        task = described_class.for_role('dog_mouth').first
+        task.params['state'] = 'is ready'
+        task.fields['meal'] = 'root beer and a kite'
         task.complete
-        event = Bumbleworks.dashboard.wait_for :nap
-        event['participant_name'].should == 'nap'
+        described_class.for_role('dog_mouth').should be_empty
+        event = Bumbleworks.dashboard.wait_for :dog_brain
+        task = described_class.for_role('dog_brain').first
+        task.params['state'].should be_nil
+        task.fields['meal'].should == 'root beer and a kite'
       end
     end
   end

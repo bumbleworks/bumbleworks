@@ -14,21 +14,24 @@ module Bumbleworks
 
       def for_roles(identifiers)
         return [] unless identifiers.is_a?(Array)
-        identifiers.collect { |identifier|
+        workitems = identifiers.collect { |identifier|
           storage_participant.by_participant(identifier)
-        }.flatten.uniq.map(&to_task)
+        }.flatten.uniq
+        from_workitems(workitems)
       end
 
       def all
-        storage_participant.all.map(&to_task)
+        from_workitems(storage_participant.all)
       end
 
       def storage_participant
         Bumbleworks.dashboard.storage_participant
       end
 
-      def to_task
-        lambda {|wi| new(wi)}
+      def from_workitems(workitems)
+        workitems.map { |wi|
+          new(wi) if wi.params['task']
+        }.compact
       end
     end
 
