@@ -20,6 +20,10 @@ describe Bumbleworks do
       described_class.configuration.root.should == 'pickles'
       described_class.configuration.autostart_worker.should == true
     end
+
+    it 'requires a block' do
+      expect { described_class.configure }.to raise_error(ArgumentError)
+    end
   end
 
   describe ".configure!" do

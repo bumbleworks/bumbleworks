@@ -1,4 +1,21 @@
 describe Bumbleworks::TreeBuilder do
+  describe '.new' do
+    it 'raises error if no definition or tree' do
+      expect { described_class.new }.to raise_error(ArgumentError)
+    end
+
+    it 'raises error if both definition and tree' do
+      expect {
+        described_class.new(:definition => :foo, :tree => :bar)
+      }.to raise_error(ArgumentError)
+    end
+
+    it 'succeeds if only one of definition or tree specified' do
+      expect { described_class.new(:definition => :foo) }.not_to raise_error
+      expect { described_class.new(:tree => :foo) }.not_to raise_error
+    end
+  end
+
   describe '#build!' do
     it 'builds tree and sets name to given name' do
       pdef = %q(

@@ -115,10 +115,6 @@ describe Bumbleworks::ProcessDefinition do
   end
 
   describe "#load_definition_from_file" do
-    before :each do
-      @test_process_filename = File.join(fixtures_path, 'definitions', 'test_process.rb').to_s
-    end
-
     it "raises an error if given file can't be found" do
       pdef = described_class.new(:name => 'whatever')
       lambda { pdef.load_definition_from_file('nerf') }.should raise_error(described_class::FileNotFound)
@@ -126,8 +122,8 @@ describe Bumbleworks::ProcessDefinition do
 
     it "sets #definition to the parsed result of the file, if found" do
       pdef = described_class.new(:name => 'test_process')
-      pdef.load_definition_from_file @test_process_filename
-      pdef.definition.should == File.read(@test_process_filename)
+      pdef.load_definition_from_file definition_path('test_process')
+      pdef.definition.should == File.read(definition_path('test_process'))
     end
   end
 
@@ -138,6 +134,18 @@ describe Bumbleworks::ProcessDefinition do
       expect {
         described_class.create_all_from_directory!(definitions_path)
       }.to raise_error(described_class::Invalid)
+    end
+
+    it 'rolls back any processes defined within current transaction if error' do
+      Bumbleworks.dashboard.variables['keep_me'] = 'top_secret_cat_pics'
+      Bumbleworks::Support.stub(:all_files).
+        and_yield(definition_path('test_process'), 'test_process').
+        and_yield(definition_path('a_list_of_jams'), 'a_list_of_jams')
+      expect {
+        described_class.create_all_from_directory!(definitions_path)
+      }.to raise_error
+      Bumbleworks.dashboard.variables['test_process'].should be_nil
+      Bumbleworks.dashboard.variables['keep_me'].should == 'top_secret_cat_pics'
     end
 
     it 'skips invalid files and loads all valid definitions when option specified' do
