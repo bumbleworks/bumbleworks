@@ -6,7 +6,7 @@ require 'bumbleworks/version'
 Gem::Specification.new do |spec|
   spec.name          = "bumbleworks"
   spec.version       = Bumbleworks::VERSION
-  spec.authors       = ["Maher Hawash","Ravi Gadad", "Laurie Kemmerer", "David Miller"]
+  spec.authors       = ["Maher Hawash", "Ravi Gadad", "Laurie Kemmerer", "David Miller"]
   spec.email         = ["mhawash@renewfund.com", "ravi@renewfund.com", "laurie@renewfund.com", "dave.miller@renewfund.com"]
   spec.description   = %q{Bumbleworks adds a workflow engine (via ruote[http://github.com/jmettraux/ruote] to your application.}
   spec.summary       = %q{Framework around ruote[http://github.com/jmettraux/ruote] workflow engine}
