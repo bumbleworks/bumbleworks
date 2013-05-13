@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bumbleworks (0.0.2)
+    bumbleworks (0.0.3)
       ruote
       ruote-redis
       ruote-sequel
