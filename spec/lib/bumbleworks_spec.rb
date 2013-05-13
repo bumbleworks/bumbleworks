@@ -104,4 +104,16 @@ describe Bumbleworks do
       described_class.configuration.should == configuration
     end
   end
+
+  describe 'Bumbleworks::Ruote delegation' do
+    it 'includes dashboard' do
+      Bumbleworks::Ruote.should_receive(:dashboard).and_return(:oh_goodness_me)
+      Bumbleworks.dashboard.should == :oh_goodness_me
+    end
+
+    it 'includes start_worker' do
+      Bumbleworks::Ruote.should_receive(:start_worker!).and_return(:lets_do_it)
+      Bumbleworks.start_worker!.should == :lets_do_it
+    end
+  end
 end

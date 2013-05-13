@@ -101,10 +101,24 @@ Bumbleworks, by default, uses...
 
 ### Starting Work
 
-Without running a "worker," Bumbleworks won't do anything behind the scenes - no workitems will proceed through their workflow, no schedules will be checked, etc.  To run a worker, use the following rake task:
+Without running a "worker," Bumbleworks won't do anything behind the scenes - no workitems will proceed through their workflow, no schedules will be checked, etc.  To run a worker, you can either set the `autostart_worker` option in configuration, before starting Bumbleworks:
 
+```ruby
+Bumbleworks.configure do |c|
+  # ...
+  # NOTE: NOT RECOMMENDED IN PRODUCTION!
+  c.autostart_worker = true
+end
+
+Bumbleworks.start! # this will now start a worker automatically
 ```
-rake bumbleworks:start_worker
+
+... but, while this is handy in development and testing, it's not a good practice to follow in production.  In an actual production environment, you will likely have multiple workers running in their own threads, or even on separate servers.  So the **preferred way** is to do the following (most likely in a Rake task that has your environment loaded):
+
+```ruby
+Bumbleworks.start_worker!
 ```
+
+> Strictly speaking, the entire environment doesn't need to be loaded; only Bumbleworks.storage needs to be set before starting a worker.  However, it's best practice to configure Bumbleworks in one place, to ensure you don't get your storage configurations out of sync.
 
 You can run as many workers as you want in parallel, and as long as they're accessing the same storage, no concurrency issues should arise.

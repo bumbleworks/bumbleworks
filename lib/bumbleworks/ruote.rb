@@ -5,15 +5,22 @@ require "ruote-sequel"
 module Bumbleworks
   class Ruote
     class << self
-      def dashboard
+      def dashboard(options = {})
         @dashboard ||= begin
-          context = if Bumbleworks.autostart_worker
+          context = if Bumbleworks.autostart_worker || options[:start_worker] == true
             ::Ruote::Worker.new(storage)
           else
             storage
           end
           ::Ruote::Dashboard.new(context)
         end
+      end
+
+      def start_worker!(options = {})
+        @dashboard = nil
+        dashboard(:start_worker => true)
+        dashboard.join if options[:join] == true
+        dashboard.worker
       end
 
       def launch(name, options)

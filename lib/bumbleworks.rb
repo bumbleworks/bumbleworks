@@ -20,7 +20,7 @@ module Bumbleworks
       def_delegators :configuration, setting, "#{setting.to_s}="
     end
 
-    def_delegator Bumbleworks::Ruote, :dashboard
+    def_delegators Bumbleworks::Ruote, :dashboard, :start_worker!
     def_delegator Bumbleworks::ProcessDefinition, :define, :define_process
 
     # @public
