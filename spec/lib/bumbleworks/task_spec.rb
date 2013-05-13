@@ -5,12 +5,7 @@ describe Bumbleworks::Task do
     Bumbleworks.reset!
     Bumbleworks.autostart_worker = true
     Bumbleworks.storage = {}
-
-    Bumbleworks.register_participants do
-      catchall
-    end
-
-    Bumbleworks.register_participant_list
+    Bumbleworks::Ruote.register_participants
   end
 
   describe '.for_roles' do

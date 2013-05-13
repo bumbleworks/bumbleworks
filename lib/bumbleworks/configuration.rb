@@ -75,10 +75,6 @@ module Bumbleworks
     # default: false
     define_setting :autostart_worker
 
-    def initialize
-      @defined_settings = []
-    end
-
     # Path where Bumbleworks will look for ruote process defintiions to load.
     # The path can be relative or absolute.  Relative paths are
     # relative to Bumbleworks.root.

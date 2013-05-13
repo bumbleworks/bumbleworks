@@ -1,16 +1,11 @@
 require "forwardable"
 require "bumbleworks/version"
-require "bumbleworks/helpers/ruote"
-require "bumbleworks/helpers/participant"
-require "bumbleworks/helpers/definition"
 require "bumbleworks/configuration"
 require "bumbleworks/support"
 require "bumbleworks/process_definition"
 require "bumbleworks/task"
-require "ruote"
-require "ruote/reader"
-require "ruote-redis"
-require "ruote-sequel"
+require "bumbleworks/participant_registration"
+require "bumbleworks/ruote"
 
 module Bumbleworks
   class UnsupportedMode < StandardError; end
@@ -20,13 +15,13 @@ module Bumbleworks
   class << self
     extend Forwardable
     attr_accessor :env
-    include Helpers::Ruote
-    include Helpers::Participant
-    include Helpers::Definition
 
     Configuration.defined_settings.each do |setting|
       def_delegators :configuration, setting, "#{setting.to_s}="
     end
+
+    def_delegator Bumbleworks::Ruote, :dashboard
+    def_delegator Bumbleworks::ProcessDefinition, :define, :define_process
 
     # @public
     # Returns the global configuration, or initializes a new
@@ -78,29 +73,11 @@ module Bumbleworks
     end
 
     # @public
-    # Adds the process name and definition to the registraton queue.
-    # Raises an error if the process name has already been encountered.
-    #
-    # @example
-    #   Bumbleworks.define_process 'build_house' do
-    #     contractor :task => 'schedule'
-    #   end
-    def define_process(name, *args, &block)
-      if registered_process_definitions[name]
-        raise DefinitionDuplicate, "the process '#{name}' has already been defined"
-      end
-
-      registered_process_definitions[name] = ProcessDefinition.define_process(name, *args, &block)
-    end
-
-    # @public
     # Starts a Ruote engine, sets up the storage and registers participants
     # and process_definitions with the Ruote engine.
     def start!
-      load_participants
-      register_participant_list
+      autoload_and_register_participants
       load_process_definitions
-      register_process_definitions
     end
 
     # @public
@@ -109,7 +86,8 @@ module Bumbleworks
     def reset!
       @configuration = nil
       @participant_block = nil
-      shutdown_dashboard
+      @registered_process_definitions = nil
+      Bumbleworks::Ruote.reset!
     end
 
     # @public
@@ -117,10 +95,18 @@ module Bumbleworks
     # The process_definiton_name should already be registered with
     # Bumbleworks.
     def launch!(process_definition_name, options = {})
-      register_process_definitions
-      autostart = options.delete(:autostart_worker)
+      Bumbleworks::Ruote.launch(process_definition_name, options)
+    end
 
-      dashboard.launch(dashboard.variables[process_definition_name], options)
+  private
+
+    def autoload_and_register_participants
+      Bumbleworks::ParticipantRegistration.autoload_all
+      Bumbleworks::Ruote.register_participants(&@participant_block)
+    end
+
+    def load_process_definitions
+      Bumbleworks::ProcessDefinition.create_all_from_directory!(definitions_directory)
     end
   end
 end

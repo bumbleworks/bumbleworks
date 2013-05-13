@@ -9,10 +9,10 @@ module Bumbleworks
       string = string.gsub(/(?:_|(\/))([a-z\d]*)/) { "#{$1}#{$2.capitalize}" }.gsub('/', '::')
     end
 
-    def all_files(directory)
+    def all_files(directory, options = {})
       Dir["#{directory}/**/*.rb"].each do |path|
         name = File.basename(path, '.rb')
-        name = camelize(name)
+        name = camelize(name) if options[:camelize] == true
         yield path, name
       end
     end
