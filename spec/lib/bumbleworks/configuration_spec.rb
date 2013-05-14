@@ -110,7 +110,7 @@ describe Bumbleworks::Configuration do
   describe '#add_storage_adapter' do
     it 'adds storage adapter to registered list' do
       GoodForNothingStorage = OpenStruct.new(
-        :driver => nil, :display_name => 'Dummy', :use? => true
+        :driver => nil, :storage_class => 'Dummy', :display_name => 'Dummy', :use? => true
       )
       configuration.storage_adapters.should be_empty
       configuration.add_storage_adapter(GoodForNothingStorage)

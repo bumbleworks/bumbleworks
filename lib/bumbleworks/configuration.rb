@@ -126,15 +126,13 @@ module Bumbleworks
     end
 
     # Add a storage adapter to the set of possible adapters.  Takes an object
-    # that responds to `driver`, `use?(storage)`, and `display_name`.
+    # that responds to `driver`, `use?`, `storage_class`, and `display_name`.
     #
-    def add_storage_adapter(storage_adapter)
-      raise ArgumentError, "#{storage_adapter} is not a Bumbleworks storage adapter" unless
-        storage_adapter.respond_to?(:driver) &&
-        storage_adapter.respond_to?(:use?) &&
-        storage_adapter.respond_to?(:display_name)
+    def add_storage_adapter(adapter)
+      raise ArgumentError, "#{adapter} is not a Bumbleworks storage adapter" unless
+        [:driver, :use?, :storage_class, :display_name].all? { |m| adapter.respond_to?(m) }
 
-      @storage_adapters << storage_adapter
+      @storage_adapters << adapter
       @storage_adapters
     end
 
