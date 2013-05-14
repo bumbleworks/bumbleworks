@@ -6,6 +6,7 @@ require "bumbleworks/process_definition"
 require "bumbleworks/task"
 require "bumbleworks/participant_registration"
 require "bumbleworks/ruote"
+require "bumbleworks/hash_storage"
 
 module Bumbleworks
   class UnsupportedMode < StandardError; end
@@ -27,7 +28,17 @@ module Bumbleworks
     # Returns the global configuration, or initializes a new
     # configuration object if it doesn't exist yet.
     def configuration
-      @configuration ||= Bumbleworks::Configuration.new
+      @configuration ||= begin
+        configuration = Bumbleworks::Configuration.new
+        configuration.add_storage_adapter(Bumbleworks::HashStorage)
+        if defined?(Bumbleworks::Redis::Adapter) && Bumbleworks::Redis::Adapter.auto_register?
+          configuration.add_storage_adapter(Bumbleworks::Redis::Adapter)
+        end
+        if defined?(Bumbleworks::Sequel::Adapter) && Bumbleworks::Sequel::Adapter.auto_register?
+          configuration.add_storage_adapter(Bumbleworks::Sequel::Adapter)
+        end
+        configuration
+      end
     end
 
     # @public

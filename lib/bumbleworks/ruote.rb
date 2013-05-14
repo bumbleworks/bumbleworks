@@ -1,6 +1,4 @@
 require "ruote"
-require "ruote-redis"
-require "ruote-sequel"
 
 module Bumbleworks
   class Ruote
@@ -43,14 +41,12 @@ module Bumbleworks
 
       def storage
         @storage ||= begin
-          ruote_storage_class = case Bumbleworks.storage.class.name
-          when /^Redis/  then ::Ruote::Redis::Storage
-          when /^Hash/   then ::Ruote::HashStorage
-          when /^Sequel/ then ::Ruote::Sequel::Storage
-          else
-            raise UndefinedSetting, "Storage is missing or not supported. Redis, Sequel or Hash are the only supported storage adapters"
+          all_adapters = Bumbleworks.configuration.storage_adapters
+          adapter = all_adapters.detect do |adapter|
+            adapter.use?(Bumbleworks.storage)
           end
-          ruote_storage_class.new(Bumbleworks.storage)
+          raise UndefinedSetting, "Storage is missing or not supported.  Supported: #{all_adapters.map(&:display_name).join(', ')}" unless adapter
+          adapter.driver.new(Bumbleworks.storage)
         end
       end
 

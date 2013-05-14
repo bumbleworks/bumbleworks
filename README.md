@@ -32,25 +32,41 @@ Before you can load process definitions, register participants, and spin up work
 
 #### Redis
 
-If you want to use Redis, set Bumbleworks.storage to a Redis instance.  In a configure block, this looks like:
+If you want to use Redis:
 
-```ruby
-Bumbleworks.configure do |c|
-  c.storage = Redis.new(:host => '127.0.0.1', :db => 0, :thread_safe => true)
-  # ...
-end
-```
+1. Add the gem to your Gemfile:
+
+  ```ruby
+  gem 'bumbleworks-redis'
+  ```
+
+2. Set Bumbleworks.storage to a Redis instance.  In a configure block, this looks like:
+
+  ```ruby
+  Bumbleworks.configure do |c|
+    c.storage = Redis.new(:host => '127.0.0.1', :db => 0, :thread_safe => true)
+    # ...
+  end
+  ```
 
 #### Sequel
 
-If you want to use Sequel, set Bumbleworks.storage to a Sequel database connection.  You can use Sequel.connect for this.  In a configure block, this looks like:
+If you want to use Sequel:
 
-```ruby
-Bumbleworks.configure do |c|
-  c.storage = Sequel.connect('postgres://user:password@host:port/database_name')
-  # ...
-end
-```
+1. Add the gem to your Gemfile:
+
+  ```ruby
+  gem 'bumbleworks-sequel'
+  ```
+
+2. Set Bumbleworks.storage to a Sequel database connection.  You can use Sequel.connect for this.  In a configure block, this looks like:
+
+  ```ruby
+  Bumbleworks.configure do |c|
+    c.storage = Sequel.connect('postgres://user:password@host:port/database_name')
+    # ...
+  end
+  ```
 
 ### Process Definition Loading
 
@@ -95,10 +111,6 @@ By default, Bumbleworks will attempt in several ways to find your root directory
 
 ## Usage
 
-### The Task Queue
-
-Bumbleworks, by default, uses...
-
 ### Starting Work
 
 Without running a "worker," Bumbleworks won't do anything behind the scenes - no workitems will proceed through their workflow, no schedules will be checked, etc.  To run a worker, you can either set the `autostart_worker` option in configuration, before starting Bumbleworks:
@@ -122,3 +134,27 @@ Bumbleworks.start_worker!
 > Strictly speaking, the entire environment doesn't need to be loaded; only Bumbleworks.storage needs to be set before starting a worker.  However, it's best practice to configure Bumbleworks in one place, to ensure you don't get your storage configurations out of sync.
 
 You can run as many workers as you want in parallel, and as long as they're accessing the same storage, no concurrency issues should arise.
+
+### The Task Queue
+
+When a worker encounters an expression that doesn't match a subprocess or a participant, it gets dropped into the storage and waits to be picked up and dealt with.  Using the Bumbleworks::Task class, Bumbleworks makes available any of these items that have a param called "task."  Let's use the following expressions as an example:
+
+```ruby
+concurrence do
+  trombonist :task => 'have_a_little_too_much_fun'
+  admin :task => 'clean_up_after_trombone_quintet'
+  rooster :do => 'something_nice'
+end
+```
+
+If you call Bumbleworks::Task.all, both of the first two will be returned as Task instances - the third one will be ignored.  You can also do:
+
+```ruby
+Bumbleworks::Task.for_role('trombonist') # returns first task
+Bumbleworks::Task.for_role('admin') # returns second task
+Bumbleworks::Task.for_roles(['trombonist', 'admin']) # returns both tasks
+```
+
+Call Bumbleworks::Task#complete to finish a task and proceed to the next expression.
+
+See the Bumbleworks::Task class for more details.

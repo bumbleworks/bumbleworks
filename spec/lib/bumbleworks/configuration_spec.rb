@@ -107,6 +107,26 @@ describe Bumbleworks::Configuration do
     end
   end
 
+  describe '#add_storage_adapter' do
+    it 'adds storage adapter to registered list' do
+      GoodForNothingStorage = OpenStruct.new(
+        :driver => nil, :display_name => 'Dummy', :use? => true
+      )
+      configuration.storage_adapters.should be_empty
+      configuration.add_storage_adapter(GoodForNothingStorage)
+      configuration.add_storage_adapter(Bumbleworks::HashStorage)
+      configuration.storage_adapters.should =~ [
+        GoodForNothingStorage, Bumbleworks::HashStorage
+      ]
+    end
+
+    it 'raises ArgumentError if object is not a storage adapter' do
+      expect {
+        configuration.add_storage_adapter(:nice_try_buddy)
+      }.to raise_error(ArgumentError)
+    end
+  end
+
   describe '#autostart_worker' do
     it 'returns false by default' do
       configuration.autostart_worker.should be_false

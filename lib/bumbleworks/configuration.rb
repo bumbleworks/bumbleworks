@@ -12,6 +12,7 @@ module Bumbleworks
   #   end
   #
   class Configuration
+    attr_reader :storage_adapters
 
     class << self
       def define_setting(name)
@@ -75,6 +76,10 @@ module Bumbleworks
     # default: false
     define_setting :autostart_worker
 
+    def initialize
+      @storage_adapters = []
+    end
+
     # Path where Bumbleworks will look for ruote process defintiions to load.
     # The path can be relative or absolute.  Relative paths are
     # relative to Bumbleworks.root.
@@ -120,10 +125,24 @@ module Bumbleworks
       @autostart_worker == true
     end
 
+    # Add a storage adapter to the set of possible adapters.  Takes an object
+    # that responds to `driver`, `use?(storage)`, and `display_name`.
+    #
+    def add_storage_adapter(storage_adapter)
+      raise ArgumentError, "#{storage_adapter} is not a Bumbleworks storage adapter" unless
+        storage_adapter.respond_to?(:driver) &&
+        storage_adapter.respond_to?(:use?) &&
+        storage_adapter.respond_to?(:display_name)
+
+      @storage_adapters << storage_adapter
+      @storage_adapters
+    end
+
     # Clears all memoize variables and configuration settings
     #
     def clear!
       defined_settings.each {|setting| instance_variable_set("@#{setting}", nil)}
+      @storage_adapters = []
       @definitions_folder = @participants_folder = nil
     end
 

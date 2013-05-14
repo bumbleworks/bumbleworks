@@ -95,6 +95,10 @@ describe Bumbleworks do
   end
 
   describe '.configuration' do
+    before :each do
+      Bumbleworks.reset!
+    end
+
     it 'creates an instance of Bumbleworks::Configuration' do
       described_class.configuration.should be_an_instance_of(Bumbleworks::Configuration)
     end
@@ -102,6 +106,16 @@ describe Bumbleworks do
     it 'returns the same instance when called multiple times' do
       configuration = described_class.configuration
       described_class.configuration.should == configuration
+    end
+
+    it 'automatically adds Redis adapter if defined' do
+      stub_const('Bumbleworks::Redis::Adapter', Bumbleworks::StorageAdapter)
+      described_class.configuration.storage_adapters.should include(Bumbleworks::Redis::Adapter)
+    end
+
+    it 'automatically adds Sequel adapter if defined' do
+      stub_const('Bumbleworks::Sequel::Adapter', Bumbleworks::StorageAdapter)
+      described_class.configuration.storage_adapters.should include(Bumbleworks::Sequel::Adapter)
     end
   end
 

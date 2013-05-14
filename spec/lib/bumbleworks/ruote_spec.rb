@@ -103,19 +103,5 @@ describe Bumbleworks::Ruote do
       Ruote::HashStorage.should_receive(:new).with(storage)
       described_class.send(:storage)
     end
-
-    it 'handles Redis storage' do
-      storage = Redis.new
-      Bumbleworks.storage = storage
-      Ruote::Redis::Storage.should_receive(:new).with(storage)
-      described_class.send(:storage)
-    end
-
-    it 'handles Sequel storage' do
-      storage = Sequel.sqlite
-      Bumbleworks.storage = storage
-      Ruote::Sequel::Storage.should_receive(:new).with(storage)
-      described_class.send(:storage)
-    end
   end
 end
