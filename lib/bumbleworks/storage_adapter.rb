@@ -12,11 +12,15 @@ module Bumbleworks
       end
 
       def use?(storage)
-        storage.class.name =~ /^#{display_name}/
+        storage.is_a? storage_class
+      end
+
+      def storage_class
+        raise "Subclass responsibility"
       end
 
       def display_name
-        raise "Subclass responsibility"
+        storage_class.name
       end
     end
   end

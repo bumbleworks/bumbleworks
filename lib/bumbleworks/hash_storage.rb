@@ -2,12 +2,14 @@ require 'bumbleworks/storage_adapter'
 
 module Bumbleworks
   class HashStorage < Bumbleworks::StorageAdapter
-    def self.driver
-      ::Ruote::HashStorage
-    end
+    class << self
+      def driver
+        ::Ruote::HashStorage
+      end
 
-    def self.display_name
-      'Hash'
+      def storage_class
+        Hash
+      end
     end
   end
 end

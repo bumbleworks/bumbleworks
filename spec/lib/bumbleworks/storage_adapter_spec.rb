@@ -17,8 +17,15 @@ describe Bumbleworks::StorageAdapter do
   end
 
   describe '.display_name' do
+    it 'returns storage class name as a string' do
+      described_class.stub(:storage_class).and_return(String)
+      described_class.display_name.should == 'String'
+    end
+  end
+
+  describe '.storage_class' do
     it 'is a subclass responsibility' do
-      expect { described_class.display_name }.to raise_error
+      expect { described_class.storage_class }.to raise_error
     end
   end
 
@@ -30,10 +37,10 @@ describe Bumbleworks::StorageAdapter do
 
   describe '.use?' do
     before :each do
-      described_class.stub(:display_name).and_return('String')
+      described_class.stub(:storage_class).and_return(String)
     end
 
-    it 'returns true if argument class name matches display name' do
+    it 'returns true if argument class is_a storage class' do
       described_class.use?('a string').should be_true
       described_class.use?(:not_a_string).should be_false
     end
