@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    bumbleworks (0.0.3)
+    bumbleworks (0.0.4)
       ruote
 
 GEM
