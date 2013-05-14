@@ -42,21 +42,16 @@ describe Bumbleworks::Ruote do
 
     it 'joins current thread if :join option is true' do
       Bumbleworks.storage = {}
-      new_thread = Thread.new do
-        described_class.start_worker!(:join => true)
-      end
-      sleep 0.1 until Bumbleworks.dashboard.worker
-      new_thread.alive?.should be_true
-      new_thread.kill
+      ::Ruote::Dashboard.stub(:new).and_return(dash_double = double('dash', :worker => nil))
+      dash_double.should_receive(:join)
+      described_class.start_worker!(:join => true)
     end
 
     it 'returns if :join option not true' do
       Bumbleworks.storage = {}
-      new_thread = Thread.new do
-        described_class.start_worker!
-      end
-      sleep 0.1 until Bumbleworks.dashboard.worker
-      new_thread.alive?.should be_false
+      ::Ruote::Dashboard.stub(:new).and_return(dash_double = double('dash', :worker => nil))
+      dash_double.should_receive(:join).never
+      described_class.start_worker!
     end
   end
 
