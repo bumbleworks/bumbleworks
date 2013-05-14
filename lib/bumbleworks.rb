@@ -25,8 +25,10 @@ module Bumbleworks
     def_delegator Bumbleworks::ProcessDefinition, :define, :define_process
 
     # @public
-    # Returns the global configuration, or initializes a new
-    # configuration object if it doesn't exist yet.
+    # Returns the global configuration, or initializes a new configuration
+    # object if it doesn't exist yet.  If initializing new config, also adds
+    # default storage adapters.
+    #
     def configuration
       @configuration ||= begin
         configuration = Bumbleworks::Configuration.new
@@ -42,7 +44,7 @@ module Bumbleworks
     end
 
     # @public
-    # Yields the global configurtion to a block.
+    # Yields the global configuration to a block.
     # @yield [configuration] global configuration
     #
     # @example
@@ -69,8 +71,8 @@ module Bumbleworks
 
     # @public
     # Accepts a block for registering participants which
-    # is envoked when start! is called. Notice that a
-    # 'catchall' storage participant is always added to
+    # is envoked when start! is called. Note that a
+    # 'catchall Ruote::StorageParticipant' is always added to
     # the end of the list (unless it is defined in the block).
     #
     # @example
@@ -84,8 +86,11 @@ module Bumbleworks
     end
 
     # @public
-    # Starts a Ruote engine, sets up the storage and registers participants
-    # and process_definitions with the Ruote engine.
+    # Registers participants and process_definitions with the Ruote engine.
+    # Also calls Bumbleworks::Ruote.dashboard for the first time, which
+    # implicitly instantiates the storage, and might start a worker (if
+    # configuration.autostart_worker is true)
+    #
     def start!
       autoload_and_register_participants
       load_process_definitions
@@ -93,18 +98,18 @@ module Bumbleworks
 
     # @public
     # Resets Bumbleworks - clears configuration and setup variables, and
-    # shuts down the dashboard.
+    # also resets the dashboard.
+    #
     def reset!
       @configuration = nil
       @participant_block = nil
-      @registered_process_definitions = nil
       Bumbleworks::Ruote.reset!
     end
 
     # @public
-    # Launches the workflow engine with the specified process name.
-    # The process_definiton_name should already be registered with
-    # Bumbleworks.
+    # Launches the process definition with the given process name, as long as
+    # that definition name is already registered with Bumbleworks.
+    #
     def launch!(process_definition_name, options = {})
       Bumbleworks::Ruote.launch(process_definition_name, options)
     end

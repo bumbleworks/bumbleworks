@@ -1,7 +1,7 @@
 module Bumbleworks
-  # Stores configruation information
+  # Stores configuration information
   #
-  # Configruation inforamtion is loaded from a configuration block defined within
+  # Configuration information is loaded from a configuration block defined within
   # the client application.
   #
   # @example Standard settings
@@ -33,31 +33,29 @@ module Bumbleworks
     #   /participants
     #   /app/participants
     #
-    # default: non, must be specified
+    # default: none, must be specified
     # Exceptions: raises Bumbleworks::UndefinedSetting if not defined by the client
     #
     define_setting :root
 
     # Path to the folder which holds the ruote definition files. Bumbleworks
-    # will autoload all definition files by recursively traversing the directory
-    # tree under this folder. No specific loading order is guranteed
+    # will load all definition files by recursively traversing the directory
+    # tree under this folder. No specific loading order is guaranteed
     #
     # default: ${Bumbleworks.root}/lib/process_definitions
     define_setting :definitions_directory
 
     # Path to the folder which holds the ruote participant files. Bumbleworks
-    # will autoload all participant files by recursively traversing the directory
-    # tree under this folder. No specific loading order is guranteed
-    #
-    # Bumbleworks will guarantee that these files are autoloaded before registration
-    # of participants.
+    # will recursively traverse the directory tree under this folder and ensure
+    # that all found files are autoloaded before registration of participants.
     #
     # default: ${Bumbleworks.root}/participants then ${Bumbleworks.root}/app/participants
     define_setting :participants_directory
 
-    # Bumbelworks requires a dedicated key-value storage for process information.  Two
-    # storage solutions are currently supported: Redis and Sequel.  You can set the storage
-    # as follows:
+    # Bumbleworks requires a dedicated key-value storage for process information.  Three
+    # storage solutions are currently supported: Hash, Redis and Sequel.  The latter
+    # two require the bumbleworks-redis and bumbleworks-sequel gems, respectively.
+    # You can set the storage as follows:
     #
     # @Exammple: Redis
     #   Bumbleworks.storage = Redis.new(:host => '127.0.0.1', :db => 0, :thread_safe => true)
@@ -96,10 +94,10 @@ module Bumbleworks
       @participants_folder ||= default_participant_directory
     end
 
-    # Root folder where bumbleworks looks for ruote assets (participants,
-    # process_definitions, ..etc.)  The root path must be absolute.
-    # It can be defined throguh a configuration block:
-    #   Bumbleworks.configure {|c| c.root = '/somewhere'}
+    # Root folder where Bumbleworks looks for ruote assets (participants,
+    # process_definitions, etc.)  The root path must be absolute.
+    # It can be defined through a configuration block:
+    #   Bumbleworks.configure { |c| c.root = '/somewhere' }
     #
     # Or directly:
     #   Bumbleworks.root = '/somewhere/else/'
