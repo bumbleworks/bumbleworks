@@ -5,7 +5,6 @@ module Bumbleworks
     class NotFound < StandardError; end
     class FileNotFound < StandardError; end
     class Invalid < StandardError; end
-    class Duplicate < StandardError; end
 
     attr_reader :name, :definition, :tree
 

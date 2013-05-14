@@ -1,7 +1,6 @@
 module Bumbleworks
-  class ClaimError < StandardError; end
-
   class Task
+    class AlreadyClaimed < StandardError; end
     extend Forwardable
     delegate [:sid, :fei, :fields, :params, :participant_name, :wfid, :wf_name] => :@workitem
     attr_reader :nickname
@@ -67,7 +66,7 @@ module Bumbleworks
     # Claim task and assign token to claim
     def claim(token)
       if token && claimant && token != claimant
-        raise ClaimError, "Already claimed by #{claimant}"
+        raise AlreadyClaimed, "Already claimed by #{claimant}"
       end
 
       params['claimant'] = token

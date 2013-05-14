@@ -133,11 +133,11 @@ describe Bumbleworks::Task do
       end
 
       it 'raises an error if already claimed by someone else' do
-        expect{subject.claim('peon')}.to raise_error Bumbleworks::ClaimError
+        expect{subject.claim('peon')}.to raise_error described_class::AlreadyClaimed
       end
 
       it 'does not raise an error if attempting to claim by same token' do
-        expect{subject.claim('boss')}.not_to raise_error Bumbleworks::ClaimError
+        expect{subject.claim('boss')}.not_to raise_error described_class::AlreadyClaimed
       end
     end
 
