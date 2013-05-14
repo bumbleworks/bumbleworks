@@ -8,6 +8,73 @@ describe Bumbleworks::Task do
     Bumbleworks::Ruote.register_participants
   end
 
+  describe '.new' do
+    it 'raises an error if workitem is nil' do
+      expect {
+        described_class.new(nil)
+      }.to raise_error(ArgumentError, "Not a valid workitem")
+    end
+
+    it 'raises an error if workitem not a Ruote::Workitem' do
+      expect {
+        described_class.new('a string!')
+      }.to raise_error(ArgumentError, "Not a valid workitem")
+    end
+
+    it 'succeeds when given workitem' do
+      expect {
+        described_class.new(workflow_item)
+      }.not_to raise_error
+    end
+  end
+
+  describe '#id' do
+    it 'returns the sid from the workitem' do
+      workflow_item.stub(:sid).and_return(:an_exciting_id)
+      described_class.new(workflow_item).id.should == :an_exciting_id
+    end
+  end
+
+  describe '.find_by_id' do
+    it 'returns the task for the given id' do
+      Bumbleworks.define_process 'planting_a_noodle' do
+        concurrence do
+          noodle_gardener :task => 'plant_noodle_seed'
+          horse_feeder :task => 'give_the_horse_a_bon_bon'
+        end
+      end
+      Bumbleworks.launch!('planting_a_noodle')
+      Bumbleworks.dashboard.wait_for(:horse_feeder)
+      plant_noodle_seed_task = described_class.for_role('noodle_gardener').first
+      give_the_horse_a_bon_bon_task = described_class.for_role('horse_feeder').first
+
+      # checking for equality by comparing sid, which is the flow expression id
+      # that identifies not only the expression, but its instance
+      described_class.find_by_id(plant_noodle_seed_task.id).sid.should ==
+        plant_noodle_seed_task.sid
+      described_class.find_by_id(give_the_horse_a_bon_bon_task.id).sid.should ==
+        give_the_horse_a_bon_bon_task.sid
+    end
+
+    it 'raises an error if id is nil' do
+      expect {
+        described_class.find_by_id(nil)
+      }.to raise_error(described_class::MissingWorkitem)
+    end
+
+    it 'raises an error if workitem not found for given id' do
+      expect {
+        described_class.find_by_id('asdfasdf')
+      }.to raise_error(described_class::MissingWorkitem)
+    end
+
+    it 'raises an error if id is unparseable by storage participant' do
+      expect {
+        described_class.find_by_id(:unparseable_because_i_am_a_symbol)
+      }.to raise_error(described_class::MissingWorkitem)
+    end
+  end
+
   describe '.for_roles' do
     before :each do
       Bumbleworks.define_process 'lowering_penguin_self_esteem' do

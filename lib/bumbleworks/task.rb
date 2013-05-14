@@ -1,6 +1,8 @@
 module Bumbleworks
   class Task
     class AlreadyClaimed < StandardError; end
+    class MissingWorkitem < StandardError; end
+
     extend Forwardable
     delegate [:sid, :fei, :fields, :params, :participant_name, :wfid, :wf_name] => :@workitem
     attr_reader :nickname
@@ -23,6 +25,14 @@ module Bumbleworks
         from_workitems(storage_participant.all)
       end
 
+      def find_by_id(sid)
+        workitem = storage_participant[sid] if sid
+        raise MissingWorkitem unless workitem
+        new(workitem)
+      rescue ArgumentError => e
+        raise MissingWorkitem, e.message
+      end
+
       def storage_participant
         Bumbleworks.dashboard.storage_participant
       end
@@ -36,6 +46,9 @@ module Bumbleworks
 
     def initialize(workitem)
       @workitem = workitem
+      unless workitem && workitem.is_a?(::Ruote::Workitem)
+        raise ArgumentError, "Not a valid workitem"
+      end
       @nickname = params['task']
     end
 
