@@ -44,8 +44,8 @@ If you want to use Redis:
 
   ```ruby
   Bumbleworks.configure do |c|
-    c.storage = Redis.new(:host => '127.0.0.1', :db => 0, :thread_safe => true)
-    # ...
+      c.storage = Redis.new(:host => '127.0.0.1', :db => 0, :thread_safe => true)
+      # ...
   end
   ```
 
@@ -63,8 +63,8 @@ If you want to use Sequel:
 
   ```ruby
   Bumbleworks.configure do |c|
-    c.storage = Sequel.connect('postgres://user:password@host:port/database_name')
-    # ...
+      c.storage = Sequel.connect('postgres://user:password@host:port/database_name')
+      # ...
   end
   ```
 
