@@ -14,15 +14,9 @@ describe Bumbleworks::Ruote do
       described_class.dashboard.should be_an_instance_of(Ruote::Dashboard)
     end
 
-    it 'does not start a worker if autostart is false' do
+    it 'does not start a worker by default' do
       Bumbleworks.storage = {}
       described_class.dashboard.worker.should be_nil
-    end
-
-    it 'starts a worker if autostart is true' do
-      Bumbleworks.storage = {}
-      Bumbleworks.autostart_worker = true
-      described_class.dashboard.worker.should_not be_nil
     end
 
     it 'starts a worker if :start_worker option is true' do

@@ -3,9 +3,9 @@ describe Bumbleworks::Task do
 
   before :each do
     Bumbleworks.reset!
-    Bumbleworks.autostart_worker = true
     Bumbleworks.storage = {}
     Bumbleworks::Ruote.register_participants
+    Bumbleworks.start_worker!
   end
 
   describe '.new' do

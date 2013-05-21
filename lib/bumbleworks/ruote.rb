@@ -5,7 +5,7 @@ module Bumbleworks
     class << self
       def dashboard(options = {})
         @dashboard ||= begin
-          context = if Bumbleworks.autostart_worker || options[:start_worker] == true
+          context = if options[:start_worker] == true
             ::Ruote::Worker.new(storage)
           else
             storage
@@ -21,8 +21,8 @@ module Bumbleworks
         dashboard.worker
       end
 
-      def launch(name, options)
-        dashboard.launch(dashboard.variables[name], options)
+      def launch(name, *args)
+        dashboard.launch(dashboard.variables[name], *args)
       end
 
       def register_participants(&block)

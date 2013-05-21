@@ -66,10 +66,10 @@ Put the following in a `config/initializers/bumbleworks.rb` file:
 
 Bumbleworks.configure do |c|
   c.storage = {}
-  c.autostart_worker = true
 end
 
-Bumbleworks.start!
+Bumbleworks.load_definitions!
+Bumbleworks.start_worker!
 ```
 
 #### The Bumbleworks Data Store
@@ -82,13 +82,19 @@ Bumbleworks needs its own data store, used only for process state.  We'll explor
 
 Out of the box, Bumbleworks supports three storage types - [Redis](http://redis.io), [Sequel](http://sequel.rubyforge.org), and a simple Ruby Hash.  We're using the latter for now, since it requires no setup.  You would never use the Hash storage type for production - it's in-memory and in-process, so it won't survive a restart and you can't run multiple workers.  But for testing, it's ideal.
 
-#### Auto-starting Workers
+#### Loading Process Definitions
 
-*Okay, intelligent pants.  What about `c.autostart_worker = true`?*
+*Why are you yelling at me about loading definitions?*
 
-In a production environment, your "workers" - Ruby processes that actually run the workflow, stepping through your process definitions and generating task queues, etc. - should be instantiated in separate daemon processes.
+The `Bumbleworks.load_definitions!` call loads all process definitions in the configured directory.  See "Writing our First Process Definition" below for more on this.
 
-To support this best practice, we don't run a worker by default when you call `Bumbleworks.start!`.  This means launching processes won't actually do anything, and you'll slowly succumb to a suffocating despair.  For ease of development and testing, you can set `autostart_worker` to true, which will (surprisingly) automatically start a worker when you call `Bumbleworks.start!`.
+#### Starting a Worker
+
+*Okay, intelligent pants.  What about `Bumbleworks.start_worker!`?*
+
+In a production environment, your "workers" - Ruby processes that actually run the workflow, stepping through your process definitions and generating task queues, etc. - should be instantiated in separate daemon processes.  To support this best practice, Bumbleworks doesn't ever automatically start a worker for you - this is something you'd most likely do through the provided rake task (`rake bumbleworks:start_worker`, if you're one of those nerds who likes to know stuff).
+
+When we're developing locally or running tests, though, running a separate worker would be overkill.  However, not running a worker means launching processes won't actually do anything, and you'll slowly succumb to a suffocating despair.  For ease of development and testing, for now we're going to spin up a worker in the initializer with `Bumbleworks.start_worker!`, which (surprisingly) starts a worker.
 
 ## Writing our First Process Definition
 

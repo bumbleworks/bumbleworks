@@ -5,6 +5,7 @@ module Bumbleworks
     class NotFound < StandardError; end
     class FileNotFound < StandardError; end
     class Invalid < StandardError; end
+    class DuplicatesInDirectory < StandardError; end
 
     attr_reader :name, :definition, :tree
 
@@ -30,7 +31,6 @@ module Bumbleworks
       errors = []
       errors << "Name must be specified" unless @name
       errors << "Definition or tree must be specified" unless @definition || @tree
-      errors << "Name is not unique" if Bumbleworks.dashboard.variables[@name]
       begin
         build_tree!
       rescue Invalid
@@ -123,7 +123,11 @@ module Bumbleworks
       #
       def create_all_from_directory!(directory, opts = {})
         added_names = []
-        Bumbleworks::Support.all_files(directory) do |path, basename|
+        definition_files = Bumbleworks::Support.all_files(directory)
+        if definition_files.values.uniq.count != definition_files.count
+          raise DuplicatesInDirectory, "Definitions directory contains duplicate filenames"
+        end
+        definition_files.each do |path, basename|
           puts "Registering process definition #{basename} from file #{path}" if opts[:verbose] == true
           begin
             create!(:name => basename, :definition => File.read(path))

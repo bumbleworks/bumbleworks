@@ -24,11 +24,35 @@ Or you can install it yourself using
 
 ## Configuration
 
+#### Example Initializer File
+
+```ruby
+Bumbleworks.configure do |c|
+  c.storage = Redis.new # requires bumbleworks-redis gem
+  # Or, for dev/test, if you don't have Redis set up yet:
+  # c.storage = {}
+end
+
+# this next block is optional - it's only needed
+# if you want to load custom participants
+Bumbleworks.register_participants do
+  # foo FooParticipant
+  # bar BarParticipant
+  # ...
+end
+
+# Load all process definitions in lib/process_definitions
+Bumbleworks.load_definitions!
+
+# Start a worker in the background
+Bumbleworks.start_worker!
+```
+
 ### The Process Storage
 
 Bumbleworks uses a dedicated key-value storage for process information; this is where all process instance state is stored.  We consider it a best practice to keep this storage in a separate place from your business information; see Process vs. Business Information for more discussion.
 
-Before you can load process definitions, register participants, and spin up workers in Bumbleworks, you need to configure Bumbleworks's process storage.  Right now, Bumbleworks supports two storage methods - [Redis](http://redis.io/) and [Sequel](http://sequel.rubyforge.org/) (an ORM that itself supports MySQL, Postgres, etc.).
+Before you can load process definitions, register participants, and spin up workers in Bumbleworks, you need to configure Bumbleworks's process storage.  Right now, Bumbleworks supports three storage methods - [Redis](http://redis.io/), [Sequel](http://sequel.rubyforge.org/) (an ORM that itself supports MySQL, Postgres, etc.), and a simple Hash (only for development and testing, since it won't persist )
 
 #### Redis
 
@@ -68,9 +92,11 @@ If you want to use Sequel:
   end
   ```
 
-### Process Definition Loading
+### Process Definitions Directory
 
-Bumbleworks uses [ruote](http://github.com/jmettraux/ruote), which allows process definitions to be written using a [Ruby DSL](http://ruote.rubyforge.org/definitions.html#ruby).  By default, your process definitions will be loaded from the `lib/process_definitions` directory at `Bumbleworks.root` (see Determining the Root Directory for more info).  This directory can have as many subdirectories as you want, and Bumbleworks will load everything recursively; note, however, that the directory hierarchy doesn't mean anything to Bumbleworks, and is only for your own organization.  The directory is configurable by setting Bumbleworks.definitions_directory:
+Bumbleworks uses [ruote](http://github.com/jmettraux/ruote), which allows process definitions to be written using a [Ruby DSL](http://ruote.rubyforge.org/definitions.html#ruby).
+
+By default, your process definitions will be loaded from the `lib/process_definitions` directory at `Bumbleworks.root` (see Determining the Root Directory for more info).  This directory can have as many subdirectories as you want, and Bumbleworks will load everything recursively; note, however, that the directory hierarchy doesn't mean anything to Bumbleworks, and is only for your own organization.  The directory is configurable by setting Bumbleworks.definitions_directory:
 
 ```ruby
 Bumbleworks.configure do |c|
@@ -79,24 +105,11 @@ Bumbleworks.configure do |c|
 end
 ```
 
-Note that if you override the default path, you can either specify an absolute path or a relative path - just use a leading slash if you want it to be interpreted as absolute.
+Note that if you override the default path, you can either specify an absolute path or a relative path - just use a leading slash if you want it to be interpreted as absolute.  Relative paths will be relative to `Bumbleworks.root`.
 
-## Participant Class Registration
+### Participant Class Directory
 
-Registering participants with Bumbleworks is done using Bumbleworks.register_participants, which takes a block, and follows [Ruote's #register syntax](http://ruote.rubyforge.org/participants.html#registering).  For example:
-
-```ruby
-Bumbleworks.register_participants do
-  update_status StatusChangerParticipant
-  acquire_lock LockerParticipant, 'action' => 'acquire'
-  release_lock LockerParticipant, 'action' => 'release'
-  notify_applicant ApplicantNotifierParticipant
-end
-```
-
-By default, Bumbleworks will register a "catchall" participant at the end of your participant list, which will catch any workitems not picked up by a participant higher in the list.  Those workitems then fall into ruote's StorageParticipant, from where Bumbleworks will assemble its task queue.
-
-If your app has a `participants` or `app/participants` directory at the root (see Determining the Root Directory), Bumbleworks will require all files in that directory by default before running the `register_participants` block.  You can customize this directory by setting Bumbleworks.participants_directory:
+If your app has a `participants` or `app/participants` directory at the root (see Determining the Root Directory), Bumbleworks will require all files in that directory by default before running your `register_participants` block (see below).  You can customize this directory by setting Bumbleworks.participants_directory:
 
 ```ruby
 Bumbleworks.configure do |c|
@@ -107,29 +120,52 @@ end
 
 ### Determining the Root Directory
 
-By default, Bumbleworks will attempt in several ways to find your root directory.  In the most common cases (Rails, Sinatra, running via Rake), it usually won't have trouble guessing the directory.
+By default, Bumbleworks will attempt in several ways to find your root directory.  In the most common cases (Rails, Sinatra, or Rory), it usually won't have trouble guessing the directory.
+
+If you're not using Rails, Sinatra, or Rory, Bumbleworks will complain when you call `bootstrap!` or `update!`, **unless** both your definitions directory and your participants directory (see above) are specified as absolute paths.
 
 ## Usage
 
-### Starting Work
+### Loading Definitions and Participants
 
-Without running a "worker," Bumbleworks won't do anything behind the scenes - no workitems will proceed through their workflow, no schedules will be checked, etc.  To run a worker, you can either set the `autostart_worker` option in configuration, before starting Bumbleworks:
+#### Process Definitions
+
+Process definitions are just ruby files with blocks following Ruote's [Ruby DSL syntax](http://ruote.rubyforge.org/definitions.html#ruby).  The only difference is that instead of `Ruote.define`, the method to call is `Bumbleworks.define_process`.  No arguments are necessary - the name will be taken from the base name of the ruby file (e.g. 'foo.rb' defines a process named 'foo').  All process definition files should be in your app's `definitions_directory` (see above); they can be in subdirectories for your own organization, but all filenames must be unique within the `definition_directory`'s tree.
+
+To actually load your process definitions from the directory:
 
 ```ruby
-Bumbleworks.configure do |c|
-  # ...
-  # NOTE: NOT RECOMMENDED IN PRODUCTION!
-  c.autostart_worker = true
-end
-
-Bumbleworks.start! # this will now start a worker automatically
+Bumbleworks.load_definitions!
 ```
 
-... but, while this is handy in development and testing, it's not a good practice to follow in production.  In an actual production environment, you will likely have multiple workers running in their own threads, or even on separate servers.  So the **preferred way** is to do the following (most likely in a Rake task that has your environment loaded):
+Keep in mind that any changed process definitions will overwrite previously loaded ones - in other words, after running this command successfully, all process definitions loaded into Bumbleworks will be in sync with the files in your definitions directory.
+
+Process definitions will be named (and `launch`able) using the name of the file itself.  Therefore, Bumbleworks will throw an exception if any files in your definitions directory (and subdirectories) have the same name.
+
+#### Participants
+
+Registering participants with Bumbleworks is done using `Bumbleworks.register_participants`, which takes a block, and follows [Ruote's #register syntax](http://ruote.rubyforge.org/participants.html#registering).  For example:
+
+```ruby
+Bumbleworks.register_participants do
+  update_status StatusChangerParticipant
+  acquire_lock LockerParticipant, 'action' => 'acquire'
+  release_lock LockerParticipant, 'action' => 'release'
+  notify_applicant ApplicantNotifierParticipant
+end
+```
+
+Unless you add it yourself, Bumbleworks will register a "catchall" participant at the end of your participant list, which will catch any workitems not picked up by a participant higher in the list.  Those workitems then fall into ruote's StorageParticipant, from where Bumbleworks will assemble its task queue.
+
+### Starting Work
+
+Without running a "worker," Bumbleworks won't do anything behind the scenes - no workitems will proceed through their workflow, no schedules will be checked, etc.  Running a worker is done using the following command:
 
 ```ruby
 Bumbleworks.start_worker!
 ```
+
+You can add this to the end of your initializer, but, while this is handy in development and testing, it's not a good practice to follow in production.  In an actual production environment, you will likely have multiple workers running in their own threads, or even on separate servers.  So the **preferred way** is to call the `Bumbleworks.start_worker!` method outside of the initializer, most likely in a Rake task that has your environment loaded.
 
 > Strictly speaking, the entire environment doesn't need to be loaded; only Bumbleworks.storage needs to be set before starting a worker.  However, it's best practice to configure Bumbleworks in one place, to ensure you don't get your storage configurations out of sync.
 
@@ -158,3 +194,35 @@ Bumbleworks::Task.for_roles(['trombonist', 'admin']) # returns both tasks
 Call Bumbleworks::Task#complete to finish a task and proceed to the next expression.
 
 See the Bumbleworks::Task class for more details.
+
+## Rake Tasks
+
+*TODO:  Actually implement these, so I'm not a liar.*
+
+If you...
+
+```ruby
+require 'bumbleworks/rake_tasks'
+```
+
+... in your Rakefile, Bumbleworks will give you a couple of rake tasks.  Both of these rake tasks expect an `environment` Rake task to be specified that loads your application's environment (Rails, for example, gives you this automatically).
+
+The tasks are:
+
+1. `rake bumbleworks:start_worker`
+
+  This task starts a Bumbleworks worker, and does not return.  It will expect Bumbleworks to be required and for Bumbleworks' storage to be configured.
+
+2. `rake bumbleworks:reload_definitions`
+
+  All process definitions will be reloaded from the configured `definitions_directory`.
+
+## Contributing
+
+1. Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
+1. Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
+1. Fork the project.
+1. Start a feature/bugfix branch.
+1. Commit and push until you are happy with your contribution.
+1. Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
+1. Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.

@@ -72,13 +72,6 @@ describe Bumbleworks::ProcessDefinition do
         pdef.validate!
       }.to raise_error(described_class::Invalid, /Definition is not a valid process definition/)
     end
-
-    it "raises error if name already taken" do
-      Bumbleworks.dashboard.variables['tasty_beans'] = 'A miraculous ingredient'
-      expect {
-        described_class.new(:name => 'tasty_beans').validate!
-      }.to raise_error(described_class::Invalid, /Name is not unique/)
-    end
   end
 
   describe "#save!" do
@@ -95,6 +88,14 @@ describe Bumbleworks::ProcessDefinition do
     end
 
     it "registers the process definition with the dashboard" do
+      pdef = described_class.new(:name => 'monkeys', :definition => valid_definition)
+      pdef.save!
+      Bumbleworks.dashboard.variables['monkeys'].should ==
+        pdef.build_tree!
+    end
+
+    it "overwrites existing variable with new definition" do
+      Bumbleworks.dashboard.variables['monkeys'] = 'A miraculous ingredient'
       pdef = described_class.new(:name => 'monkeys', :definition => valid_definition)
       pdef.save!
       Bumbleworks.dashboard.variables['monkeys'].should ==
@@ -136,11 +137,25 @@ describe Bumbleworks::ProcessDefinition do
       }.to raise_error(described_class::Invalid)
     end
 
+    it 'raises error if duplicate filenames are encountered' do
+      Bumbleworks::Support.stub(:all_files).and_return({
+        'Rhubarb Derailleur' => 'popular_side_dish',
+        'Cantonese Phrasebook' => 'popular_side_dish',
+        'Beans' => 'unpopular_side_dish'
+      })
+      expect {
+        described_class.create_all_from_directory!(definitions_path)
+      }.to raise_error(described_class::DuplicatesInDirectory)
+    end
+
     it 'rolls back any processes defined within current transaction if error' do
       Bumbleworks.dashboard.variables['keep_me'] = 'top_secret_cat_pics'
-      Bumbleworks::Support.stub(:all_files).
-        and_yield(definition_path('test_process'), 'test_process').
-        and_yield(definition_path('a_list_of_jams'), 'a_list_of_jams')
+      # stubbing here so we can explicitly set an order which will
+      # ensure we're testing rollback
+      Bumbleworks::Support.stub(:all_files).and_return({
+        definition_path('test_process') => 'test_process',
+        definition_path('a_list_of_jams') => 'a_list_of_jams'
+      })
       expect {
         described_class.create_all_from_directory!(definitions_path)
       }.to raise_error

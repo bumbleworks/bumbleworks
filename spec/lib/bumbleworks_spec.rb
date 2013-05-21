@@ -10,15 +10,14 @@ describe Bumbleworks do
     it 'allows multiple cumulative configuration blocks' do
       described_class.configure do |c|
         c.root = 'pickles'
-        c.autostart_worker = false
       end
 
       described_class.configure do |c|
-        c.autostart_worker = true
+        c.storage = 'nerfy'
       end
 
       described_class.configuration.root.should == 'pickles'
-      described_class.configuration.autostart_worker.should == true
+      described_class.configuration.storage.should == 'nerfy'
     end
 
     it 'requires a block' do
@@ -53,44 +52,20 @@ describe Bumbleworks do
   end
 
   describe '.register_participants' do
-    it 'stores the block' do
-      participant_block = lambda { bees_honey 'BeesHoney' }
-      described_class.register_participants &participant_block
-      described_class.instance_variable_get('@participant_block').should == participant_block
+    it 'autoloads and registers participants' do
+      the_block = lambda {  }
+      Bumbleworks::ParticipantRegistration.should_receive(:autoload_all)
+      Bumbleworks::Ruote.should_receive(:register_participants).with(&the_block)
+      described_class.register_participants &the_block
     end
   end
 
-  describe '.start!' do
-    before :each do
-      described_class.reset!
-      Bumbleworks::ParticipantRegistration.stub(:autoload_all)
-      described_class.stub(:load_process_definitions)
-    end
-
-    it 'registers pre-configured participants with ruote' do
-      the_block = lambda {}
-      described_class.register_participants &the_block
-      Bumbleworks::Ruote.should_receive(:register_participants).with(&the_block)
-      described_class.start!
-    end
-
-    it 'registers process definitions with dashboard' do
+  describe '.load_definitions!' do
+    it 'creates all definitions from directory' do
+      described_class.stub(:definitions_directory).and_return(:defs_dir)
       described_class.storage = {}
-      described_class.should_receive(:load_process_definitions)
-      described_class.start!
-    end
-
-    it 'does not automatically start a worker by default' do
-      described_class.storage = {}
-      described_class.start!
-      Bumbleworks::Ruote.dashboard.worker.should be_nil
-    end
-
-    it 'starts a worker if autostart_worker config setting is true' do
-      described_class.storage = {}
-      described_class.autostart_worker = true
-      described_class.start!
-      Bumbleworks::Ruote.dashboard.worker.should_not be_nil
+      Bumbleworks::ProcessDefinition.should_receive(:create_all_from_directory!).with(:defs_dir)
+      described_class.load_definitions!
     end
   end
 

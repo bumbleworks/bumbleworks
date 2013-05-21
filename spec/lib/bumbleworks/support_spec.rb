@@ -12,29 +12,23 @@ describe Bumbleworks::Support do
   describe ".all_files" do
     let(:test_directory) { File.join(fixtures_path, 'definitions').to_s }
 
-    it "for given directory, yields given block with path and name params" do
-      assembled_hash = {}
-      described_class.all_files(test_directory) do |path, name|
-        assembled_hash[name] = path
-      end
+    it "for given directory, creates hash of basename => path pairs" do
+      assembled_hash = described_class.all_files(test_directory)
 
-      assembled_hash['test_process'].should ==
-        File.join(fixtures_path, 'definitions', 'test_process.rb').to_s
-      assembled_hash['test_nested_process'].should ==
-        File.join(fixtures_path, 'definitions', 'nested_folder', 'test_nested_process.rb').to_s
+      assembled_hash[File.join(fixtures_path, 'definitions', 'test_process.rb').to_s].should ==
+        'test_process'
+      assembled_hash[File.join(fixtures_path, 'definitions', 'nested_folder', 'test_nested_process.rb').to_s].should ==
+        'test_nested_process'
     end
 
     it "camelizes names if :camelize option is true " do
       path = File.join(fixtures_path, 'definitions')
-      assembled_hash = {}
-      described_class.all_files(test_directory, :camelize => true) do |path, name|
-        assembled_hash[name] = path
-      end
+      assembled_hash = described_class.all_files(test_directory, :camelize => true)
 
-      assembled_hash['TestProcess'].should ==
-        File.join(fixtures_path, 'definitions', 'test_process.rb').to_s
-      assembled_hash['TestNestedProcess'].should ==
-        File.join(fixtures_path, 'definitions', 'nested_folder', 'test_nested_process.rb').to_s
+      assembled_hash[File.join(fixtures_path, 'definitions', 'test_process.rb').to_s].should ==
+        'TestProcess'
+      assembled_hash[File.join(fixtures_path, 'definitions', 'nested_folder', 'test_nested_process.rb').to_s].should ==
+        'TestNestedProcess'
     end
   end
 end

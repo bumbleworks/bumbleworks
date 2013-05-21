@@ -10,7 +10,7 @@ module Bumbleworks
       #
       def autoload_all(options = {})
         options[:directory] ||= Bumbleworks.participants_directory
-        Bumbleworks::Support.all_files(options[:directory], :camelize => true) do |path, name|
+        Bumbleworks::Support.all_files(options[:directory], :camelize => true).each do |path, name|
           Object.autoload name.to_sym, path
         end
       end

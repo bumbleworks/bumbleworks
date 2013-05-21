@@ -70,8 +70,7 @@ module Bumbleworks
     end
 
     # @public
-    # Accepts a block for registering participants which
-    # is envoked when start! is called. Note that a
+    # Accepts a block for registering participants.  Note that a
     # 'catchall Ruote::StorageParticipant' is always added to
     # the end of the list (unless it is defined in the block).
     #
@@ -82,18 +81,16 @@ module Bumbleworks
     #     plumber PlumberClass
     #   end
     def register_participants(&block)
-      @participant_block = block
+      Bumbleworks::ParticipantRegistration.autoload_all
+      Bumbleworks::Ruote.register_participants(&block)
     end
 
     # @public
-    # Registers participants and process_definitions with the Ruote engine.
-    # Also calls Bumbleworks::Ruote.dashboard for the first time, which
-    # implicitly instantiates the storage, and might start a worker (if
-    # configuration.autostart_worker is true)
+    # Registers all process_definitions in the configured definitions_directory
+    # with the Ruote engine.
     #
-    def start!
-      autoload_and_register_participants
-      load_process_definitions
+    def load_definitions!
+      Bumbleworks::ProcessDefinition.create_all_from_directory!(definitions_directory)
     end
 
     # @public
@@ -112,17 +109,6 @@ module Bumbleworks
     #
     def launch!(process_definition_name, options = {})
       Bumbleworks::Ruote.launch(process_definition_name, options)
-    end
-
-  private
-
-    def autoload_and_register_participants
-      Bumbleworks::ParticipantRegistration.autoload_all
-      Bumbleworks::Ruote.register_participants(&@participant_block)
-    end
-
-    def load_process_definitions
-      Bumbleworks::ProcessDefinition.create_all_from_directory!(definitions_directory)
     end
   end
 end

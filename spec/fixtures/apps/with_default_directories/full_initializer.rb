@@ -1,7 +1,6 @@
 Bumbleworks.configure! do |c|
   c.root = File.dirname(__FILE__)
   c.storage = {}
-  c.autostart_worker = true
 end
 
 Bumbleworks.register_participants do
@@ -9,4 +8,5 @@ Bumbleworks.register_participants do
   molasses_maker MolassesParticipant
 end
 
-Bumbleworks.start!
+Bumbleworks.load_definitions!
+Bumbleworks.start_worker!

@@ -10,10 +10,11 @@ module Bumbleworks
     end
 
     def all_files(directory, options = {})
-      Dir["#{directory}/**/*.rb"].each do |path|
+      Dir["#{directory}/**/*.rb"].inject({}) do |memo, path|
         name = File.basename(path, '.rb')
         name = camelize(name) if options[:camelize] == true
-        yield path, name
+        memo[path] = name
+        memo
       end
     end
   end
