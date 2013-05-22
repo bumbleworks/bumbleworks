@@ -64,8 +64,8 @@ describe Bumbleworks do
     it 'creates all definitions from directory' do
       described_class.stub(:definitions_directory).and_return(:defs_dir)
       described_class.storage = {}
-      Bumbleworks::ProcessDefinition.should_receive(:create_all_from_directory!).with(:defs_dir)
-      described_class.load_definitions!
+      Bumbleworks::ProcessDefinition.should_receive(:create_all_from_directory!).with(:defs_dir, :fake_options)
+      described_class.load_definitions!(:fake_options)
     end
   end
 

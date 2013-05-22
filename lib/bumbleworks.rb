@@ -89,8 +89,8 @@ module Bumbleworks
     # Registers all process_definitions in the configured definitions_directory
     # with the Ruote engine.
     #
-    def load_definitions!
-      Bumbleworks::ProcessDefinition.create_all_from_directory!(definitions_directory)
+    def load_definitions!(options = {})
+      Bumbleworks::ProcessDefinition.create_all_from_directory!(definitions_directory, options)
     end
 
     # @public

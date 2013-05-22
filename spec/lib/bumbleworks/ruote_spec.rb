@@ -37,6 +37,7 @@ describe Bumbleworks::Ruote do
     it 'joins current thread if :join option is true' do
       Bumbleworks.storage = {}
       ::Ruote::Dashboard.stub(:new).and_return(dash_double = double('dash', :worker => nil))
+      dash_double.should_receive(:noisy=).with(false)
       dash_double.should_receive(:join)
       described_class.start_worker!(:join => true)
     end
@@ -44,8 +45,16 @@ describe Bumbleworks::Ruote do
     it 'returns if :join option not true' do
       Bumbleworks.storage = {}
       ::Ruote::Dashboard.stub(:new).and_return(dash_double = double('dash', :worker => nil))
+      dash_double.should_receive(:noisy=).with(false)
       dash_double.should_receive(:join).never
       described_class.start_worker!
+    end
+
+    it 'sets dashboard to noisy if :verbose option true' do
+      Bumbleworks.storage = {}
+      ::Ruote::Dashboard.stub(:new).and_return(dash_double = double('dash', :worker => nil))
+      dash_double.should_receive(:noisy=).with(true)
+      described_class.start_worker!(:verbose => true)
     end
   end
 

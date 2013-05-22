@@ -14,9 +14,25 @@ module Bumbleworks
         end
       end
 
+      # Start a worker, which will begin polling for messages in
+      # the workflow storage.  You can run multiple workers if you
+      # are using a storage that supports them (such as Sequel or
+      # Redis, but not Hash) - they all just have to be connected
+      # to the same storage, and be able to instantiate participants
+      # in the participant list.
+      #
+      # @param [Hash] options startup options for the worker
+      # @option options [Boolean] :verbose whether or not to spin up
+      #   a "noisy" worker, which will output all messages picked up
+      # @option options [Boolean] :join whether or not to join the worker
+      #   thread; if false, this method will return, and the worker
+      #   thread will be disconnected, and killed if the calling process
+      #   exits.
+      #
       def start_worker!(options = {})
         @dashboard = nil
         dashboard(:start_worker => true)
+        dashboard.noisy = options[:verbose] == true
         dashboard.join if options[:join] == true
         dashboard.worker
       end
