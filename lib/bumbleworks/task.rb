@@ -76,19 +76,14 @@ module Bumbleworks
       storage_participant.proceed(@workitem)
     end
 
-    # Claim task and assign token to claim
-    def claim(token)
-      if token && claimant && token != claimant
-        raise AlreadyClaimed, "Already claimed by #{claimant}"
-      end
-
-      params['claimant'] = token
-      save
-    end
-
     # Token used to claim task, nil if not claimed
     def claimant
       params['claimant']
+    end
+
+    # Claim task and assign token to claimant
+    def claim(token)
+      set_claimant(token)
     end
 
     # true if task is claimed
@@ -98,12 +93,21 @@ module Bumbleworks
 
     # release claim on task.
     def release
-      claim(nil)
+      set_claimant(nil)
     end
 
     private
     def storage_participant
       self.class.storage_participant
+    end
+
+    def set_claimant(token)
+      if token && claimant && token != claimant
+        raise AlreadyClaimed, "Already claimed by #{claimant}"
+      end
+
+      params['claimant'] = token
+      save
     end
   end
 end
