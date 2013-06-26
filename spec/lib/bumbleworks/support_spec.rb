@@ -31,4 +31,32 @@ describe Bumbleworks::Support do
         'TestNestedProcess'
     end
   end
+
+  describe '.constantize' do
+    before :each do
+      class Whatever
+        Smoothies = 'tasty'
+      end
+      class Boojus
+      end
+    end
+
+    after :each do
+      Object.send(:remove_const, :Whatever)
+    end
+
+    it 'returns value of constant with given name' do
+      described_class.constantize('Whatever')::Smoothies.should == 'tasty'
+    end
+
+    it 'works with nested constants' do
+      described_class.constantize('Whatever::Smoothies').should == 'tasty'
+    end
+
+    it 'does not check inheritance tree' do
+      expect {
+        described_class.constantize('Whatever::Boojus')
+      }.to raise_error(NameError)
+    end
+  end
 end

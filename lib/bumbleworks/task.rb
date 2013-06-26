@@ -2,6 +2,7 @@ module Bumbleworks
   class Task
     class AlreadyClaimed < StandardError; end
     class MissingWorkitem < StandardError; end
+    class EntityNotFound < StandardError; end
 
     extend Forwardable
     delegate [:sid, :fei, :fields, :params, :participant_name, :wfid, :wf_name] => :@workitem
@@ -52,6 +53,19 @@ module Bumbleworks
       @nickname = params['task']
     end
 
+    def entity
+      if has_entity_fields?
+        klass = Bumbleworks::Support.constantize(fields['entity_type'])
+        entity = klass.first_by_identifier(fields['entity_id'])
+      end
+      raise EntityNotFound unless entity
+      entity
+    end
+
+    def has_entity_fields?
+      fields['entity_id'] && fields['entity_type']
+    end
+
     # alias for fields[] (fields delegated to workitem)
     def [](key)
       fields[key]
@@ -67,7 +81,7 @@ module Bumbleworks
     end
 
     # update workitem with changes to fields & params
-    def save
+    def update
       storage_participant.update(@workitem)
     end
 

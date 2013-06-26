@@ -62,6 +62,6 @@
     Bumbleworks.start_worker!
   ```
 
-1. You can now launch processes using `Bumbleworks.launch!('process_definition_name')`.
+1. You can now launch processes using `Bumbleworks.launch!('process_definition_name')`.  `#launch!` takes a hash as an optional second argument - anything set here will become workitem fields.  A special key, `:entity`, can be used to specify a persistent business entity for the process, which will be retrievable from process tasks (using `Task#entity`).
 
 1. Any expressions of the form `[role] :task => [task_name]` will be turned into tasks retrievable at `Bumbleworks::Task.all`; you can get tasks specific to a role or roles using `Bumbleworks::Task.for_roles([role1, role2, ...])`.

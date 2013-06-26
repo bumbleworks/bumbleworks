@@ -105,4 +105,42 @@ describe Bumbleworks do
       Bumbleworks.start_worker!.should == :lets_do_it
     end
   end
+
+  describe '.launch!' do
+    class LovelyEntity
+      attr_accessor :id
+      def initialize(id)
+        @id = id
+      end
+    end
+
+    it 'delegates to Bumbleworks::Ruote.launch' do
+      Bumbleworks::Ruote.should_receive(:launch).with(:amazing_process, :hugs => :love)
+      Bumbleworks.launch!(:amazing_process, :hugs => :love)
+    end
+
+    it 'expands entity params when entity object provided' do
+      Bumbleworks::Ruote.should_receive(:launch).with(:amazing_process, :entity_id => :wiley_e_coyote, :entity_type => 'LovelyEntity')
+      Bumbleworks.launch!(:amazing_process, :entity => LovelyEntity.new(:wiley_e_coyote))
+    end
+
+    it 'uses "identifier" method instead of id, if entity has one' do
+      entity = LovelyEntity.new(5)
+      entity.stub(:identifier).and_return(:five)
+      Bumbleworks::Ruote.should_receive(:launch).with(:amazing_process, :entity_id => :five, :entity_type => 'LovelyEntity')
+      Bumbleworks.launch!(:amazing_process, :entity => entity)
+    end
+
+    it 'throws exception if entity has nil id' do
+      expect {
+        Bumbleworks.launch!(:amazing_process, :entity => LovelyEntity.new(nil))
+      }.to raise_error(Bumbleworks::InvalidEntity)
+    end
+
+    it 'throws exception if entity is invalid object' do
+      expect {
+        Bumbleworks.launch!(:amazing_process, :entity => :give_me_a_break)
+      }.to raise_error(Bumbleworks::InvalidEntity)
+    end
+  end
 end

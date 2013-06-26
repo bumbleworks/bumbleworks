@@ -17,5 +17,21 @@ module Bumbleworks
         memo
       end
     end
+
+    def constantize(name)
+      name_parts = name.split('::')
+      name_parts.shift if name_parts.first.empty?
+      constant = Object
+
+      name_parts.each do |name_part|
+        constant_defined = if Module.method(:const_defined?).arity == 1
+          constant.const_defined?(name_part)
+        else
+          constant.const_defined?(name_part, false)
+        end
+        constant = constant_defined ? constant.const_get(name_part) : constant.const_missing(name_part)
+      end
+      constant
+    end
   end
 end
