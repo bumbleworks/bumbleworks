@@ -98,9 +98,9 @@ When we're developing locally or running tests, though, running a separate worke
 
 ## Writing our First Process Definition
 
-Bumbleworks, by default, will load all files in `lib/process_definitions`.  Go ahead and create that directory, and we'll put our first process definition in there.
+Bumbleworks, by default, will load all files in `lib/bumbleworks/process_definitions`, or `lib/bumbleworks/processes` if you prefer.  Go ahead and create that directory, and we'll put our first process definition in there.
 
-In Bumbleworks, our plan above (for now, we'll ignore steps 5 and 6, mostly because we're in denial) might look something like the following (save this to `lib/process_definitions/build_zen_clock.rb`):
+In Bumbleworks, our plan above (for now, we'll ignore steps 5 and 6, mostly because we're in denial) might look something like the following (save this to `lib/bumbleworks/process_definitions/build_zen_clock.rb`):
 
 ```ruby
 Bumbleworks.define_process 'build_zen_clock' do
@@ -205,7 +205,7 @@ We're doing great!  We received an order, and we placed a box of parts on the co
 
 ## Hiring the Staff
 
-The Zen Clock, being at once a highly technical affair and a pseudo-spiritual scam, will require both robots and real humans to build it.  Let's flesh out the `build_zen_clock` process by expanding our previous `make` step (go ahead and change your `lib/process_definitions/build_zen_clock.rb` file to look like this):
+The Zen Clock, being at once a highly technical affair and a pseudo-spiritual scam, will require both robots and real humans to build it.  Let's flesh out the `build_zen_clock` process by expanding our previous `make` step (go ahead and change your `lib/bumbleworks/process_definitions/build_zen_clock.rb` file to look like this):
 
 ```ruby
 Bumbleworks.define_process 'build_zen_clock' do

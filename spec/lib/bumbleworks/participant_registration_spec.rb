@@ -4,9 +4,9 @@ describe Bumbleworks::ParticipantRegistration do
       Bumbleworks.reset!
       Bumbleworks.root = File.join(fixtures_path, 'apps', 'with_default_directories')
       Object.should_receive(:autoload).with(:HoneyParticipant,
-        File.join(Bumbleworks.root, 'app', 'participants', 'honey_participant.rb'))
+        File.join(Bumbleworks.root, 'lib', 'bumbleworks', 'participants', 'honey_participant.rb'))
       Object.should_receive(:autoload).with(:MolassesParticipant,
-        File.join(Bumbleworks.root, 'app', 'participants', 'molasses_participant.rb'))
+        File.join(Bumbleworks.root, 'lib', 'bumbleworks', 'participants', 'molasses_participant.rb'))
       Bumbleworks::ParticipantRegistration.autoload_all
     end
   end

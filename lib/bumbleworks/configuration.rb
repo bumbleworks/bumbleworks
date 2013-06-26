@@ -132,12 +132,12 @@ module Bumbleworks
     end
 
     def default_definition_directory
-      default_folders = ['lib/process_definitions']
+      default_folders = ['lib/bumbleworks/process_definitions', 'lib/bumbleworks/processes']
       find_folder(default_folders, @definitions_directory, "Definitions folder not found")
     end
 
     def default_participant_directory
-      default_folders = ['participants', 'app/participants']
+      default_folders = ['lib/bumbleworks/participants']
       find_folder(default_folders, @participants_directory, "Participants folder not found")
     end
 

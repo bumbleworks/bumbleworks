@@ -60,7 +60,14 @@ describe Bumbleworks::Configuration do
     it 'returns the default folder if not set by client app' do
       File.stub(:directory? => true)
       configuration.root = '/Root'
-      configuration.definitions_directory.should == '/Root/lib/process_definitions'
+      configuration.definitions_directory.should == '/Root/lib/bumbleworks/process_definitions'
+    end
+
+    it 'returns the second default folder if first does not exist' do
+      File.stub(:directory?).with('/Root/lib/bumbleworks/process_definitions').and_return(false)
+      File.stub(:directory?).with('/Root/lib/bumbleworks/processes').and_return(true)
+      configuration.root = '/Root'
+      configuration.definitions_directory.should == '/Root/lib/bumbleworks/processes'
     end
 
     it 'raises an error if default folder not found' do
@@ -83,9 +90,9 @@ describe Bumbleworks::Configuration do
 
     it 'returns the default folder if not set by client app' do
       File.stub(:directory? => false)
-      File.stub(:directory?).with('/Root/app/participants').and_return(true)
+      File.stub(:directory?).with('/Root/lib/bumbleworks/participants').and_return(true)
       configuration.root = '/Root'
-      configuration.participants_directory.should == '/Root/app/participants'
+      configuration.participants_directory.should == '/Root/lib/bumbleworks/participants'
     end
 
     it 'raises an error if default folder not found' do
@@ -141,7 +148,7 @@ describe Bumbleworks::Configuration do
       configuration.clear!
 
       configuration.root = '/Root'
-      configuration.definitions_directory.should == '/Root/lib/process_definitions'
+      configuration.definitions_directory.should == '/Root/lib/bumbleworks/process_definitions'
     end
   end
 end

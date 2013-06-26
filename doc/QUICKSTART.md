@@ -31,7 +31,7 @@
     Bumbleworks.load_definitions!
   ```
 
-1. Add your first process definition at `lib/process_definitions/`:
+1. Add your first process definition at `lib/bumbleworks/process_definitions/` (or `lib/bumbleworks/processes`):
 
   ```ruby
   Bumbleworks.define_process do
@@ -41,7 +41,7 @@
 
   Process definitions follow the same syntax as [ruote](http://ruote.rubyforge.org/definitions.html), but are defined using `Bumbleworks.define_process` instead of `Ruote.define`.
 
-1. (*optional*) Put any [custom participants](http://ruote.rubyforge.org/implementing_participants.html) in `app/participants` or `participants`.
+1. (*optional*) Put any [custom participants](http://ruote.rubyforge.org/implementing_participants.html) in `lib/bumbleworks/participants`.
 
 1. Create an initializer file (e.g. `config/initializers/bumbleworks.rb` for Rails) with the following:
 

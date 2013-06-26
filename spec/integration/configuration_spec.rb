@@ -19,7 +19,7 @@ describe Bumbleworks::Configuration do
 
     it 'returns default directory when not set in configuration' do
       load default_initializer
-      Bumbleworks.definitions_directory.should == File.join(default_app_path, 'lib', 'process_definitions')
+      Bumbleworks.definitions_directory.should == File.join(default_app_path, 'lib', 'bumbleworks', 'process_definitions')
     end
   end
 
@@ -31,13 +31,7 @@ describe Bumbleworks::Configuration do
 
     it 'returns default directory when not set in configuration' do
       load default_initializer
-      Bumbleworks.participants_directory.should == File.join(default_app_path, 'app', 'participants')
-    end
-
-    it 'returns second default directory if first not found' do
-      load default_initializer
-      Bumbleworks.root = File.join(default_app_path, 'app')
-      Bumbleworks.participants_directory.should == File.join(default_app_path, 'app', 'participants')
+      Bumbleworks.participants_directory.should == File.join(default_app_path, 'lib', 'bumbleworks', 'participants')
     end
   end
 end
