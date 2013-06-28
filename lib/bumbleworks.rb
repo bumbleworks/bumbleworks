@@ -87,6 +87,13 @@ module Bumbleworks
     end
 
     # @public
+    # Autoloads all files in the configured tasks_directory.
+    #
+    def register_tasks(&block)
+      Bumbleworks::Task.autoload_all
+    end
+
+    # @public
     # Registers all process_definitions in the configured definitions_directory
     # with the Ruote engine.
     #

@@ -1,14 +1,14 @@
 describe 'Bumbleworks Sample Application' do
+  let(:app_root) {
+    File.expand_path(File.join(fixtures_path, 'apps', 'with_default_directories'))
+  }
+
+  before :each do
+    Bumbleworks.reset!
+    load File.join(app_root, 'full_initializer.rb')
+  end
+
   describe 'initializer' do
-    let(:app_root) {
-      File.expand_path(File.join(fixtures_path, 'apps', 'with_default_directories'))
-    }
-
-    before :each do
-      Bumbleworks.reset!
-      load File.join(app_root, 'full_initializer.rb')
-    end
-
     it 'registers participants' do
       Bumbleworks.dashboard.participant_list.should have(3).items
       Bumbleworks.dashboard.participant_list.map(&:classname).should =~ ['HoneyParticipant', 'MolassesParticipant', 'Ruote::StorageParticipant']
@@ -26,19 +26,31 @@ describe 'Bumbleworks Sample Application' do
           {},
           [["dave", {"task"=>"make_some_molasses"}, []], ["sam", {"task"=>"taste_that_molasses"}, []]]]]]
     end
+  end
 
-    it 'automatically starts engine and waits for first task in catchall participant' do
+  describe 'launching process' do
+    it 'waits for first task in catchall participant' do
       Bumbleworks.launch!('make_honey')
       Bumbleworks.dashboard.wait_for(:dave)
       Bumbleworks::Task.all.should have(1).item
     end
 
-    it 'automatically starts engine and waits for first task in catchall participant' do
+    it 'creates tasks for concurrent workflows' do
       Bumbleworks.launch!('make_molasses')
       Bumbleworks.dashboard.wait_for(:dave)
       Bumbleworks::Task.all.should have(2).item
       Bumbleworks::Task.for_role('dave').should have(1).item
       Bumbleworks::Task.for_role('sam').should have(1).item
+    end
+  end
+
+  describe 'updating a task' do
+    it 'calls callbacks' do
+      Bumbleworks.launch!('make_honey')
+      Bumbleworks.dashboard.wait_for(:dave)
+      task = Bumbleworks::Task.for_role('dave').first
+      task.update('happening' => 'update')
+      task['what_happened'].should == 'update'
     end
   end
 end

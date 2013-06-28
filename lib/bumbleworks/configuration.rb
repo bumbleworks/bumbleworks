@@ -42,15 +42,23 @@ module Bumbleworks
     # will load all definition files by recursively traversing the directory
     # tree under this folder. No specific loading order is guaranteed
     #
-    # default: ${Bumbleworks.root}/lib/process_definitions
+    # default: ${Bumbleworks.root}/lib/bumbleworks/process_definitions then ${Bumbleworks.root}/lib/bumbleworks/processes
     define_setting :definitions_directory
 
     # Path to the folder which holds the ruote participant files. Bumbleworks
     # will recursively traverse the directory tree under this folder and ensure
     # that all found files are autoloaded before registration of participants.
     #
-    # default: ${Bumbleworks.root}/participants then ${Bumbleworks.root}/app/participants
+    # default: ${Bumbleworks.root}/lib/bumbleworks/participants
     define_setting :participants_directory
+
+    # Path to the folder which holds the optional task module files, which are
+    # used to dynamically extend tasks (to override methods, or implement
+    # callbacks). Bumbleworks will recursively traverse the directory tree under
+    # this folder and ensure that all found files are autoloaded.
+    #
+    # default: ${Bumbleworks.root}/lib/bumbleworks/tasks
+    define_setting :tasks_directory
 
     # Bumbleworks requires a dedicated key-value storage for process information.  Three
     # storage solutions are currently supported: Hash, Redis and Sequel.  The latter
@@ -83,6 +91,14 @@ module Bumbleworks
     #
     def participants_directory
       @participants_folder ||= default_participant_directory
+    end
+
+    # Path where Bumbleworks will look for task modules to load.
+    # The path can be relative or absolute.  Relative paths are
+    # relative to Bumbleworks.root.
+    #
+    def tasks_directory
+      @tasks_folder ||= default_tasks_directory
     end
 
     # Root folder where Bumbleworks looks for ruote assets (participants,
@@ -123,7 +139,7 @@ module Bumbleworks
     def clear!
       defined_settings.each {|setting| instance_variable_set("@#{setting}", nil)}
       @storage_adapters = []
-      @definitions_folder = @participants_folder = nil
+      @definitions_folder = @participants_folder = @tasks_folder = nil
     end
 
     private
@@ -139,6 +155,11 @@ module Bumbleworks
     def default_participant_directory
       default_folders = ['lib/bumbleworks/participants']
       find_folder(default_folders, @participants_directory, "Participants folder not found")
+    end
+
+    def default_tasks_directory
+      default_folders = ['lib/bumbleworks/tasks']
+      find_folder(default_folders, @tasks_directory, "Tasks folder not found")
     end
 
     def find_folder(default_directories, defined_directory, message)

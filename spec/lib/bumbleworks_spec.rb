@@ -51,6 +51,13 @@ describe Bumbleworks do
     end
   end
 
+  describe '.register_tasks' do
+    it 'autoloads task modules' do
+      Bumbleworks::Task.should_receive(:autoload_all)
+      described_class.register_tasks
+    end
+  end
+
   describe '.register_participants' do
     it 'autoloads and registers participants' do
       the_block = lambda {  }

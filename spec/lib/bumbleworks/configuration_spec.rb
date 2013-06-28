@@ -89,7 +89,6 @@ describe Bumbleworks::Configuration do
     end
 
     it 'returns the default folder if not set by client app' do
-      File.stub(:directory? => false)
       File.stub(:directory?).with('/Root/lib/bumbleworks/participants').and_return(true)
       configuration.root = '/Root'
       configuration.participants_directory.should == '/Root/lib/bumbleworks/participants'
@@ -103,6 +102,30 @@ describe Bumbleworks::Configuration do
     it 'raises an error if specific folder not found' do
       configuration.participants_directory = '/mumbo/jumbo'
       expect{configuration.participants_directory}.to raise_error Bumbleworks::InvalidSetting
+    end
+  end
+
+  describe "#tasks_directory" do
+    it 'returns the folder which was set by the client app' do
+      File.stub(:directory?).with('/dog/ate/my/homework').and_return(true)
+      configuration.tasks_directory = '/dog/ate/my/homework'
+      configuration.tasks_directory.should == '/dog/ate/my/homework'
+    end
+
+    it 'returns the default folder if not set by client app' do
+      File.stub(:directory?).with('/Root/lib/bumbleworks/tasks').and_return(true)
+      configuration.root = '/Root'
+      configuration.tasks_directory.should == '/Root/lib/bumbleworks/tasks'
+    end
+
+    it 'raises an error if default folder not found' do
+      configuration.root = '/Root'
+      expect{configuration.tasks_directory}.to raise_error Bumbleworks::InvalidSetting
+    end
+
+    it 'raises an error if specific folder not found' do
+      configuration.tasks_directory = '/mumbo/jumbo'
+      expect{configuration.tasks_directory}.to raise_error Bumbleworks::InvalidSetting
     end
   end
 

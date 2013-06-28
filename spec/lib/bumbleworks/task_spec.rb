@@ -8,6 +8,17 @@ describe Bumbleworks::Task do
     Bumbleworks.start_worker!
   end
 
+  describe '.autoload_all' do
+    it 'autoloads all task modules in directory' do
+      Bumbleworks.root = File.join(fixtures_path, 'apps', 'with_default_directories')
+      Object.should_receive(:autoload).with(:MakeSomeHoneyTask,
+        File.join(Bumbleworks.root, 'lib', 'bumbleworks', 'tasks', 'make_some_honey_task.rb'))
+      Object.should_receive(:autoload).with(:TasteThatMolassesTask,
+        File.join(Bumbleworks.root, 'lib', 'bumbleworks', 'tasks', 'taste_that_molasses_task.rb'))
+      Bumbleworks::Task.autoload_all
+    end
+  end
+
   describe '.new' do
     it 'raises an error if workitem is nil' do
       expect {
@@ -25,6 +36,53 @@ describe Bumbleworks::Task do
       expect {
         described_class.new(workflow_item)
       }.not_to raise_error
+    end
+
+    it 'extends new object with task module' do
+      described_class.any_instance.should_receive(:extend_module)
+      described_class.new(workflow_item)
+    end
+  end
+
+  describe '#extend_module' do
+    it 'extends with base module and task module' do
+      task = described_class.new(workflow_item)
+      task.should_receive(:task_module).and_return(:task_module_double)
+      task.should_receive(:extend).with(Bumbleworks::Tasks::Base).ordered
+      task.should_receive(:extend).with(:task_module_double).ordered
+      task.extend_module
+    end
+
+    it 'extends only with base module if no nickname' do
+      task = described_class.new(workflow_item)
+      task.stub(:nickname).and_return(nil)
+      task.should_receive(:extend).with(Bumbleworks::Tasks::Base)
+      task.extend_module
+    end
+
+    it 'extends only with base module if task module does not exist' do
+      task = described_class.new(workflow_item)
+      task.should_receive(:extend).with(Bumbleworks::Tasks::Base)
+      task.extend_module
+    end
+  end
+
+  describe '#task_module' do
+    # def task_module
+    #   return nil unless nickname
+    #   klass_name = Bumbleworks::Support.camelize(nickname)
+    #   klass = Bumbleworks::Support.constantize("Bumbleworks::Tasks::#{klass_name}")
+    # end
+    it 'returns nil if no nickname' do
+      task = described_class.new(workflow_item)
+      task.stub(:nickname).and_return(nil)
+      task.task_module.should be_nil
+    end
+
+    it 'returns constantized task nickname with "Task" appended' do
+      task = described_class.new(workflow_item)
+      Bumbleworks::Support.stub(:constantize).with("GoToWorkTask").and_return(:the_task_module)
+      task.task_module.should == :the_task_module
     end
   end
 
@@ -253,6 +311,14 @@ describe Bumbleworks::Task do
         task = described_class.for_role('dog_mouth').first
         task.params['state'].should == 'is ready'
         task.fields['meal'].should == 'salted_rhubarb'
+      end
+
+      it 'calls before_update and after_update callbacks' do
+        task = described_class.new(workflow_item)
+        task.should_receive(:before_update).with(:argue_mints).ordered
+        task.should_receive(:update_workitem).ordered
+        task.should_receive(:after_update).with(:argue_mints).ordered
+        task.update(:argue_mints)
       end
     end
 

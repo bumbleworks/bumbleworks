@@ -1,3 +1,5 @@
+require "bumbleworks/tasks/base"
+
 module Bumbleworks
   class Task
     class AlreadyClaimed < StandardError; end
@@ -10,6 +12,20 @@ module Bumbleworks
     alias_method :id, :sid
 
     class << self
+      # @public
+      # Autoload all task modules defined in files in the
+      # tasks_directory.  The symbol for autoload comes from the
+      # camelized version of the filename, so this method is dependent on
+      # following that convention.  For example, file `chew_cud_task.rb`
+      # should define `ChewCudTask`.
+      #
+      def autoload_all(options = {})
+        options[:directory] ||= Bumbleworks.tasks_directory
+        Bumbleworks::Support.all_files(options[:directory], :camelize => true).each do |path, name|
+          Object.autoload name.to_sym, path
+        end
+      end
+
       def for_role(identifier)
         for_roles([identifier])
       end
@@ -51,6 +67,7 @@ module Bumbleworks
         raise ArgumentError, "Not a valid workitem"
       end
       @nickname = params['task']
+      extend_module
     end
 
     def entity
@@ -80,14 +97,28 @@ module Bumbleworks
       participant_name
     end
 
+    def extend_module
+      extend Bumbleworks::Tasks::Base
+      extend task_module if nickname
+    rescue NameError
+    end
+
+    def task_module
+      return nil unless nickname
+      klass_name = Bumbleworks::Support.camelize(nickname)
+      klass = Bumbleworks::Support.constantize("#{klass_name}Task")
+    end
+
     # update workitem with changes to fields & params
-    def update
-      storage_participant.update(@workitem)
+    def update(params = {})
+      before_update(params)
+      update_workitem
+      after_update(params)
     end
 
     # proceed workitem (saving changes to fields)
-    def complete
-      storage_participant.proceed(@workitem)
+    def complete(params = {})
+      proceed_workitem
     end
 
     # Token used to claim task, nil if not claimed
@@ -110,9 +141,18 @@ module Bumbleworks
       set_claimant(nil)
     end
 
-    private
+  private
+
     def storage_participant
       self.class.storage_participant
+    end
+
+    def update_workitem
+      storage_participant.update(@workitem)
+    end
+
+    def proceed_workitem
+      storage_participant.proceed(@workitem)
     end
 
     def set_claimant(token)

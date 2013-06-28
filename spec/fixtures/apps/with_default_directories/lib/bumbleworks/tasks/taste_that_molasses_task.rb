@@ -1,0 +1,2 @@
+module TasteThatMolassesTask
+end
