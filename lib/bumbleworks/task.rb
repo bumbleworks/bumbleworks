@@ -110,19 +110,19 @@ module Bumbleworks
     end
 
     # update workitem with changes to fields & params
-    def update(params = {})
-      before_update(params)
+    def update(metadata = {})
+      before_update(metadata)
       update_workitem
-      after_update(params)
+      after_update(metadata)
     end
 
     # proceed workitem (saving changes to fields)
-    def complete(params = {})
-      before_update(params)
-      before_complete(params)
+    def complete(metadata = {})
+      before_update(metadata)
+      before_complete(metadata)
       proceed_workitem
-      after_complete(params)
-      after_update(params)
+      after_complete(metadata)
+      after_update(metadata)
     end
 
     # Token used to claim task, nil if not claimed
