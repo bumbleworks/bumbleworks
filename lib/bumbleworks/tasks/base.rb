@@ -6,6 +6,12 @@ module Bumbleworks
 
       def after_update(params)
       end
+
+      def before_complete(params)
+      end
+
+      def after_complete(params)
+      end
     end
   end
 end

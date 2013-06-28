@@ -118,7 +118,11 @@ module Bumbleworks
 
     # proceed workitem (saving changes to fields)
     def complete(params = {})
+      before_update(params)
+      before_complete(params)
       proceed_workitem
+      after_complete(params)
+      after_update(params)
     end
 
     # Token used to claim task, nil if not claimed

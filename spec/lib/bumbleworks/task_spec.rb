@@ -335,6 +335,16 @@ describe Bumbleworks::Task do
         task.params['state'].should be_nil
         task.fields['meal'].should == 'root beer and a kite'
       end
+
+      it 'calls update and complete callbacks' do
+        task = described_class.new(workflow_item)
+        task.should_receive(:before_update).with(:argue_mints).ordered
+        task.should_receive(:before_complete).with(:argue_mints).ordered
+        task.should_receive(:proceed_workitem).ordered
+        task.should_receive(:after_complete).with(:argue_mints).ordered
+        task.should_receive(:after_update).with(:argue_mints).ordered
+        task.complete(:argue_mints)
+      end
     end
 
     describe '#has_entity_fields?' do
