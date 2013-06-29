@@ -113,6 +113,7 @@ module Bumbleworks
     def update(metadata = {})
       before_update(metadata)
       update_workitem
+      log(:update, metadata)
       after_update(metadata)
     end
 
@@ -121,6 +122,7 @@ module Bumbleworks
       before_update(metadata)
       before_complete(metadata)
       proceed_workitem
+      log(:complete, metadata)
       after_complete(metadata)
       after_update(metadata)
     end
@@ -133,6 +135,7 @@ module Bumbleworks
     # Claim task and assign token to claimant
     def claim(token)
       set_claimant(token)
+      log(:claim)
     end
 
     # true if task is claimed
@@ -142,7 +145,18 @@ module Bumbleworks
 
     # release claim on task.
     def release
+      log(:release)
       set_claimant(nil)
+    end
+
+    def log(action, metadata = {})
+      Bumbleworks.logger.info({
+        :actor => params['claimant'],
+        :action => action,
+        :object_type => 'Task',
+        :object_id => id,
+        :metadata => metadata.merge(fields)
+      })
     end
 
   private

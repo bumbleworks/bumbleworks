@@ -7,6 +7,7 @@ require "bumbleworks/task"
 require "bumbleworks/participant_registration"
 require "bumbleworks/ruote"
 require "bumbleworks/hash_storage"
+require "bumbleworks/simple_logger"
 
 module Bumbleworks
   class UnsupportedMode < StandardError; end

@@ -73,6 +73,16 @@ module Bumbleworks
     #
     define_setting :storage
 
+    # Bumbleworks will attempt to log a variety of events (tasks becoming
+    # available, being claimed/released/completed, etc), and to do so it uses
+    # the logger registered in configuration.  If no logger has been registered,
+    # Bumbleworks will use its SimpleLogger, which just adds the entries to an
+    # array.  See the SimpleLogger for hints on implementing your own logger;
+    # notably, you can also use an instance Ruby's built-in Logger class.
+    #
+    # default: Bumbleworks::SimpleLogger
+    define_setting :logger
+
     def initialize
       @storage_adapters = []
     end
@@ -132,6 +142,10 @@ module Bumbleworks
 
       @storage_adapters << adapter
       @storage_adapters
+    end
+
+    def logger
+      @logger ||= Bumbleworks::SimpleLogger
     end
 
     # Clears all memoize variables and configuration settings

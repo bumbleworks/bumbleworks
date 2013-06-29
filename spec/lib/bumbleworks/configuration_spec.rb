@@ -129,6 +129,17 @@ describe Bumbleworks::Configuration do
     end
   end
 
+  describe '#logger' do
+    it 'returns the registered logger' do
+      configuration.logger = :a_logger
+      configuration.logger.should == :a_logger
+    end
+
+    it 'returns the default simple logger if no logger registered' do
+      configuration.logger.should == Bumbleworks::SimpleLogger
+    end
+  end
+
   describe "#storage" do
     it 'can set storage directly' do
       storage = double("Storage")

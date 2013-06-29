@@ -68,11 +68,6 @@ describe Bumbleworks::Task do
   end
 
   describe '#task_module' do
-    # def task_module
-    #   return nil unless nickname
-    #   klass_name = Bumbleworks::Support.camelize(nickname)
-    #   klass = Bumbleworks::Support.constantize("Bumbleworks::Tasks::#{klass_name}")
-    # end
     it 'returns nil if no nickname' do
       task = described_class.new(workflow_item)
       task.stub(:nickname).and_return(nil)
@@ -245,49 +240,65 @@ describe Bumbleworks::Task do
   end
 
   context 'claiming things' do
-    subject{described_class.new(workflow_item)}
     before :each do
-      subject.stub(:save)
-      workflow_item.params['claimant'] = nil
-      subject.claim('boss')
+      Bumbleworks.define_process 'planting_a_noodle' do
+        noodle_gardener :task => 'plant_noodle_seed'
+      end
+      Bumbleworks.launch!('planting_a_noodle')
+      Bumbleworks.dashboard.wait_for(:noodle_gardener)
+      @task = described_class.for_role('noodle_gardener').first
+      @task.claim('boss')
     end
 
     describe '#claim' do
       it 'sets token on  "claimant" param' do
-        workflow_item.params['claimant'].should == 'boss'
+        @task.params['claimant'].should == 'boss'
       end
 
       it 'raises an error if already claimed by someone else' do
-        expect{subject.claim('peon')}.to raise_error described_class::AlreadyClaimed
+        expect{@task.claim('peon')}.to raise_error described_class::AlreadyClaimed
       end
 
       it 'does not raise an error if attempting to claim by same token' do
-        expect{subject.claim('boss')}.not_to raise_error described_class::AlreadyClaimed
+        expect{@task.claim('boss')}.not_to raise_error described_class::AlreadyClaimed
+      end
+
+      it 'logs event' do
+        log_entry = Bumbleworks.logger.entries.last[:entry]
+        log_entry[:action].should == :claim
+        log_entry[:actor].should == 'boss'
       end
     end
 
     describe '#claimant' do
       it 'returns token of who has claim' do
-        subject.claimant.should == 'boss'
+        @task.claimant.should == 'boss'
       end
     end
 
     describe '#claimed?' do
       it 'returns true if claimed' do
-        subject.claimed?.should be_true
+        @task.claimed?.should be_true
       end
 
       it 'false otherwise' do
-        workflow_item.params['claimant'] = nil
-        subject.claimed?.should be_false
+        @task.params['claimant'] = nil
+        @task.claimed?.should be_false
       end
     end
 
     describe '#release' do
       it "release claim on workitem" do
-        subject.should be_claimed
-        subject.release
-        subject.should_not be_claimed
+        @task.should be_claimed
+        @task.release
+        @task.should_not be_claimed
+      end
+
+      it 'logs event' do
+        @task.release
+        log_entry = Bumbleworks.logger.entries.last[:entry]
+        log_entry[:action].should == :release
+        log_entry[:actor].should == 'boss'
       end
     end
   end
@@ -315,10 +326,27 @@ describe Bumbleworks::Task do
 
       it 'calls before_update and after_update callbacks' do
         task = described_class.new(workflow_item)
+        task.stub(:log)
         task.should_receive(:before_update).with(:argue_mints).ordered
         task.should_receive(:update_workitem).ordered
         task.should_receive(:after_update).with(:argue_mints).ordered
         task.update(:argue_mints)
+      end
+
+      it 'logs event' do
+        event = Bumbleworks.dashboard.wait_for :dog_mouth
+        task = described_class.for_role('dog_mouth').first
+        task.params['claimant'] = :some_user
+        task.update(:extra_data => :fancy)
+        Bumbleworks.logger.entries.last.should == {
+          :level => :info, :entry => {
+            :actor => :some_user,
+            :action => :update,
+            :object_type => 'Task',
+            :object_id => task.id,
+            :metadata => { :extra_data => :fancy }.merge(task.fields)
+          }
+        }
       end
     end
 
@@ -338,12 +366,29 @@ describe Bumbleworks::Task do
 
       it 'calls update and complete callbacks' do
         task = described_class.new(workflow_item)
+        task.stub(:log)
         task.should_receive(:before_update).with(:argue_mints).ordered
         task.should_receive(:before_complete).with(:argue_mints).ordered
         task.should_receive(:proceed_workitem).ordered
         task.should_receive(:after_complete).with(:argue_mints).ordered
         task.should_receive(:after_update).with(:argue_mints).ordered
         task.complete(:argue_mints)
+      end
+
+      it 'logs event' do
+        event = Bumbleworks.dashboard.wait_for :dog_mouth
+        task = described_class.for_role('dog_mouth').first
+        task.params['claimant'] = :some_user
+        task.complete(:extra_data => :fancy)
+        Bumbleworks.logger.entries.last.should == {
+          :level => :info, :entry => {
+            :actor => :some_user,
+            :action => :complete,
+            :object_type => 'Task',
+            :object_id => task.id,
+            :metadata => { :extra_data => :fancy }.merge(task.fields)
+          }
+        }
       end
     end
 

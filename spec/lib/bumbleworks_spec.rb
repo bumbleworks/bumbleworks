@@ -150,4 +150,11 @@ describe Bumbleworks do
       }.to raise_error(Bumbleworks::InvalidEntity)
     end
   end
+
+  describe '.logger' do
+    it 'delegates to configuration.logger' do
+      described_class.configuration.stub(:logger).and_return(:a_logger)
+      described_class.logger.should == :a_logger
+    end
+  end
 end
