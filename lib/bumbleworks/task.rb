@@ -165,7 +165,7 @@ module Bumbleworks
       end
 
       params['claimant'] = token
-      save
+      update_workitem
     end
   end
 end
