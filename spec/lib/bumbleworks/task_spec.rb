@@ -342,9 +342,12 @@ describe Bumbleworks::Task do
           :level => :info, :entry => {
             :actor => :some_user,
             :action => :update,
-            :object_type => 'Task',
-            :object_id => task.id,
-            :metadata => { :extra_data => :fancy }.merge(task.fields)
+            :target_type => 'Task',
+            :target_id => task.id,
+            :metadata => {
+              :extra_data => :fancy,
+              :current_fields => task.fields
+            }
           }
         }
       end
@@ -384,9 +387,12 @@ describe Bumbleworks::Task do
           :level => :info, :entry => {
             :actor => :some_user,
             :action => :complete,
-            :object_type => 'Task',
-            :object_id => task.id,
-            :metadata => { :extra_data => :fancy }.merge(task.fields)
+            :target_type => 'Task',
+            :target_id => task.id,
+            :metadata => {
+              :extra_data => :fancy,
+              :current_fields => task.fields
+            }
           }
         }
       end

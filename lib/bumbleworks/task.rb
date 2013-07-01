@@ -153,9 +153,9 @@ module Bumbleworks
       Bumbleworks.logger.info({
         :actor => params['claimant'],
         :action => action,
-        :object_type => 'Task',
-        :object_id => id,
-        :metadata => metadata.merge(fields)
+        :target_type => 'Task',
+        :target_id => id,
+        :metadata => metadata.merge(:current_fields => fields)
       })
     end
 
