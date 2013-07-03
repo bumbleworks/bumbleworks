@@ -412,6 +412,20 @@ describe Bumbleworks::Task do
       end
     end
 
+    describe '#has_entity?' do
+      it 'returns true if entity is not nil' do
+        task = described_class.new(workflow_item)
+        task.stub(:entity).and_return(:a_real_boy_not_a_puppet)
+        task.has_entity?.should be_true
+      end
+
+      it 'returns false if EntityNotFound' do
+        task = described_class.new(workflow_item)
+        task.stub(:entity).and_raise(Bumbleworks::Task::EntityNotFound)
+        task.has_entity?.should be_false
+      end
+    end
+
     describe '#entity' do
       class LovelyEntity
         def self.first_by_identifier(identifier)

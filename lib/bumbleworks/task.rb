@@ -79,6 +79,12 @@ module Bumbleworks
       entity
     end
 
+    def has_entity?
+      !entity.nil?
+    rescue EntityNotFound
+      false
+    end
+
     def has_entity_fields?
       fields['entity_id'] && fields['entity_type']
     end
