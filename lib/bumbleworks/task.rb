@@ -189,6 +189,7 @@ module Bumbleworks
       end
 
       params['claimant'] = token
+      params['claimed_at'] = token ? Time.now : nil
       update_workitem
     end
   end

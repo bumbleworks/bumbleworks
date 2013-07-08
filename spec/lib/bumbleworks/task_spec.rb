@@ -279,6 +279,10 @@ describe Bumbleworks::Task do
         @task.params['claimant'].should == 'boss'
       end
 
+      it 'sets claimed_at param' do
+        @task.params['claimed_at'].should_not be_nil
+      end
+
       it 'raises an error if already claimed by someone else' do
         expect{@task.claim('peon')}.to raise_error described_class::AlreadyClaimed
       end
@@ -316,6 +320,11 @@ describe Bumbleworks::Task do
         @task.should be_claimed
         @task.release
         @task.should_not be_claimed
+      end
+
+      it 'clears claimed_at param' do
+        @task.release
+        @task.params['claimed_at'].should be_nil
       end
 
       it 'logs event' do
