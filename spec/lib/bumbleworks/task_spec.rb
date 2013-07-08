@@ -239,6 +239,30 @@ describe Bumbleworks::Task do
     end
   end
 
+  context '.for_claimant' do
+    it 'returns all tasks claimed by given claimant' do
+      Bumbleworks.define_process 'dog-lifecycle' do
+        concurrence do
+          dog :task => 'eat'
+          dog :task => 'bark'
+          dog :task => 'pet_dog'
+          the_universe_is_wonderful
+          cat :task => 'skip_and_jump'
+        end
+        dog :task => 'nap'
+      end
+      Bumbleworks.launch!('dog-lifecycle')
+      Bumbleworks.dashboard.wait_for(:dog)
+      described_class.for_claimant('radish').should be_empty
+      described_class.all.each do |t|
+        t.claim('radish') unless t.nickname == 'pet_dog'
+      end
+      @tasks = described_class.for_claimant('radish')
+      @tasks.should have(3).items
+      @tasks.map(&:nickname).should =~ ['eat', 'bark', 'skip_and_jump']
+    end
+  end
+
   context 'claiming things' do
     before :each do
       Bumbleworks.define_process 'planting_a_noodle' do

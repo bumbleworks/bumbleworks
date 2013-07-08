@@ -38,6 +38,10 @@ module Bumbleworks
         from_workitems(workitems)
       end
 
+      def for_claimant(token)
+        all.select { |t| t.claimant == token }
+      end
+
       def all
         from_workitems(storage_participant.all)
       end
