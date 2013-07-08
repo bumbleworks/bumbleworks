@@ -304,6 +304,12 @@ describe Bumbleworks::Task do
       end
     end
 
+    describe '#claimed_at' do
+      it 'returns claimed_at param' do
+        @task.claimed_at.should == @task.params['claimed_at']
+      end
+    end
+
     describe '#claimed?' do
       it 'returns true if claimed' do
         @task.claimed?.should be_true

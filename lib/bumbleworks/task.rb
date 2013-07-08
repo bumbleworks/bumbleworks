@@ -142,6 +142,11 @@ module Bumbleworks
       params['claimant']
     end
 
+    # Timestamp of last claim, nil if not currently claimed
+    def claimed_at
+      params['claimed_at']
+    end
+
     # Claim task and assign token to claimant
     def claim(token)
       set_claimant(token)
