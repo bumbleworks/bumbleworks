@@ -70,7 +70,7 @@ describe Bumbleworks::Ruote do
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &registration_block
       described_class.dashboard.participant_list.should have(4).items
-      described_class.dashboard.participant_list.map(&:classname).should =~ ['BeesHoney', 'MapleSyrup', 'NewCatchall', 'Ruote::StorageParticipant']
+      described_class.dashboard.participant_list.map(&:classname).should =~ ['BeesHoney', 'MapleSyrup', 'NewCatchall', 'Bumbleworks::StorageParticipant']
     end
 
     it 'does not add storage participant catchall if already exists' do
@@ -91,7 +91,7 @@ describe Bumbleworks::Ruote do
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &nil
       described_class.dashboard.participant_list.should have(1).item
-      described_class.dashboard.participant_list.first.classname.should == 'Ruote::StorageParticipant'
+      described_class.dashboard.participant_list.first.classname.should == 'Bumbleworks::StorageParticipant'
     end
   end
 
