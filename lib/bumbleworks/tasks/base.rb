@@ -13,6 +13,9 @@ module Bumbleworks
       def after_complete(params)
       end
 
+      def after_dispatch
+      end
+
       def completable?
         true
       end

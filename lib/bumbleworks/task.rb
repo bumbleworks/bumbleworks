@@ -166,6 +166,11 @@ module Bumbleworks
       set_claimant(nil)
     end
 
+    def on_dispatch
+      log(:dispatch)
+      after_dispatch
+    end
+
     def log(action, metadata = {})
       Bumbleworks.logger.info({
         :actor => params['claimant'],

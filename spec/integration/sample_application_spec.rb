@@ -11,7 +11,7 @@ describe 'Bumbleworks Sample Application' do
   describe 'initializer' do
     it 'registers participants' do
       Bumbleworks.dashboard.participant_list.should have(3).items
-      Bumbleworks.dashboard.participant_list.map(&:classname).should =~ ['HoneyParticipant', 'MolassesParticipant', 'Ruote::StorageParticipant']
+      Bumbleworks.dashboard.participant_list.map(&:classname).should =~ ['HoneyParticipant', 'MolassesParticipant', 'Bumbleworks::StorageParticipant']
     end
 
     it 'loads process definitions' do
@@ -51,6 +51,15 @@ describe 'Bumbleworks Sample Application' do
       task = Bumbleworks::Task.for_role('dave').first
       task.update('happening' => 'update')
       task['what_happened'].should == 'update'
+    end
+  end
+
+  describe 'dispatching a task' do
+    it 'triggers after_dispatch callback' do
+      Bumbleworks.launch!('make_honey')
+      Bumbleworks.dashboard.wait_for(:dave)
+      task = Bumbleworks::Task.for_role('dave').first
+      task['i_was_dispatched'].should == 'yes_i_was'
     end
   end
 end

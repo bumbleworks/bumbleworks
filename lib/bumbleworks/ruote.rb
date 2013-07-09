@@ -49,8 +49,9 @@ module Bumbleworks
 
       def set_catchall_if_needed
         last_participant = dashboard.participant_list.last
-        unless last_participant && last_participant.regex == "^.+$" && last_participant.classname == "Ruote::StorageParticipant"
-          catchall = ::Ruote::ParticipantEntry.new(["^.+$", ["Ruote::StorageParticipant", {}]])
+        unless last_participant && last_participant.regex == "^.+$" &&
+            ["Ruote::StorageParticipant", "Bumbleworks::StorageParticipant"].include?(last_participant.classname)
+          catchall = ::Ruote::ParticipantEntry.new(["^.+$", ["Bumbleworks::StorageParticipant", {}]])
           dashboard.participant_list = dashboard.participant_list.push(catchall)
         end
       end

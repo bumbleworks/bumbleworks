@@ -50,6 +50,39 @@ describe Bumbleworks::Task do
     end
   end
 
+  describe '#on_dispatch' do
+    before :each do
+      Bumbleworks.define_process 'planting_a_noodle' do
+        concurrence do
+          horse_feeder :task => 'give_the_horse_a_bon_bon'
+        end
+      end
+    end
+
+    it 'is called when task is dispatched, and triggers callback' do
+      described_class.any_instance.should_receive(:on_dispatch)
+      Bumbleworks.launch!('planting_a_noodle')
+      Bumbleworks.dashboard.wait_for(:horse_feeder)
+    end
+
+    it 'logs dispatch' do
+      Bumbleworks.launch!('planting_a_noodle')
+      Bumbleworks.dashboard.wait_for(:horse_feeder)
+      task = described_class.for_role('horse_feeder').last
+      log_entry = Bumbleworks.logger.entries.last[:entry]
+      log_entry[:action].should == :dispatch
+      log_entry[:target_type].should == 'Task'
+      log_entry[:target_id].should == task.id
+    end
+
+    it 'calls after_dispatch callback' do
+      task = described_class.new(workflow_item)
+      task.stub(:log)
+      task.should_receive(:after_dispatch)
+      task.on_dispatch
+    end
+  end
+
   describe '#extend_module' do
     it 'extends with base module and task module' do
       task = described_class.new(workflow_item)
