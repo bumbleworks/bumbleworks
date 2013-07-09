@@ -5,6 +5,7 @@ module Bumbleworks
     class AlreadyClaimed < StandardError; end
     class MissingWorkitem < StandardError; end
     class EntityNotFound < StandardError; end
+    class NotCompletable < StandardError; end
 
     extend Forwardable
     delegate [:sid, :fei, :fields, :params, :participant_name, :wfid, :wf_name] => :@workitem
@@ -129,6 +130,7 @@ module Bumbleworks
 
     # proceed workitem (saving changes to fields)
     def complete(metadata = {})
+      raise NotCompletable unless completable?
       before_update(metadata)
       before_complete(metadata)
       proceed_workitem

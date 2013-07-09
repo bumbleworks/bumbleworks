@@ -19,6 +19,12 @@ describe Bumbleworks::Task do
     end
   end
 
+  describe '#completable?' do
+    it 'defaults to true on base task' do
+      described_class.new(workflow_item).should be_completable
+    end
+  end
+
   describe '.new' do
     it 'raises an error if workitem is nil' do
       expect {
@@ -404,6 +410,21 @@ describe Bumbleworks::Task do
         task = described_class.for_role('dog_brain').first
         task.params['state'].should be_nil
         task.fields['meal'].should == 'root beer and a kite'
+      end
+
+      it 'throws exception if task is not completable' do
+        event = Bumbleworks.dashboard.wait_for :dog_mouth
+        task = described_class.for_role('dog_mouth').first
+        task.stub(:completable?).and_return(false)
+        task.should_receive(:before_update).never
+        task.should_receive(:before_complete).never
+        task.should_receive(:proceed_workitem).never
+        task.should_receive(:after_complete).never
+        task.should_receive(:after_update).never
+        expect {
+          task.complete
+        }.to raise_error(Bumbleworks::Task::NotCompletable)
+        described_class.for_role('dog_mouth').should_not be_empty
       end
 
       it 'calls update and complete callbacks' do

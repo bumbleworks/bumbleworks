@@ -12,6 +12,10 @@ module Bumbleworks
 
       def after_complete(params)
       end
+
+      def completable?
+        true
+      end
     end
   end
 end
