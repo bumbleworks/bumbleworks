@@ -3,6 +3,44 @@ describe Bumbleworks::Ruote do
     Bumbleworks.reset!
   end
 
+  describe ".cancel_all_processes!" do
+    before :each do
+      Bumbleworks.storage = {}
+      Bumbleworks::Ruote.register_participants
+      Bumbleworks.start_worker!
+    end
+
+    it 'cancels all processes' do
+      5.times do |i|
+        Bumbleworks.define_process "do_nothing_#{i}" do
+          participant :ref => "lazy_guy_#{i}", :task => 'absolutely_nothing'
+        end
+        Bumbleworks.launch!("do_nothing_#{i}")
+        Bumbleworks.dashboard.wait_for("lazy_guy_#{i}".to_sym)
+      end
+      Bumbleworks.dashboard.processes.count.should == 5
+      described_class.cancel_all_processes!
+      Bumbleworks.dashboard.processes.count.should == 0
+    end
+
+    it 'times out if processes are not cancelled in time' do
+      Bumbleworks.define_process "time_hog" do
+        sequence :on_cancel => 'ignore_parents' do
+          pigheaded :task => 'whatever'
+        end
+        define 'ignore_parents' do
+          wait '1s'
+        end
+      end
+      Bumbleworks.launch!('time_hog')
+      Bumbleworks.dashboard.wait_for(:pigheaded)
+      Bumbleworks.dashboard.processes.count.should == 1
+      expect {
+        described_class.cancel_all_processes!(:timeout => 0.5)
+      }.to raise_error(Bumbleworks::Ruote::CancelTimeout)
+    end
+  end
+
   describe '.dashboard' do
     it 'raises an error if no storage is defined' do
       Bumbleworks.storage = nil

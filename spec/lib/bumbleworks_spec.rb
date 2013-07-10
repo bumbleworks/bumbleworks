@@ -111,6 +111,11 @@ describe Bumbleworks do
       Bumbleworks::Ruote.should_receive(:start_worker!).and_return(:lets_do_it)
       Bumbleworks.start_worker!.should == :lets_do_it
     end
+
+    it 'includes cancel_all_processes!' do
+      Bumbleworks::Ruote.should_receive(:cancel_all_processes!).and_return(:cancelling)
+      Bumbleworks.cancel_all_processes!.should == :cancelling
+    end
   end
 
   describe '.launch!' do
