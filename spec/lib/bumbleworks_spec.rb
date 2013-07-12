@@ -119,11 +119,17 @@ describe Bumbleworks do
   end
 
   describe '.launch!' do
-    class LovelyEntity
-      attr_accessor :id
-      def initialize(id)
-        @id = id
+    before :all do
+      class LovelyEntity
+        attr_accessor :id
+        def initialize(id)
+          @id = id
+        end
       end
+    end
+
+    after :all do
+      Object.send(:remove_const, :LovelyEntity)
     end
 
     it 'delegates to Bumbleworks::Ruote.launch' do

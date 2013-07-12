@@ -39,11 +39,22 @@ describe Bumbleworks::WorkitemEntityStorage do
   end
 
   describe '#entity' do
-    class LovelyEntity
-      def self.first_by_identifier(identifier)
-        return nil unless identifier
-        "Object #{identifier}"
+    before :all do
+      class LovelyEntity
+        attr_accessor :identifier
+        def initialize(identifier)
+          @identifier = identifier
+        end
+
+        def self.first_by_identifier(identifier)
+          return nil unless identifier
+          new(identifier)
+        end
       end
+    end
+
+    after :all do
+      Object.send(:remove_const, :LovelyEntity)
     end
 
     let(:entitied_workflow_item) {
@@ -56,7 +67,7 @@ describe Bumbleworks::WorkitemEntityStorage do
 
     it 'attempts to instantiate business entity from _id and _type fields' do
       feh = FakeEntityHolder.new('entity_id' => '15', 'entity_type' => 'LovelyEntity')
-      feh.entity.should == 'Object 15'
+      feh.entity.identifier.should == '15'
     end
 
     it 'throw exception if entity fields not present' do
@@ -71,6 +82,18 @@ describe Bumbleworks::WorkitemEntityStorage do
       expect {
         feh.entity
       }.to raise_error Bumbleworks::WorkitemEntityStorage::EntityNotFound
+    end
+
+    it 'returns same instance when called twice' do
+      feh = FakeEntityHolder.new('entity_id' => '15', 'entity_type' => 'LovelyEntity')
+      feh.entity.identifier = 'pickles'
+      feh.entity.identifier.should == 'pickles'
+    end
+
+    it 'reloads instance when called with reload option' do
+      feh = FakeEntityHolder.new('entity_id' => '15', 'entity_type' => 'LovelyEntity')
+      feh.entity.identifier = 'pickles'
+      feh.entity(:reload => true).identifier.should == '15'
     end
   end
 end
