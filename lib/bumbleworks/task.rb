@@ -75,6 +75,11 @@ module Bumbleworks
       extend_module
     end
 
+    def reload
+      @workitem = storage_participant[sid]
+      self
+    end
+
     def entity
       if has_entity_fields?
         klass = Bumbleworks::Support.constantize(fields['entity_type'])

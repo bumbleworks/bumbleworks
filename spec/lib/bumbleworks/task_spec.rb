@@ -50,6 +50,17 @@ describe Bumbleworks::Task do
     end
   end
 
+  describe '#reload' do
+    it 'reloads the workitem from the storage participant' do
+      task = described_class.new(workflow_item)
+      task.stub(:sid).and_return(:the_sid)
+      Bumbleworks.dashboard.storage_participant.should_receive(
+        :[]).with(:the_sid).and_return(:amazing_workitem)
+      task.reload
+      task.instance_variable_get(:@workitem).should == :amazing_workitem
+    end
+  end
+
   describe '#on_dispatch' do
     before :each do
       Bumbleworks.define_process 'planting_a_noodle' do
