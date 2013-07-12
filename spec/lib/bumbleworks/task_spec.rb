@@ -8,6 +8,14 @@ describe Bumbleworks::Task do
     Bumbleworks.start_worker!
   end
 
+  describe '#not_completable_error_message' do
+    it 'defaults to generic message' do
+      task = described_class.new(workflow_item)
+      task.not_completable_error_message.should ==
+        "This task is not currently completable."
+    end
+  end
+
   describe '.autoload_all' do
     it 'autoloads all task modules in directory' do
       Bumbleworks.root = File.join(fixtures_path, 'apps', 'with_default_directories')
@@ -460,6 +468,7 @@ describe Bumbleworks::Task do
         event = Bumbleworks.dashboard.wait_for :dog_mouth
         task = described_class.for_role('dog_mouth').first
         task.stub(:completable?).and_return(false)
+        task.stub(:not_completable_error_message).and_return('hogwash!')
         task.should_receive(:before_update).never
         task.should_receive(:before_complete).never
         task.should_receive(:proceed_workitem).never
@@ -467,7 +476,7 @@ describe Bumbleworks::Task do
         task.should_receive(:after_update).never
         expect {
           task.complete
-        }.to raise_error(Bumbleworks::Task::NotCompletable)
+        }.to raise_error(Bumbleworks::Task::NotCompletable, "hogwash!")
         described_class.for_role('dog_mouth').should_not be_empty
       end
 

@@ -135,7 +135,7 @@ module Bumbleworks
 
     # proceed workitem (saving changes to fields)
     def complete(metadata = {})
-      raise NotCompletable unless completable?
+      raise NotCompletable.new(not_completable_error_message) unless completable?
       before_update(metadata)
       before_complete(metadata)
       proceed_workitem

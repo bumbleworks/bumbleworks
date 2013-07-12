@@ -19,6 +19,10 @@ module Bumbleworks
       def completable?
         true
       end
+
+      def not_completable_error_message
+        "This task is not currently completable."
+      end
     end
   end
 end
