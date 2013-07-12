@@ -1,10 +1,12 @@
 require "bumbleworks/tasks/base"
+require "bumbleworks/workitem_entity_storage"
 
 module Bumbleworks
   class Task
+    include WorkitemEntityStorage
+
     class AlreadyClaimed < StandardError; end
     class MissingWorkitem < StandardError; end
-    class EntityNotFound < StandardError; end
     class NotCompletable < StandardError; end
 
     extend Forwardable
@@ -78,25 +80,6 @@ module Bumbleworks
     def reload
       @workitem = storage_participant[sid]
       self
-    end
-
-    def entity
-      if has_entity_fields?
-        klass = Bumbleworks::Support.constantize(fields['entity_type'])
-        entity = klass.first_by_identifier(fields['entity_id'])
-      end
-      raise EntityNotFound unless entity
-      entity
-    end
-
-    def has_entity?
-      !entity.nil?
-    rescue EntityNotFound
-      false
-    end
-
-    def has_entity_fields?
-      fields['entity_id'] && fields['entity_type']
     end
 
     # alias for fields[] (fields delegated to workitem)
@@ -187,6 +170,10 @@ module Bumbleworks
     end
 
   private
+
+    def workitem
+      @workitem
+    end
 
     def storage_participant
       self.class.storage_participant

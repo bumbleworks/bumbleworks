@@ -9,6 +9,7 @@ require "bumbleworks/ruote"
 require "bumbleworks/hash_storage"
 require "bumbleworks/simple_logger"
 require "bumbleworks/storage_participant"
+require "bumbleworks/local_participant"
 
 module Bumbleworks
   class UnsupportedMode < StandardError; end

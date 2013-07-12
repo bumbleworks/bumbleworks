@@ -8,6 +8,10 @@ describe Bumbleworks::Task do
     Bumbleworks.start_worker!
   end
 
+  it 'includes WorkitemEntityStorage' do
+    described_class.included_modules.should include(Bumbleworks::WorkitemEntityStorage)
+  end
+
   describe '#not_completable_error_message' do
     it 'defaults to generic message' do
       task = described_class.new(workflow_item)
@@ -508,71 +512,6 @@ describe Bumbleworks::Task do
             }
           }
         }
-      end
-    end
-
-    describe '#has_entity_fields?' do
-      it 'returns true if workitem fields include entity fields' do
-        task = described_class.new(workflow_item)
-        task['entity_id'] = '1'
-        task['entity_type'] = 'SomeEntity'
-        task.should have_entity_fields
-      end
-
-      it 'returns false if workitem fields do not include entity fields' do
-        task = described_class.new(workflow_item)
-        task.should_not have_entity_fields
-      end
-    end
-
-    describe '#has_entity?' do
-      it 'returns true if entity is not nil' do
-        task = described_class.new(workflow_item)
-        task.stub(:entity).and_return(:a_real_boy_not_a_puppet)
-        task.has_entity?.should be_true
-      end
-
-      it 'returns false if EntityNotFound' do
-        task = described_class.new(workflow_item)
-        task.stub(:entity).and_raise(Bumbleworks::Task::EntityNotFound)
-        task.has_entity?.should be_false
-      end
-    end
-
-    describe '#entity' do
-      class LovelyEntity
-        def self.first_by_identifier(identifier)
-          return nil unless identifier
-          "Object #{identifier}"
-        end
-      end
-
-      let(:entitied_workflow_item) {
-        Ruote::Workitem.new('fields' => {
-          'entity_id' => '15',
-          'entity_type' => 'LovelyEntity',
-          'params' => {'task' => 'go_to_work'}
-        })
-      }
-
-      it 'attempts to instantiate business entity from _id and _type fields' do
-        task = described_class.new(entitied_workflow_item)
-        task.entity.should == 'Object 15'
-      end
-
-      it 'throw exception if entity fields not present' do
-        task = described_class.new(workflow_item)
-        expect {
-          task.entity
-        }.to raise_error Bumbleworks::Task::EntityNotFound
-      end
-
-      it 'throw exception if entity returns nil' do
-        task = described_class.new(entitied_workflow_item)
-        task['entity_id'] = nil
-        expect {
-          task.entity
-        }.to raise_error Bumbleworks::Task::EntityNotFound
       end
     end
   end
