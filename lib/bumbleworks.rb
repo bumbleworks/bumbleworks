@@ -25,7 +25,7 @@ module Bumbleworks
       def_delegators :configuration, setting, "#{setting.to_s}="
     end
 
-    def_delegators Bumbleworks::Ruote, :dashboard, :start_worker!, :cancel_all_processes!
+    def_delegators Bumbleworks::Ruote, :dashboard, :start_worker!, :cancel_all_processes!, :kill_all_processes!
     def_delegator Bumbleworks::ProcessDefinition, :define, :define_process
 
     # @public

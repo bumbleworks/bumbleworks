@@ -116,6 +116,11 @@ describe Bumbleworks do
       Bumbleworks::Ruote.should_receive(:cancel_all_processes!).and_return(:cancelling)
       Bumbleworks.cancel_all_processes!.should == :cancelling
     end
+
+    it 'includes kill_all_processes!' do
+      Bumbleworks::Ruote.should_receive(:kill_all_processes!).and_return(:killing)
+      Bumbleworks.kill_all_processes!.should == :killing
+    end
   end
 
   describe '.launch!' do

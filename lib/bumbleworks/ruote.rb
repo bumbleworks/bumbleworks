@@ -3,6 +3,7 @@ require "ruote"
 module Bumbleworks
   class Ruote
     class CancelTimeout < StandardError; end
+    class KillTimeout < StandardError; end
 
     class << self
       def dashboard(options = {})
@@ -45,17 +46,26 @@ module Bumbleworks
 
       def cancel_all_processes!(options = {})
         options[:timeout] ||= 5
-        dashboard.processes.each do |ps|
-          dashboard.cancel(ps.wfid)
+        unless options[:method] == :kill
+          options[:method] = :cancel
         end
 
-        cancel_start_time = Time.now
+        dashboard.processes.each do |ps|
+          dashboard.send(options[:method], ps.wfid)
+        end
+
+        start_time = Time.now
         while dashboard.processes.count > 0
-          if (Time.now - cancel_start_time) > options[:timeout]
-            raise CancelTimeout, "Cancel taking too long - #{dashboard.processes.count} processes remain"
+          if (Time.now - start_time) > options[:timeout]
+            error_type = options[:method] == :cancel ? CancelTimeout : KillTimeout
+            raise error_type, "Process #{options[:method]} taking too long - #{dashboard.processes.count} processes remain"
           end
           sleep 0.1
         end
+      end
+
+      def kill_all_processes!(options = {})
+        cancel_all_processes!(options.merge(:method => :kill))
       end
 
       def register_participants(&block)
