@@ -6,7 +6,12 @@ module Bumbleworks
       @entity = nil if options[:reload] == true
       @entity ||= if has_entity_fields?
         klass = Bumbleworks::Support.constantize(workitem.fields['entity_type'])
-        entity = klass.first_by_identifier(workitem.fields['entity_id'])
+        begin
+          entity = klass.first_by_identifier(workitem.fields['entity_id'])
+        rescue NoMethodError => e
+          # try it again
+          entity = klass.first_by_identifier(workitem.fields['entity_id'])
+        end
       end
       raise EntityNotFound unless @entity
       @entity
