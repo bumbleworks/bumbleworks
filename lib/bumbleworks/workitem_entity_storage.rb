@@ -1,3 +1,4 @@
+
 module Bumbleworks
   module WorkitemEntityStorage
     class EntityNotFound < StandardError; end
