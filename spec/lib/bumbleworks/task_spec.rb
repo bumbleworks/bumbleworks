@@ -383,7 +383,7 @@ describe Bumbleworks::Task do
     end
 
     describe '#claim' do
-      it 'sets token on  "claimant" param' do
+      it 'sets token on "claimant" param' do
         @task.params['claimant'].should == 'boss'
       end
 
@@ -611,6 +611,42 @@ describe Bumbleworks::Task do
       expect {
         described_class.kerplunk!(:oh_no)
       }.to raise_error
+    end
+  end
+
+  describe '.next_available' do
+    it 'waits for one task to show up and returns it' do
+      Bumbleworks.define_process "lazy_bum_and_cool_guy" do
+        concurrence do
+          cool_guy :task => 'get_it_going_man'
+          sequence do
+            wait '2s'
+            bum :task => 'finally_get_a_round_tuit'
+          end
+        end
+      end
+      start_time = Time.now
+      Bumbleworks.launch!('lazy_bum_and_cool_guy')
+      task = described_class.for_role('bum').next_available
+      end_time = Time.now
+      task.nickname.should == 'finally_get_a_round_tuit'
+      (end_time - start_time).should >= 2
+    end
+
+    it 'times out if task does not appear in time' do
+      Bumbleworks.define_process "really_lazy_bum_and_cool_guy" do
+        concurrence do
+          cool_guy :task => 'good_golly_never_mind_you'
+          sequence do
+            wait '2s'
+            bum :task => 'whatever_these_socks_are_tasty'
+          end
+        end
+      end
+      Bumbleworks.launch!('really_lazy_bum_and_cool_guy')
+      expect {
+        described_class.for_role('bum').next_available(:timeout => 0.5)
+      }.to raise_error(Bumbleworks::Task::AvailabilityTimeout)
     end
   end
 end

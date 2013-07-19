@@ -9,6 +9,7 @@ module Bumbleworks
     class AlreadyClaimed < StandardError; end
     class MissingWorkitem < StandardError; end
     class NotCompletable < StandardError; end
+    class AvailabilityTimeout < StandardError; end
 
     extend Forwardable
     delegate [:sid, :fei, :fields, :params, :participant_name, :wfid, :wf_name] => :@workitem

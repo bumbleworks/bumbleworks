@@ -50,6 +50,19 @@ module Bumbleworks
         all.empty?
       end
 
+      def next_available(options = {})
+        options[:timeout] ||= 5
+
+        start_time = Time.now
+        while first.nil?
+          if (Time.now - start_time) > options[:timeout]
+            raise Bumbleworks::Task::AvailabilityTimeout, "No tasks found matching criteria in time"
+          end
+          sleep 0.1
+        end
+        first
+      end
+
     private
 
       def from_workitems(workitems)
