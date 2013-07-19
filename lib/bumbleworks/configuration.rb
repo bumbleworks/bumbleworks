@@ -177,22 +177,26 @@ module Bumbleworks
       find_folder(default_folders, @tasks_directory, "Tasks folder not found")
     end
 
-    def find_folder(default_directories, defined_directory, message)
-      # use defined directory structure if defined
-      if defined_directory
-        defined_directory = File.join(root, defined_directory) unless defined_directory[0] == '/'
-      end
-
-      # next look in default directory structure
-      defined_directory ||= default_directories.detect do |default_folder|
-        folder = File.join(root, default_folder)
-        next unless File.directory?(folder)
-        break folder
+    def find_folder(default_directories, user_defined_directory, message)
+      if user_defined_directory
+        # use user-defined directory if specified
+        defined_directory = if user_defined_directory[0] == '/'
+          user_defined_directory
+        else
+          File.join(root, user_defined_directory)
+        end
+      else
+        # next look in default directory structure
+        defined_directory = default_directories.detect do |default_folder|
+          folder = File.join(root, default_folder)
+          next unless File.directory?(folder)
+          break folder
+        end
       end
 
       return defined_directory if File.directory?(defined_directory.to_s)
 
-      raise Bumbleworks::InvalidSetting, "#{message}: #{defined_directory}"
+      raise Bumbleworks::InvalidSetting, "#{message} (looked in #{user_defined_directory || default_directories.join(', ')})"
     end
   end
 end

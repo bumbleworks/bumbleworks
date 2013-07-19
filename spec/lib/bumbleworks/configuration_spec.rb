@@ -94,12 +94,22 @@ describe Bumbleworks::Configuration do
 
     it 'raises an error if default folder not found' do
       configuration.root = '/Root'
-      expect{configuration.definitions_directory}.to raise_error Bumbleworks::InvalidSetting
+      expect {
+        configuration.definitions_directory
+      }.to raise_error(
+        Bumbleworks::InvalidSetting,
+        "Definitions folder not found (looked in lib/bumbleworks/process_definitions, lib/bumbleworks/processes)"
+      )
     end
 
     it 'raises an error if specific folder not found' do
       configuration.definitions_directory = '/mumbo/jumbo'
-      expect{configuration.definitions_directory}.to raise_error Bumbleworks::InvalidSetting
+      expect {
+        configuration.definitions_directory
+      }.to raise_error(
+        Bumbleworks::InvalidSetting,
+        "Definitions folder not found (looked in /mumbo/jumbo)"
+      )
     end
   end
 
@@ -118,12 +128,22 @@ describe Bumbleworks::Configuration do
 
     it 'raises an error if default folder not found' do
       configuration.root = '/Root'
-      expect{configuration.participants_directory}.to raise_error Bumbleworks::InvalidSetting
+      expect {
+        configuration.participants_directory
+      }.to raise_error(
+        Bumbleworks::InvalidSetting,
+        "Participants folder not found (looked in lib/bumbleworks/participants)"
+      )
     end
 
     it 'raises an error if specific folder not found' do
       configuration.participants_directory = '/mumbo/jumbo'
-      expect{configuration.participants_directory}.to raise_error Bumbleworks::InvalidSetting
+      expect {
+        configuration.participants_directory
+      }.to raise_error(
+        Bumbleworks::InvalidSetting,
+        "Participants folder not found (looked in /mumbo/jumbo)"
+      )
     end
   end
 
@@ -142,12 +162,22 @@ describe Bumbleworks::Configuration do
 
     it 'raises an error if default folder not found' do
       configuration.root = '/Root'
-      expect{configuration.tasks_directory}.to raise_error Bumbleworks::InvalidSetting
+      expect {
+        configuration.tasks_directory
+      }.to raise_error(
+        Bumbleworks::InvalidSetting,
+        "Tasks folder not found (looked in lib/bumbleworks/tasks)"
+      )
     end
 
     it 'raises an error if specific folder not found' do
       configuration.tasks_directory = '/mumbo/jumbo'
-      expect{configuration.tasks_directory}.to raise_error Bumbleworks::InvalidSetting
+      expect {
+        configuration.tasks_directory
+      }.to raise_error(
+        Bumbleworks::InvalidSetting,
+        "Tasks folder not found (looked in /mumbo/jumbo)"
+      )
     end
   end
 
