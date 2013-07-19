@@ -18,6 +18,11 @@ describe Bumbleworks::WorkitemEntityStorage do
       feh.should have_entity_fields
     end
 
+    it 'returns true if workitem fields include symbolized version of entity fields' do
+      feh = FakeEntityHolder.new(:entity_id => '1', :entity_type => 'SomeEntity')
+      feh.should have_entity_fields
+    end
+
     it 'returns false if workitem fields do not include entity fields' do
       feh = FakeEntityHolder.new
       feh.should_not have_entity_fields
@@ -59,6 +64,11 @@ describe Bumbleworks::WorkitemEntityStorage do
 
     it 'attempts to instantiate business entity from _id and _type fields' do
       feh = FakeEntityHolder.new('entity_id' => '15', 'entity_type' => 'LovelyEntity')
+      feh.entity.identifier.should == '15'
+    end
+
+    it 'works with symbolized _id and _type fields' do
+      feh = FakeEntityHolder.new(:entity_id => '15', :entity_type => 'LovelyEntity')
       feh.entity.identifier.should == '15'
     end
 

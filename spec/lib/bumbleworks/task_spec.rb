@@ -91,7 +91,7 @@ describe Bumbleworks::Task do
     it 'logs dispatch' do
       Bumbleworks.launch!('planting_a_noodle')
       Bumbleworks.dashboard.wait_for(:horse_feeder)
-      task = described_class.for_role('horse_feeder').last
+      task = described_class.for_role('horse_feeder').first
       log_entry = Bumbleworks.logger.entries.last[:entry]
       log_entry[:action].should == :dispatch
       log_entry[:target_type].should == 'Task'
@@ -230,9 +230,22 @@ describe Bumbleworks::Task do
   end
 
   describe '.for_role' do
-    it 'delegates to #for_roles with single-item array' do
-      described_class.should_receive(:for_roles).with(['mister_mystery'])
-      described_class.for_role('mister_mystery')
+    it 'returns all tasks for given role' do
+      Bumbleworks.define_process 'chalking' do
+        concurrence do
+          chalker :task => 'make_chalk_drawings'
+          hagrid :task => 'moan_endearingly'
+          chalker :task => 'chalk_it_good_baby'
+        end
+      end
+      Bumbleworks.launch!('chalking')
+      Bumbleworks.dashboard.wait_for(:chalker)
+
+      tasks = described_class.for_role('chalker')
+      tasks.map(&:nickname).should == [
+        'make_chalk_drawings',
+        'chalk_it_good_baby'
+      ]
     end
   end
 
@@ -322,6 +335,39 @@ describe Bumbleworks::Task do
       @tasks = described_class.for_claimant('radish')
       @tasks.should have(3).items
       @tasks.map(&:nickname).should =~ ['eat', 'bark', 'skip_and_jump']
+    end
+  end
+
+  context '.for_entity' do
+    it 'returns all tasks associated with given entity' do
+      fake_sandwich = OpenStruct.new(:identifier => 'rubies')
+      Bumbleworks.define_process 'existential_pb_and_j' do
+        concurrence do
+          sandwich :task => 'be_made'
+          sandwich :task => 'contemplate_being'
+        end
+      end
+      Bumbleworks.launch!('existential_pb_and_j', :entity => fake_sandwich)
+      Bumbleworks.dashboard.wait_for(:sandwich)
+      tasks = described_class.for_entity(fake_sandwich)
+      tasks.should have(2).items
+    end
+  end
+
+  context '.by_nickname' do
+    it 'returns all tasks with given nickname' do
+      Bumbleworks.define_process 'animal_disagreements' do
+        concurrence do
+          turtle :task => 'be_a_big_jerk'
+          goose :task => 'punch_turtle'
+          rabbit :task => 'punch_turtle'
+        end
+      end
+      Bumbleworks.launch!('animal_disagreements')
+      Bumbleworks.dashboard.wait_for(:rabbit)
+      tasks = described_class.by_nickname('punch_turtle')
+      tasks.should have(2).items
+      tasks.map(&:role).should =~ ['goose', 'rabbit']
     end
   end
 
@@ -513,6 +559,58 @@ describe Bumbleworks::Task do
           }
         }
       end
+    end
+  end
+
+  describe 'chained queries' do
+    it 'allows for AND-ed chained finders' do
+      Bumbleworks.define_process 'the_big_kachunko' do
+        concurrence do
+          red :task => 'be_really_mad'
+          blue :task => 'be_a_bit_sad'
+          yellow :task => 'be_scared'
+          green :task => 'be_envious'
+          green :task => 'be_proud'
+          pink :task => 'be_proud'
+        end
+      end
+      Bumbleworks.launch!('the_big_kachunko')
+      Bumbleworks.dashboard.wait_for(:pink)
+      described_class.by_nickname('be_really_mad').first.claim('crayon_box')
+      described_class.by_nickname('be_a_bit_sad').first.claim('crayon_box')
+      described_class.by_nickname('be_scared').first.claim('crayon_box')
+
+      tasks = described_class.
+        for_roles(['green', 'pink']).
+        by_nickname('be_proud')
+      tasks.should have(2).items
+      tasks.map(&:nickname).should =~ ['be_proud', 'be_proud']
+
+      tasks = described_class.
+        for_claimant('crayon_box').
+        for_roles(['red', 'yellow', 'green'])
+      tasks.should have(2).items
+      tasks.map(&:nickname).should =~ ['be_really_mad', 'be_scared']
+
+      tasks = described_class.
+        for_claimant('crayon_box').
+        by_nickname('be_a_bit_sad').
+        for_role('blue')
+      tasks.should have(1).item
+      tasks.first.nickname.should == 'be_a_bit_sad'
+    end
+  end
+
+  describe 'method missing' do
+    it 'calls method on new Finder object' do
+      described_class::Finder.any_instance.stub(:shabam!).with(:yay).and_return(:its_a_me)
+      described_class.shabam!(:yay).should == :its_a_me
+    end
+
+    it 'falls back to method missing if no finder method' do
+      expect {
+        described_class.kerplunk!(:oh_no)
+      }.to raise_error
     end
   end
 end

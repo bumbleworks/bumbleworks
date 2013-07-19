@@ -1,5 +1,6 @@
 require "bumbleworks/tasks/base"
 require "bumbleworks/workitem_entity_storage"
+require "bumbleworks/task/finder"
 
 module Bumbleworks
   class Task
@@ -29,24 +30,11 @@ module Bumbleworks
         end
       end
 
-      def for_role(identifier)
-        for_roles([identifier])
-      end
-
-      def for_roles(identifiers)
-        return [] unless identifiers.is_a?(Array)
-        workitems = identifiers.collect { |identifier|
-          storage_participant.by_participant(identifier)
-        }.flatten.uniq
-        from_workitems(workitems)
-      end
-
-      def for_claimant(token)
-        all.select { |t| t.claimant == token }
-      end
-
-      def all
-        from_workitems(storage_participant.all)
+      def method_missing(method, *args)
+        if Finder.new.respond_to?(method)
+          return Finder.new.send(method, *args)
+        end
+        super
       end
 
       def find_by_id(sid)
@@ -59,12 +47,6 @@ module Bumbleworks
 
       def storage_participant
         Bumbleworks.dashboard.storage_participant
-      end
-
-      def from_workitems(workitems)
-        workitems.map { |wi|
-          new(wi) if wi.params['task']
-        }.compact
       end
     end
 
