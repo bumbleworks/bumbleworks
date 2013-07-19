@@ -25,6 +25,17 @@ describe Bumbleworks::Configuration do
       Object.send(:remove_const, :Rails)
     end
 
+    it 'uses Padrino.root if defined' do
+      class Padrino
+        def self.root
+          '/Padrino/Root'
+        end
+      end
+
+      configuration.root.should == '/Padrino/Root'
+      Object.send(:remove_const, :Padrino)
+    end
+
     it 'uses Sinatra::Application.root if defined' do
       class Sinatra
         class Application
@@ -47,6 +58,17 @@ describe Bumbleworks::Configuration do
 
       configuration.root.should == '/Rory/Root'
       Object.send(:remove_const, :Rory)
+    end
+
+    it 'raises error if automatic root detection returns nil' do
+      class Rails
+        def self.root
+          nil
+        end
+      end
+
+      expect{configuration.root}.to raise_error Bumbleworks::UndefinedSetting
+      Object.send(:remove_const, :Rails)
     end
   end
 

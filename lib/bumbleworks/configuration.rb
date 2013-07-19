@@ -125,12 +125,13 @@ module Bumbleworks
     #
     def root
       @root ||= case
-      when defined?(Rails) then Rails.root
-      when defined?(Rory) then Rory.root
-      when defined?(Sinatra::Application) then Sinatra::Application.root
-      else
-        raise UndefinedSetting.new("Bumbleworks.root must be set") unless @root
+        when defined?(Rails) then Rails.root
+        when defined?(Rory) then Rory.root
+        when defined?(Padrino) then Padrino.root
+        when defined?(Sinatra::Application) then Sinatra::Application.root
       end
+      raise UndefinedSetting.new("Bumbleworks.root must be set") unless @root
+      @root
     end
 
     # Add a storage adapter to the set of possible adapters.  Takes an object
