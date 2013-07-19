@@ -8,8 +8,15 @@ describe Bumbleworks::Task do
     Bumbleworks.start_worker!
   end
 
-  it 'includes WorkitemEntityStorage' do
-    described_class.included_modules.should include(Bumbleworks::WorkitemEntityStorage)
+  describe 'entity storage' do
+    it 'includes WorkitemEntityStorage' do
+      described_class.included_modules.should include(Bumbleworks::WorkitemEntityStorage)
+    end
+
+    it 'has a workitem method that returns workitem' do
+      task = described_class.new(workflow_item)
+      task.workitem.should == workflow_item
+    end
   end
 
   describe '#not_completable_error_message' do
@@ -327,7 +334,7 @@ describe Bumbleworks::Task do
         dog :task => 'nap'
       end
       Bumbleworks.launch!('dog-lifecycle')
-      Bumbleworks.dashboard.wait_for(:dog)
+      Bumbleworks.dashboard.wait_for(:cat)
       described_class.for_claimant('radish').should be_empty
       described_class.all.each do |t|
         t.claim('radish') unless t.nickname == 'pet_dog'

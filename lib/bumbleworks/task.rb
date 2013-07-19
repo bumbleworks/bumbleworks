@@ -13,7 +13,7 @@ module Bumbleworks
 
     extend Forwardable
     delegate [:sid, :fei, :fields, :params, :participant_name, :wfid, :wf_name] => :@workitem
-    attr_reader :nickname
+    attr_reader :nickname, :workitem
     alias_method :id, :sid
 
     class << self
