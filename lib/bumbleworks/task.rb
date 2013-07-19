@@ -171,10 +171,6 @@ module Bumbleworks
 
   private
 
-    def workitem
-      @workitem
-    end
-
     def storage_participant
       self.class.storage_participant
     end

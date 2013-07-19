@@ -57,14 +57,6 @@ describe Bumbleworks::WorkitemEntityStorage do
       Object.send(:remove_const, :LovelyEntity)
     end
 
-    let(:entitied_workflow_item) {
-      Ruote::Workitem.new('fields' => {
-        'entity_id' => '15',
-        'entity_type' => 'LovelyEntity',
-        'params' => {'task' => 'go_to_work'}
-      })
-    }
-
     it 'attempts to instantiate business entity from _id and _type fields' do
       feh = FakeEntityHolder.new('entity_id' => '15', 'entity_type' => 'LovelyEntity')
       feh.entity.identifier.should == '15'
