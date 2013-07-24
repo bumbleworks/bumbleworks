@@ -122,8 +122,10 @@ module Bumbleworks
 
     # Claim task and assign token to claimant
     def claim(token)
+      before_claim(token)
       set_claimant(token)
       log(:claim)
+      after_claim(token)
     end
 
     # true if task is claimed
@@ -133,8 +135,11 @@ module Bumbleworks
 
     # release claim on task.
     def release
+      current_claimant = claimant
+      before_release(current_claimant)
       log(:release)
       set_claimant(nil)
+      after_release(current_claimant)
     end
 
     def on_dispatch

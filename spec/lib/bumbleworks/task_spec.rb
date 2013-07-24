@@ -406,6 +406,15 @@ describe Bumbleworks::Task do
         expect{@task.claim('boss')}.not_to raise_error described_class::AlreadyClaimed
       end
 
+      it 'calls before_claim and after_claim callbacks' do
+        task = described_class.new(workflow_item)
+        task.stub(:log)
+        task.should_receive(:before_claim).with(:doctor_claim).ordered
+        task.should_receive(:set_claimant).ordered
+        task.should_receive(:after_claim).with(:doctor_claim).ordered
+        task.claim(:doctor_claim)
+      end
+
       it 'logs event' do
         log_entry = Bumbleworks.logger.entries.last[:entry]
         log_entry[:action].should == :claim
@@ -446,6 +455,13 @@ describe Bumbleworks::Task do
       it 'clears claimed_at param' do
         @task.release
         @task.params['claimed_at'].should be_nil
+      end
+
+      it 'calls before_release and after_release callbacks' do
+        @task.should_receive(:before_release).with('boss').ordered
+        @task.should_receive(:set_claimant).ordered
+        @task.should_receive(:after_release).with('boss').ordered
+        @task.release
       end
 
       it 'logs event' do
