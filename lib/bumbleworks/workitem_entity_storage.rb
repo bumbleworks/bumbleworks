@@ -22,6 +22,21 @@ module Bumbleworks
       entity_id && entity_type
     end
 
+    def entity_fields(options = {})
+      return {} unless has_entity_fields?
+      type = if options[:humanize] == true
+        Bumbleworks::Support.humanize(entity_type)
+      elsif options[:titleize] == true
+        Bumbleworks::Support.titleize(entity_type)
+      else
+        entity_type
+      end
+      {
+        :type => type,
+        :identifier => entity_id
+      }
+    end
+
   private
 
     def entity_id

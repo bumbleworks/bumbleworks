@@ -672,4 +672,54 @@ describe Bumbleworks::Task do
       }.to raise_error(Bumbleworks::Task::AvailabilityTimeout)
     end
   end
+
+  describe '#humanize' do
+    it "returns humanized version of task name when no entity" do
+      task = described_class.new(workflow_item)
+      task.humanize.should == 'Go to work'
+    end
+
+    it "returns humanized version of task name with entity" do
+      task = described_class.new(workflow_item)
+      task[:entity_id] = '45'
+      task[:entity_type] = 'RhubarbSandwich'
+      task.humanize.should == 'Go to work: Rhubarb sandwich 45'
+    end
+
+    it "returns humanized version of task name without entity if requested" do
+      task = described_class.new(workflow_item)
+      task[:entity_id] = '45'
+      task[:entity_type] = 'RhubarbSandwich'
+      task.humanize(:entity => false).should == 'Go to work'
+    end
+  end
+
+  describe '#to_s' do
+    it "is aliased to #titleize" do
+      task = described_class.new(workflow_item)
+      task.stub(:titleize).with(:the_args).and_return(:see_i_told_you_so)
+      task.to_s(:the_args).should == :see_i_told_you_so
+    end
+  end
+
+  describe '#titleize' do
+    it "returns titleized version of task name when no entity" do
+      task = described_class.new(workflow_item)
+      task.titleize.should == 'Go To Work'
+    end
+
+    it "returns titleized version of task name with entity" do
+      task = described_class.new(workflow_item)
+      task[:entity_id] = '45'
+      task[:entity_type] = 'RhubarbSandwich'
+      task.titleize.should == 'Go To Work: Rhubarb Sandwich 45'
+    end
+
+    it "returns titleized version of task name without entity if requested" do
+      task = described_class.new(workflow_item)
+      task[:entity_id] = '45'
+      task[:entity_type] = 'RhubarbSandwich'
+      task.titleize(:entity => false).should == 'Go To Work'
+    end
+  end
 end

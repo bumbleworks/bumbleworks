@@ -98,4 +98,26 @@ describe Bumbleworks::WorkitemEntityStorage do
       feh.entity(:reload => true).identifier.should == '15'
     end
   end
+
+  describe "#entity_fields" do
+    it 'returns empty hash if no entity' do
+      feh = FakeEntityHolder.new
+      feh.entity_fields.should == {}
+    end
+
+    it 'returns class name and identifier by default' do
+      feh = FakeEntityHolder.new('entity_id' => '15', 'entity_type' => 'LovelyEntity')
+      feh.entity_fields.should == { :type => 'LovelyEntity', :identifier => '15' }
+    end
+
+    it 'humanizes class name when requested' do
+      feh = FakeEntityHolder.new('entity_id' => '15', 'entity_type' => 'LovelyEntity')
+      feh.entity_fields(:humanize => true).should == { :type => 'Lovely entity', :identifier => '15' }
+    end
+
+    it 'titleizes class name when requested' do
+      feh = FakeEntityHolder.new('entity_id' => '15', 'entity_type' => 'LovelyEntity')
+      feh.entity_fields(:titleize => true).should == { :type => 'Lovely Entity', :identifier => '15' }
+    end
+  end
 end

@@ -157,7 +157,29 @@ module Bumbleworks
       })
     end
 
+    def to_s(options = {})
+      titleize(options)
+    end
+
+    def titleize(options = {})
+      displayify(:titleize, options)
+    end
+
+    def humanize(options = {})
+      displayify(:humanize, options)
+    end
+
   private
+
+    def displayify(modifier, options = {})
+      task_name = Bumbleworks::Support.send(modifier, nickname)
+
+      if options[:entity] != false && !(entity_fields = entity_fields(modifier => true)).empty?
+        "#{task_name}: #{entity_fields[:type]} #{entity_fields[:identifier]}"
+      else
+        task_name
+      end
+    end
 
     def storage_participant
       self.class.storage_participant
