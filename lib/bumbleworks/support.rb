@@ -33,5 +33,24 @@ module Bumbleworks
       end
       constant
     end
+
+    def tokenize(string)
+      return nil if string.nil?
+      string = string.gsub(/&/, ' and ').
+        gsub(/[ \/]+/, '_').
+        gsub(/([a-z\d])([A-Z])/,'\1_\2').
+        downcase
+    end
+
+    def humanize(string)
+      return nil if string.nil?
+      tokenize(string).gsub(/_/, ' ').
+        gsub(/^\w/) { $&.upcase }
+    end
+
+    def titleize(string)
+      return nil if string.nil?
+      humanize(string).gsub(/\b('?[a-z])/) { $1.capitalize }
+    end
   end
 end

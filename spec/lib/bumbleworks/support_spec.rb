@@ -59,4 +59,50 @@ describe Bumbleworks::Support do
       }.to raise_error(NameError)
     end
   end
+
+  describe '.tokenize' do
+    it 'creates snake_case version of string' do
+      described_class.tokenize('Albus Dumbledore & his_friend').should == 'albus_dumbledore_and_his_friend'
+    end
+
+    it 'uncamelizes' do
+      described_class.tokenize('thisStrangeJavalikeWord').should == 'this_strange_javalike_word'
+    end
+
+    it 'returns nil if given nil' do
+      described_class.tokenize(nil).should be_nil
+    end
+  end
+
+  describe '.humanize' do
+    it 'creates humanized version of snaky string' do
+      described_class.humanize('mops_are_so_moppy').should == 'Mops are so moppy'
+    end
+
+    it 'created humanized version of camely string' do
+      described_class.humanize('thisStrangeJavalikeWord').should == 'This strange javalike word'
+    end
+
+    it 'returns nil if given nil' do
+      described_class.humanize(nil).should be_nil
+    end
+  end
+
+  describe '.titleize' do
+    it 'creates titleized version of snaky string' do
+      described_class.titleize('mops_are_so_moppy').should == 'Mops Are So Moppy'
+    end
+
+    it 'created titleized version of camely string' do
+      described_class.titleize('thisStrangeJavalikeWord').should == 'This Strange Javalike Word'
+    end
+
+    it 'created titleized version of humany string' do
+      described_class.titleize('You are a wonderful toothbrush').should == 'You Are A Wonderful Toothbrush'
+    end
+
+    it 'returns nil if given nil' do
+      described_class.titleize(nil).should be_nil
+    end
+  end
 end
