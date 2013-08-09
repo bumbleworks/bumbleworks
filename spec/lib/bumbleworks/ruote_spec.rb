@@ -1,11 +1,11 @@
 describe Bumbleworks::Ruote do
   before :each do
     Bumbleworks.reset!
+    Bumbleworks.storage = {}
   end
 
   describe ".cancel_all_processes!" do
     before :each do
-      Bumbleworks.storage = {}
       Bumbleworks::Ruote.register_participants
       Bumbleworks.start_worker!
     end
@@ -43,7 +43,6 @@ describe Bumbleworks::Ruote do
 
   describe ".kill_all_processes!" do
     before :each do
-      Bumbleworks.storage = {}
       Bumbleworks::Ruote.register_participants
       Bumbleworks.start_worker!
     end
@@ -83,24 +82,20 @@ describe Bumbleworks::Ruote do
     end
 
     it 'creates a new dashboard' do
-      Bumbleworks.storage = {}
       described_class.dashboard.should be_an_instance_of(Ruote::Dashboard)
     end
 
     it 'does not start a worker by default' do
-      Bumbleworks.storage = {}
       described_class.dashboard.worker.should be_nil
     end
 
     it 'starts a worker if :start_worker option is true' do
-      Bumbleworks.storage = {}
       described_class.dashboard(:start_worker => true).worker.should_not be_nil
     end
   end
 
   describe '.start_worker!' do
     it 'adds new worker to dashboard and returns worker' do
-      Bumbleworks.storage = {}
       described_class.dashboard.worker.should be_nil
       new_worker = described_class.start_worker!
       new_worker.should be_an_instance_of(Ruote::Worker)
@@ -108,7 +103,6 @@ describe Bumbleworks::Ruote do
     end
 
     it 'joins current thread if :join option is true' do
-      Bumbleworks.storage = {}
       ::Ruote::Dashboard.stub(:new).and_return(dash_double = double('dash', :worker => nil))
       dash_double.should_receive(:noisy=).with(false)
       dash_double.should_receive(:join)
@@ -116,7 +110,6 @@ describe Bumbleworks::Ruote do
     end
 
     it 'returns if :join option not true' do
-      Bumbleworks.storage = {}
       ::Ruote::Dashboard.stub(:new).and_return(dash_double = double('dash', :worker => nil))
       dash_double.should_receive(:noisy=).with(false)
       dash_double.should_receive(:join).never
@@ -124,7 +117,6 @@ describe Bumbleworks::Ruote do
     end
 
     it 'sets dashboard to noisy if :verbose option true' do
-      Bumbleworks.storage = {}
       ::Ruote::Dashboard.stub(:new).and_return(dash_double = double('dash', :worker => nil))
       dash_double.should_receive(:noisy=).with(true)
       described_class.start_worker!(:verbose => true)
@@ -139,7 +131,6 @@ describe Bumbleworks::Ruote do
         catchall 'NewCatchall'
       }
 
-      Bumbleworks.storage = {}
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &registration_block
       described_class.dashboard.participant_list.should have(4).items
@@ -152,7 +143,6 @@ describe Bumbleworks::Ruote do
         catchall
       }
 
-      Bumbleworks.storage = {}
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &registration_block
       described_class.dashboard.participant_list.should have(2).items
@@ -160,7 +150,6 @@ describe Bumbleworks::Ruote do
     end
 
     it 'adds catchall participant if block is nil' do
-      Bumbleworks.storage = {}
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &nil
       described_class.dashboard.participant_list.should have(1).item
@@ -170,6 +159,7 @@ describe Bumbleworks::Ruote do
 
   describe '.storage' do
     it 'raise error when storage is not defined' do
+      Bumbleworks.storage = nil
       expect { described_class.send(:storage) }.to raise_error Bumbleworks::UndefinedSetting
     end
 
@@ -178,6 +168,24 @@ describe Bumbleworks::Ruote do
       Bumbleworks.storage = storage
       Ruote::HashStorage.should_receive(:new).with(storage)
       described_class.send(:storage)
+    end
+  end
+
+  describe '.launch' do
+    before :each do
+      @pdef = Bumbleworks.define_process 'foo' do; end
+    end
+
+    it 'tells dashboard to launch process' do
+      described_class.dashboard.should_receive(:launch).with(@pdef.tree, 'variable' => 'neat')
+      described_class.launch('foo', 'variable' => 'neat')
+    end
+
+    it 'sets catchall if needed' do
+      described_class.dashboard.participant_list.should be_empty
+      described_class.launch('foo')
+      described_class.dashboard.participant_list.should have(1).item
+      described_class.dashboard.participant_list.first.classname.should == 'Bumbleworks::StorageParticipant'
     end
   end
 end

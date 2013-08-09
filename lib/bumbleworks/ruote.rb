@@ -41,6 +41,7 @@ module Bumbleworks
       end
 
       def launch(name, *args)
+        set_catchall_if_needed
         dashboard.launch(dashboard.variables[name], *args)
       end
 
