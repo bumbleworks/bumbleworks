@@ -403,7 +403,7 @@ describe Bumbleworks::Task do
       end
 
       it 'does not raise an error if attempting to claim by same token' do
-        expect{@task.claim('boss')}.not_to raise_error described_class::AlreadyClaimed
+        expect{@task.claim('boss')}.not_to raise_error
       end
 
       it 'calls before_claim and after_claim callbacks' do
