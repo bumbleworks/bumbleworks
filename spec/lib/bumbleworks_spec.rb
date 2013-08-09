@@ -142,9 +142,14 @@ describe Bumbleworks do
       Bumbleworks.launch!(:amazing_process, :hugs => :love)
     end
 
+    it 'sends all args along' do
+      Bumbleworks::Ruote.should_receive(:launch).with(:amazing_process, { :hugs => :love }, { :whiny => :yup }, :peahen)
+      Bumbleworks.launch!(:amazing_process, { :hugs => :love }, { :whiny => :yup }, :peahen)
+    end
+
     it 'expands entity params when entity object provided' do
-      Bumbleworks::Ruote.should_receive(:launch).with(:amazing_process, :entity_id => :wiley_e_coyote, :entity_type => 'LovelyEntity')
-      Bumbleworks.launch!(:amazing_process, :entity => LovelyEntity.new(:wiley_e_coyote))
+      Bumbleworks::Ruote.should_receive(:launch).with(:amazing_process, { :entity_id => :wiley_e_coyote, :entity_type => 'LovelyEntity' }, :et_cetera)
+      Bumbleworks.launch!(:amazing_process, { :entity => LovelyEntity.new(:wiley_e_coyote) }, :et_cetera)
     end
 
     it 'uses "identifier" method instead of id, if entity has one' do

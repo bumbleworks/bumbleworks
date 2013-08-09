@@ -121,19 +121,19 @@ module Bumbleworks
     # sending it, so it can be properly stored in workitem fields (and
     # re-instantiated later).
     #
-    def launch!(process_definition_name, options = {})
-      extract_entity_from_options!(options)
-      Bumbleworks::Ruote.launch(process_definition_name, options)
+    def launch!(process_definition_name, *args)
+      extract_entity_from_fields!(args.first || {})
+      Bumbleworks::Ruote.launch(process_definition_name, *args)
     end
 
   private
 
-    def extract_entity_from_options!(options)
+    def extract_entity_from_fields!(fields)
       begin
-        if entity = options.delete(:entity)
-          options[:entity_id] = entity.respond_to?(:identifier) ? entity.identifier : entity.id
-          options[:entity_type] = entity.class.name
-          raise InvalidEntity, "Entity#id must be non-null" unless options[:entity_id]
+        if entity = fields.delete(:entity)
+          fields[:entity_id] = entity.respond_to?(:identifier) ? entity.identifier : entity.id
+          fields[:entity_type] = entity.class.name
+          raise InvalidEntity, "Entity#id must be non-null" unless fields[:entity_id]
         end
       rescue NoMethodError => e
         raise InvalidEntity, "Entity must respond to #id and #class.name"
