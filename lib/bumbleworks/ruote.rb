@@ -1,5 +1,7 @@
 require "ruote"
 
+Dir[File.join(File.dirname(__FILE__), 'ruote', 'exp', '*.rb')].each { |f| require f }
+
 module Bumbleworks
   class Ruote
     class CancelTimeout < StandardError; end
