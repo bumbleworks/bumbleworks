@@ -359,6 +359,20 @@ describe Bumbleworks::Task do
       tasks = described_class.for_entity(fake_sandwich)
       tasks.should have(2).items
     end
+
+    it 'queries for id if entity does not respond to identifier' do
+      fake_mauvebelt = OpenStruct.new(:id => 'television_hat')
+      Bumbleworks.define_process 'tautological_mauvebelt' do
+        concurrence do
+          mauvebelt :task => 'wear_oneself'
+          mauvebelt :task => 'be_worn_by_oneself'
+        end
+      end
+      Bumbleworks.launch!('tautological_mauvebelt', :entity => fake_mauvebelt)
+      Bumbleworks.dashboard.wait_for(:mauvebelt)
+      tasks = described_class.for_entity(fake_mauvebelt)
+      tasks.should have(2).items
+    end
   end
 
   context '.by_nickname' do
