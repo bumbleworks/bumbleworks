@@ -57,7 +57,7 @@ module Bumbleworks
         while dashboard.processes.count > 0
           if (Time.now - start_time) > options[:timeout]
             error_type = options[:method] == :cancel ? CancelTimeout : KillTimeout
-            raise error_type, "Process #{options[:method]} taking too long - #{dashboard.processes.count} processes remain"
+            raise error_type, "Process #{options[:method]} taking too long - #{dashboard.processes.count} processes remain.  Errors: #{dashboard.errors}"
           end
           sleep 0.1
         end
