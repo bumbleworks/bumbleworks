@@ -88,10 +88,6 @@ describe Bumbleworks::Ruote do
     it 'does not start a worker by default' do
       described_class.dashboard.worker.should be_nil
     end
-
-    it 'starts a worker if :start_worker option is true' do
-      described_class.dashboard(:start_worker => true).worker.should_not be_nil
-    end
   end
 
   describe '.start_worker!' do
@@ -102,23 +98,20 @@ describe Bumbleworks::Ruote do
       described_class.dashboard.worker.should == new_worker
     end
 
-    it 'joins current thread if :join option is true' do
-      ::Ruote::Dashboard.stub(:new).and_return(dash_double = double('dash', :worker => nil))
-      dash_double.should_receive(:noisy=).with(false)
-      dash_double.should_receive(:join)
+    it 'runs in current thread if :join option is true' do
+      ::Ruote::Worker.stub(:new).and_return(worker_double = double('worker'))
+      worker_double.should_receive(:run)
       described_class.start_worker!(:join => true)
     end
 
-    it 'returns if :join option not true' do
-      ::Ruote::Dashboard.stub(:new).and_return(dash_double = double('dash', :worker => nil))
-      dash_double.should_receive(:noisy=).with(false)
-      dash_double.should_receive(:join).never
-      described_class.start_worker!
+    it 'runs in new thread and returns worker if :join option not true' do
+      ::Ruote::Worker.stub(:new).and_return(worker_double = double('worker'))
+      worker_double.should_receive(:run_in_thread)
+      described_class.start_worker!.should == worker_double
     end
 
     it 'sets dashboard to noisy if :verbose option true' do
-      ::Ruote::Dashboard.stub(:new).and_return(dash_double = double('dash', :worker => nil))
-      dash_double.should_receive(:noisy=).with(true)
+      described_class.dashboard.should_receive(:noisy=).with(true)
       described_class.start_worker!(:verbose => true)
     end
   end

@@ -9,14 +9,7 @@ module Bumbleworks
 
     class << self
       def dashboard(options = {})
-        @dashboard ||= begin
-          context = if options[:start_worker] == true
-            ::Ruote::Worker.new(storage)
-          else
-            storage
-          end
-          ::Ruote::Dashboard.new(context)
-        end
+        @dashboard ||= ::Ruote::Dashboard.new(storage)
       end
 
       # Start a worker, which will begin polling for messages in
@@ -35,11 +28,14 @@ module Bumbleworks
       #   exits.
       #
       def start_worker!(options = {})
-        @dashboard = nil
-        dashboard(:start_worker => true)
         dashboard.noisy = options[:verbose] == true
-        dashboard.join if options[:join] == true
-        dashboard.worker
+        worker = ::Ruote::Worker.new(dashboard.context)
+        if options[:join] == true
+          worker.run
+        else
+          worker.run_in_thread
+        end
+        worker
       end
 
       def launch(name, *args)
