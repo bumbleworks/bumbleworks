@@ -43,6 +43,27 @@ module Bumbleworks
         dashboard.launch(dashboard.variables[name], *args)
       end
 
+      def cancel_process!(wfid, options = {})
+        options[:timeout] ||= 5
+        unless options[:method] == :kill
+          options[:method] = :cancel
+        end
+
+        dashboard.send(options[:method], wfid)
+        start_time = Time.now
+        while dashboard.process(wfid)
+          if (Time.now - start_time) > options[:timeout]
+            error_type = options[:method] == :cancel ? CancelTimeout : KillTimeout
+            raise error_type, "Process #{options[:method]} taking too long - #{dashboard.processes.count} processes remain.  Errors: #{dashboard.errors}"
+          end
+          sleep 0.1
+        end
+      end
+
+      def kill_process!(wfid, options = {})
+        cancel_process!(wfid, options.merge(:method => :kill))
+      end
+
       def cancel_all_processes!(options = {})
         options[:timeout] ||= 5
         unless options[:method] == :kill

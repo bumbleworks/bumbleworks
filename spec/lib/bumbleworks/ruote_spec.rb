@@ -4,6 +4,70 @@ describe Bumbleworks::Ruote do
     Bumbleworks.storage = {}
   end
 
+  describe ".cancel_process!" do
+    before :each do
+      Bumbleworks.start_worker!
+    end
+
+    it 'cancels given process' do
+      Bumbleworks.define_process 'do_nothing' do
+        lazy_guy :task => 'absolutely_nothing'
+      end
+      wfid = Bumbleworks.launch!('do_nothing')
+      Bumbleworks.dashboard.wait_for(:lazy_guy)
+      Bumbleworks.dashboard.process(wfid).should_not be_nil
+      described_class.cancel_process!(wfid)
+      Bumbleworks.dashboard.process(wfid).should be_nil
+    end
+
+    it 'times out if process is not cancelled in time' do
+      Bumbleworks.define_process "time_hog" do
+        sequence :on_cancel => 'ignore_parents' do
+          pigheaded :task => 'whatever'
+        end
+        define 'ignore_parents' do
+          wait '1s'
+        end
+      end
+      wfid = Bumbleworks.launch!('time_hog')
+      Bumbleworks.dashboard.wait_for(:pigheaded)
+      Bumbleworks.dashboard.process(wfid).should_not be_nil
+      expect {
+        described_class.cancel_process!(wfid, :timeout => 0.5)
+      }.to raise_error(Bumbleworks::Ruote::CancelTimeout)
+    end
+  end
+
+  describe ".kill_process!" do
+    before :each do
+      Bumbleworks.start_worker!
+    end
+
+    it 'kills given process without running on_cancel' do
+      Bumbleworks.define_process "do_nothing" do
+        sequence :on_cancel => 'rethink_life' do
+          lazy_guy :task => 'absolutely_nothing'
+        end
+        define 'rethink_life' do
+          wait '10s'
+        end
+      end
+      wfid = Bumbleworks.launch!('do_nothing')
+      Bumbleworks.dashboard.wait_for(:lazy_guy)
+      Bumbleworks.dashboard.process(wfid).should_not be_nil
+      described_class.kill_process!(wfid)
+      Bumbleworks.dashboard.process(wfid).should be_nil
+    end
+
+    it 'times out if process is not killed in time' do
+      Bumbleworks.dashboard.stub(:kill)
+      Bumbleworks.dashboard.stub(:process).with('woot').and_return(:i_exist)
+      expect {
+        described_class.kill_process!('woot', :timeout => 0.5)
+      }.to raise_error(Bumbleworks::Ruote::KillTimeout)
+    end
+  end
+
   describe ".cancel_all_processes!" do
     before :each do
       Bumbleworks::Ruote.register_participants
