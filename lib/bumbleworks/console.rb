@@ -4,8 +4,10 @@ require 'bumbleworks/console/task'
 
 module Bumbleworks
   class Console
-    delegate :ps, :show, :tree, :to => :@process
-    delegate :tasks, :to => :@task
+    extend Forwardable
+
+    def_delegators :@process, :ps, :show, :tree
+    def_delegators :@task, :tasks
 
     def initialize
       @process = Process.new
