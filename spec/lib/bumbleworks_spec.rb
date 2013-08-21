@@ -112,6 +112,16 @@ describe Bumbleworks do
       Bumbleworks.start_worker!.should == :lets_do_it
     end
 
+    it 'includes cancel_process!' do
+      Bumbleworks::Ruote.should_receive(:cancel_process!).with(:wfid).and_return(:cancelling)
+      Bumbleworks.cancel_process!(:wfid).should == :cancelling
+    end
+
+    it 'includes kill_process!' do
+      Bumbleworks::Ruote.should_receive(:kill_process!).with(:wfid).and_return(:killing)
+      Bumbleworks.kill_process!(:wfid).should == :killing
+    end
+
     it 'includes cancel_all_processes!' do
       Bumbleworks::Ruote.should_receive(:cancel_all_processes!).and_return(:cancelling)
       Bumbleworks.cancel_all_processes!.should == :cancelling
