@@ -80,6 +80,20 @@ describe Bumbleworks::Task do
     end
   end
 
+  [:before, :after].each do |phase|
+    describe "#call_#{phase}_hooks" do
+      it "calls #{phase} hooks on task and all observers" do
+        observer1, observer2 = double('observer1'), double('observer2')
+        Bumbleworks.observers = [observer1, observer2]
+        task = described_class.new(workflow_item)
+        task.should_receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
+        observer1.should_receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
+        observer2.should_receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
+        task.send(:"call_#{phase}_hooks", :snoogle, :chachunga, :faloop)
+      end
+    end
+  end
+
   describe '#on_dispatch' do
     before :each do
       Bumbleworks.define_process 'planting_a_noodle' do
@@ -89,7 +103,7 @@ describe Bumbleworks::Task do
       end
     end
 
-    it 'is called when task is dispatched, and triggers callback' do
+    it 'is called when task is dispatched' do
       described_class.any_instance.should_receive(:on_dispatch)
       Bumbleworks.launch!('planting_a_noodle')
       Bumbleworks.dashboard.wait_for(:horse_feeder)
@@ -105,10 +119,10 @@ describe Bumbleworks::Task do
       log_entry[:target_id].should == task.id
     end
 
-    it 'calls after_dispatch callback' do
+    it 'calls after hooks' do
       task = described_class.new(workflow_item)
       task.stub(:log)
-      task.should_receive(:after_dispatch)
+      task.should_receive(:call_after_hooks).with(:dispatch)
       task.on_dispatch
     end
   end
@@ -471,10 +485,10 @@ describe Bumbleworks::Task do
         @task.params['claimed_at'].should be_nil
       end
 
-      it 'calls before_release and after_release callbacks' do
-        @task.should_receive(:before_release).with('boss').ordered
+      it 'calls with hooks' do
+        @task.should_receive(:call_before_hooks).with(:release, 'boss').ordered
         @task.should_receive(:set_claimant).ordered
-        @task.should_receive(:after_release).with('boss').ordered
+        @task.should_receive(:call_after_hooks).with(:release, 'boss').ordered
         @task.release
       end
 
@@ -508,12 +522,12 @@ describe Bumbleworks::Task do
         task.fields['meal'].should == 'salted_rhubarb'
       end
 
-      it 'calls before_update and after_update callbacks' do
+      it 'calls with hooks' do
         task = described_class.new(workflow_item)
         task.stub(:log)
-        task.should_receive(:before_update).with(:argue_mints).ordered
+        task.should_receive(:call_before_hooks).with(:update, :argue_mints).ordered
         task.should_receive(:update_workitem).ordered
-        task.should_receive(:after_update).with(:argue_mints).ordered
+        task.should_receive(:call_after_hooks).with(:update, :argue_mints).ordered
         task.update(:argue_mints)
       end
 
@@ -570,11 +584,11 @@ describe Bumbleworks::Task do
       it 'calls update and complete callbacks' do
         task = described_class.new(workflow_item)
         task.stub(:log)
-        task.should_receive(:before_update).with(:argue_mints).ordered
-        task.should_receive(:before_complete).with(:argue_mints).ordered
+        task.should_receive(:call_before_hooks).with(:update, :argue_mints).ordered
+        task.should_receive(:call_before_hooks).with(:complete, :argue_mints).ordered
         task.should_receive(:proceed_workitem).ordered
-        task.should_receive(:after_complete).with(:argue_mints).ordered
-        task.should_receive(:after_update).with(:argue_mints).ordered
+        task.should_receive(:call_after_hooks).with(:complete, :argue_mints).ordered
+        task.should_receive(:call_after_hooks).with(:update, :argue_mints).ordered
         task.complete(:argue_mints)
       end
 

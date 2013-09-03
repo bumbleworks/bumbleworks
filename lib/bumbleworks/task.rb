@@ -91,23 +91,37 @@ module Bumbleworks
       klass = Bumbleworks::Support.constantize("#{klass_name}Task")
     end
 
+    def call_before_hooks(action, *args)
+      call_hooks(:before, action, *args)
+    end
+
+    def call_after_hooks(action, *args)
+      call_hooks(:after, action, *args)
+    end
+
+    def with_hooks(action, *args, &block)
+      call_before_hooks(action, *args)
+      yield
+      call_after_hooks(action, *args)
+    end
+
     # update workitem with changes to fields & params
     def update(metadata = {})
-      before_update(metadata)
-      update_workitem
-      log(:update, metadata)
-      after_update(metadata)
+      with_hooks(:update, metadata) do
+        update_workitem
+        log(:update, metadata)
+      end
     end
 
     # proceed workitem (saving changes to fields)
     def complete(metadata = {})
       raise NotCompletable.new(not_completable_error_message) unless completable?
-      before_update(metadata)
-      before_complete(metadata)
-      proceed_workitem
-      log(:complete, metadata)
-      after_complete(metadata)
-      after_update(metadata)
+      with_hooks(:update, metadata) do
+        with_hooks(:complete, metadata) do
+          proceed_workitem
+          log(:complete, metadata)
+        end
+      end
     end
 
     # Token used to claim task, nil if not claimed
@@ -122,10 +136,10 @@ module Bumbleworks
 
     # Claim task and assign token to claimant
     def claim(token)
-      before_claim(token)
-      set_claimant(token)
-      log(:claim)
-      after_claim(token)
+      with_hooks(:claim, token) do
+        set_claimant(token)
+        log(:claim)
+      end
     end
 
     # true if task is claimed
@@ -136,15 +150,15 @@ module Bumbleworks
     # release claim on task.
     def release
       current_claimant = claimant
-      before_release(current_claimant)
-      log(:release)
-      set_claimant(nil)
-      after_release(current_claimant)
+      with_hooks(:release, current_claimant) do
+        log(:release)
+        set_claimant(nil)
+      end
     end
 
     def on_dispatch
       log(:dispatch)
-      after_dispatch
+      call_after_hooks(:dispatch)
     end
 
     def log(action, metadata = {})
@@ -170,6 +184,11 @@ module Bumbleworks
     end
 
   private
+    def call_hooks(phase, action, *args)
+      (Bumbleworks.observers + [self]).each do |observer|
+        observer.send(:"#{phase}_#{action}", *args)
+      end
+    end
 
     def displayify(modifier, options = {})
       task_name = Bumbleworks::Support.send(modifier, nickname)

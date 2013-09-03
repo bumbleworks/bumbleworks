@@ -83,6 +83,10 @@ module Bumbleworks
     # default: Bumbleworks::SimpleLogger
     define_setting :logger
 
+    # All before_* and after_* callback methods prototyped in Tasks::Base will
+    # also be called on all registered observers.
+    define_setting :observers
+
     def initialize
       @storage_adapters = []
     end
@@ -147,6 +151,10 @@ module Bumbleworks
 
     def logger
       @logger ||= Bumbleworks::SimpleLogger
+    end
+
+    def observers
+      @observers ||= []
     end
 
     # Clears all memoize variables and configuration settings

@@ -192,6 +192,18 @@ describe Bumbleworks::Configuration do
     end
   end
 
+  describe '#observers' do
+    it 'is empty by default' do
+      configuration.observers.should be_empty
+    end
+
+    it 'returns the registered observers' do
+      configuration.observers = [:smash, :pumpkin]
+      configuration.observers << :rhubarb
+      configuration.observers.should == [:smash, :pumpkin, :rhubarb]
+    end
+  end
+
   describe "#storage" do
     it 'can set storage directly' do
       storage = double("Storage")
