@@ -270,6 +270,51 @@ describe Bumbleworks::Task do
     end
   end
 
+  describe '.unclaimed' do
+    it 'returns all unclaimed tasks' do
+      Bumbleworks.define_process 'dog-lifecycle' do
+        concurrence do
+          dog :task => 'eat'
+          dog :task => 'bark'
+          dog :task => 'pet_dog'
+          cat :task => 'skip_and_jump'
+        end
+        dog :task => 'nap'
+      end
+      Bumbleworks.launch!('dog-lifecycle')
+      Bumbleworks.dashboard.wait_for(:cat)
+      @unclaimed = described_class.unclaimed
+      @unclaimed.map(&:nickname).should =~ ['eat', 'bark', 'pet_dog', 'skip_and_jump']
+      described_class.all.each do |t|
+        t.claim('radish') unless ['pet_dog', 'bark'].include?(t.nickname)
+      end
+      @unclaimed = described_class.unclaimed
+      @unclaimed.map(&:nickname).should =~ ['pet_dog', 'bark']
+    end
+  end
+
+  describe '.claimed' do
+    it 'returns all claimed tasks' do
+      Bumbleworks.define_process 'dog-lifecycle' do
+        concurrence do
+          dog :task => 'eat'
+          dog :task => 'bark'
+          dog :task => 'pet_dog'
+          cat :task => 'skip_and_jump'
+        end
+        dog :task => 'nap'
+      end
+      Bumbleworks.launch!('dog-lifecycle')
+      Bumbleworks.dashboard.wait_for(:cat)
+      described_class.claimed.should be_empty
+      described_class.all.each_with_index do |t, i|
+        t.claim("radish_#{i}") unless ['pet_dog', 'bark'].include?(t.nickname)
+      end
+      @claimed = described_class.claimed
+      @claimed.map(&:nickname).should =~ ['eat', 'skip_and_jump']
+    end
+  end
+
   describe '.all' do
     before :each do
       Bumbleworks.define_process 'dog-lifecycle' do
@@ -295,6 +340,14 @@ describe Bumbleworks::Task do
         ['everyone', 'pet_dog'],
         ['dog_legs', 'skip_and_jump']
       ]
+    end
+
+    it 'uses subclass for generation of tasks' do
+      class MyOwnTask < Bumbleworks::Task; end
+      Bumbleworks.dashboard.wait_for(:dog_legs)
+      tasks = MyOwnTask.all
+      tasks.should be_all { |t| t.class == MyOwnTask }
+      Object.send(:remove_const, :MyOwnTask)
     end
   end
 

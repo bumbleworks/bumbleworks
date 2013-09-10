@@ -33,7 +33,7 @@ module Bumbleworks
 
       def method_missing(method, *args)
         if Finder.new.respond_to?(method)
-          return Finder.new.send(method, *args)
+          return Finder.new([], self).send(method, *args)
         end
         super
       end

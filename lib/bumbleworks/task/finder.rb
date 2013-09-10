@@ -3,8 +3,9 @@ module Bumbleworks
     class Finder
       include Enumerable
 
-      def initialize(queries = [])
+      def initialize(queries = [], task_class = Bumbleworks::Task)
         @queries = queries
+        @task_class = task_class
       end
 
       def by_nickname(nickname)
@@ -20,6 +21,15 @@ module Bumbleworks
 
       def for_role(identifier)
         for_roles([identifier])
+      end
+
+      def unclaimed(check = true)
+        @queries << proc { |wi| wi['fields']['params']['claimant'].nil? == check }
+        self
+      end
+
+      def claimed
+        unclaimed(false)
       end
 
       def for_claimant(token)
@@ -57,7 +67,7 @@ module Bumbleworks
         start_time = Time.now
         while first.nil?
           if (Time.now - start_time) > options[:timeout]
-            raise Bumbleworks::Task::AvailabilityTimeout, "No tasks found matching criteria in time"
+            raise @task_class::AvailabilityTimeout, "No tasks found matching criteria in time"
           end
           sleep 0.1
         end
@@ -68,7 +78,7 @@ module Bumbleworks
 
       def from_workitems(workitems)
         workitems.map { |wi|
-          Task.new(wi) if wi.params['task']
+          @task_class.new(wi) if wi.params['task']
         }.compact
       end
     end
