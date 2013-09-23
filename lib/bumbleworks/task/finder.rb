@@ -62,7 +62,7 @@ module Bumbleworks
       end
 
       def next_available(options = {})
-        options[:timeout] ||= 5
+        options[:timeout] ||= Bumbleworks.timeout
 
         start_time = Time.now
         while first.nil?

@@ -255,12 +255,12 @@ describe Bumbleworks::Task do
       Bumbleworks.define_process 'chalking' do
         concurrence do
           chalker :task => 'make_chalk_drawings'
-          hagrid :task => 'moan_endearingly'
           chalker :task => 'chalk_it_good_baby'
+          hagrid :task => 'moan_endearingly'
         end
       end
       Bumbleworks.launch!('chalking')
-      Bumbleworks.dashboard.wait_for(:chalker)
+      Bumbleworks.dashboard.wait_for(:hagrid)
 
       tasks = described_class.for_role('chalker')
       tasks.map(&:nickname).should == [

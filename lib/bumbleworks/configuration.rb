@@ -87,8 +87,16 @@ module Bumbleworks
     # also be called on all registered observers.
     define_setting :observers
 
+    # Cancelling a process or waiting for a task to become available are both asynchronous actions
+    # performed by Ruote.  Bumbleworks waits for the specified timeout before giving up and raising
+    # the appropriate Timeout error.
+    #
+    # default: 5 seconds
+    define_setting :timeout
+
     def initialize
       @storage_adapters = []
+      @timeout ||= 5
     end
 
     # Path where Bumbleworks will look for ruote process defintiions to load.

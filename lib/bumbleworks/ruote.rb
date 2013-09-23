@@ -44,7 +44,7 @@ module Bumbleworks
       end
 
       def cancel_process!(wfid, options = {})
-        options[:timeout] ||= 5
+        options[:timeout] ||= Bumbleworks.timeout
         unless options[:method] == :kill
           options[:method] = :cancel
         end
@@ -65,7 +65,7 @@ module Bumbleworks
       end
 
       def cancel_all_processes!(options = {})
-        options[:timeout] ||= 5
+        options[:timeout] ||= Bumbleworks.timeout
         unless options[:method] == :kill
           options[:method] = :cancel
         end
