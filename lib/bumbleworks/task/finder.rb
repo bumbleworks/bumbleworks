@@ -69,10 +69,7 @@ module Bumbleworks
           if (Time.now - start_time) > options[:timeout]
             raise @task_class::AvailabilityTimeout, "No tasks found matching criteria in time"
           end
-          current_priority = Process.getpriority(Process::PRIO_PROCESS, 0)
-          Process.setpriority(Process::PRIO_PROCESS, 0, 19)
           sleep 0.5
-          Process.setpriority(Process::PRIO_PROCESS, 0, current_priority)
         end
         first
       end
