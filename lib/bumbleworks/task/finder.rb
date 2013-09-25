@@ -67,11 +67,13 @@ module Bumbleworks
         start_time = Time.now
         while first.nil?
           if (Time.now - start_time) > options[:timeout]
-            puts Bumbleworks.dashboard.errors
-            puts Bumbleworks.dashboard.ps
+            p Bumbleworks.dashboard.errors
+            p Bumbleworks.dashboard.ps
+            p Loan.all
+            p Pool.all
             raise @task_class::AvailabilityTimeout, "No tasks found matching criteria in time"
           end
-          sleep 0.5
+          sleep 0.1
         end
         first
       end
