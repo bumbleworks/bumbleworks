@@ -40,6 +40,9 @@ module Bumbleworks
       def for_entity(entity)
         entity_id = entity.respond_to?(:identifier) ? entity.identifier : entity.id
         @queries << proc { |wi|
+          p "%s: %s" % [__FILE__, __LINE__]
+          p wi
+          p entity
           (wi['fields'][:entity_type] || wi['fields']['entity_type']) == entity.class.name &&
             (wi['fields'][:entity_id] || wi['fields']['entity_id']) == entity_id
         }
@@ -67,6 +70,7 @@ module Bumbleworks
         start_time = Time.now
         while first.nil?
           if (Time.now - start_time) > options[:timeout]
+            p Bumbleworks.dashboard.storage_participant.send(:fetch_all, {})
             p Bumbleworks.dashboard.errors
             p Bumbleworks.dashboard.ps
             p Loan.all
