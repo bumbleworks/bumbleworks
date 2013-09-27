@@ -70,13 +70,17 @@ module Bumbleworks
           options[:method] = :cancel
         end
 
-        dashboard.processes.each do |ps|
-          dashboard.send(options[:method], ps.wfid)
-        end
+        notified_processes = []
 
         start_time = Time.now
         while dashboard.processes.count > 0
           if (Time.now - start_time) > options[:timeout]
+          to_be_notified = dashboard.processes - notified_processes
+          to_be_notified.each do |ps|
+            dashboard.send(options[:method], ps.wfid)
+            notified_processes += to_be_notified
+          end
+
             error_type = options[:method] == :cancel ? CancelTimeout : KillTimeout
             raise error_type, "Process #{options[:method]} taking too long - #{dashboard.processes.count} processes remain.  Errors: #{dashboard.errors}"
           end
