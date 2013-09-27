@@ -87,6 +87,48 @@ describe Bumbleworks::Ruote do
       Bumbleworks.dashboard.processes.count.should == 0
     end
 
+
+    it 'cancels processes which show up while waiting' do
+      class Bumbleworks::Ruote
+        class << self
+          alias_method :original, :send_cancellation_message
+          def send_cancellation_message(method, processes)
+            # 2. call original method to cancel the processes kicked off below
+            original(method, processes)
+
+            # 3. launch some more processes before returning, but only do it once.
+            #    These should also be cancelled.
+            if !@kicked_off
+              Bumbleworks.define_process "do_more_nothing" do
+                participant :ref => "lazy_guy_bob", :task => 'absolutely_nothing'
+              end
+
+              10.times do
+                Bumbleworks.launch!("do_more_nothing")
+              end
+              @kicked_off = true
+            end
+          end
+        end
+      end
+
+      # 1. kick off some processes, wait for them then cancel them.
+      5.times do |i|
+        Bumbleworks.define_process "do_nothing_#{i}" do
+          participant :ref => "lazy_guy_#{i}", :task => 'absolutely_nothing'
+        end
+        Bumbleworks.launch!("do_nothing_#{i}")
+        Bumbleworks.dashboard.wait_for("lazy_guy_#{i}".to_sym)
+      end
+
+      Bumbleworks.dashboard.processes.count.should == 5
+
+      described_class.cancel_all_processes!(:timeout => 30)
+
+      # 4. When this is all done, all processes should be cancelled.
+      Bumbleworks.dashboard.processes.count.should == 0
+    end
+
     it 'times out if processes are not cancelled in time' do
       Bumbleworks.define_process "time_hog" do
         sequence :on_cancel => 'ignore_parents' do
