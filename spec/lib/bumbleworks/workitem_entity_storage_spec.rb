@@ -83,7 +83,7 @@ describe Bumbleworks::WorkitemEntityStorage do
       feh = FakeEntityHolder.new('entity_id' => nil, 'entity_type' => 'LovelyEntity')
       expect {
         feh.entity
-      }.to raise_error Bumbleworks::WorkitemEntityStorage::EntityNotFound
+      }.to raise_error Bumbleworks::WorkitemEntityStorage::EntityNotFound, '{:entity_id=>nil, :entity_type=>"LovelyEntity"}'
     end
 
     it 'returns same instance when called twice' do

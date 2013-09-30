@@ -8,7 +8,7 @@ module Bumbleworks
         klass = Bumbleworks::Support.constantize(entity_type)
         entity = klass.first_by_identifier(entity_id)
       end
-      raise EntityNotFound unless @entity
+      raise EntityNotFound, {:entity_id => entity_id, :entity_type => entity_type} unless @entity
       @entity
     end
 
