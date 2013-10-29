@@ -67,13 +67,13 @@ describe Ruote::Exp::WaitForEventExpression do
       noop :tag => 'the_event'
     end
 
-    waiter1 = Bumbleworks.launch!('waiter', 'entity_type' => 'Pigeon', 'entity_id' => 1)
-    waiter2 = Bumbleworks.launch!('waiter', 'entity_type' => 'Rhubarb', 'entity_id' => 2)
-    waiter3 = Bumbleworks.launch!('waiter', 'entity_type' => 'Rhubarb', 'entity_id' => 1)
-    sender1 = Bumbleworks.launch!('sender', 'entity_type' => 'Pigeon', 'entity_id' => 2)
-    sender2 = Bumbleworks.launch!('sender', 'entity_type' => 'Rhubarb', 'entity_id' => 1)
+    waiter1 = Bumbleworks.launch!('waiter', 'entity_type' => 'Pigeon', 'entity_id' => '43-4boof')
+    waiter2 = Bumbleworks.launch!('waiter', 'entity_type' => 'Rhubarb', 'entity_id' => '13-6zoop')
+    waiter3 = Bumbleworks.launch!('waiter', 'entity_type' => 'Rhubarb', 'entity_id' => 'spitpickle-4boof')
+    sender1 = Bumbleworks.launch!('sender', 'entity_type' => 'Pigeon', 'entity_id' => '13-6zoop')
+    sender2 = Bumbleworks.launch!('sender', 'entity_type' => 'Rhubarb', 'entity_id' => 'spitpickle-4boof')
 
     Bumbleworks.dashboard.wait_for(waiter3)
-    @tracer.should == ['entities! Rhubarb,1']
+    @tracer.should == ['entities! Rhubarb,spitpickle-4boof']
   end
 end

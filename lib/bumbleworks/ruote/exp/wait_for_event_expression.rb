@@ -32,19 +32,20 @@ module Ruote::Exp
         if translated_where.to_s == 'entities_match'
           # Check to see that the event's entity is equal to the current workitem's
           # entity.  If so, this message is intended for us.
-          translated_where = '${f:entity_id} == ${f:receiver.entity_id} && ${f:entity_type} == ${f:receiver.entity_type}'
+          translated_where = '${"f:entity_id} == ${"f:receiver.entity_id} && ${"f:entity_type} == ${"f:receiver.entity_type}'
         else
           # This just gives us a shortcut so the process definition reads more
           # clearly.  You could always use "${f:" and "${f:receiver." in your
           # where clauses, but you have to remember that the former refers to the
           # incoming event's workitem, and the latter is the workitem of the
           # listening process.
-          translated_where.gsub!('${event:', '${f:') # event workitem
-          translated_where.gsub!('${this:', '${f:receiver.') # listening workitem
+          translated_where.gsub!(/\$\{(['"]?)event:/, '${\1f:') # event workitem
+          translated_where.gsub!(/\$\{(['"]?)this:/, '${\1f:receiver.') # listening workitem
         end
         h.updated_tree[1]['where'] = translated_where
       end
       workitem['fields']['receiver'] = h.applied_workitem['fields']
+      debugger
       super
     end
   end
