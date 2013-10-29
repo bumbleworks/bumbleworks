@@ -45,7 +45,6 @@ module Ruote::Exp
         h.updated_tree[1]['where'] = translated_where
       end
       workitem['fields']['receiver'] = h.applied_workitem['fields']
-      debugger
       super
     end
   end
