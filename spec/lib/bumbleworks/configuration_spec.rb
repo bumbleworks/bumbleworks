@@ -253,7 +253,7 @@ describe Bumbleworks::Configuration do
   describe '#error_handlers', dev:true do
     let(:super_handler) {double('error_handler')}
     it 'sets default error handler' do
-      configuration.error_handlers.should == [Bumbleworks::ErrorHandler]
+      configuration.error_handlers.should == [Bumbleworks::ErrorLogger]
     end
 
     it 'replaces default handler' do
@@ -263,7 +263,7 @@ describe Bumbleworks::Configuration do
 
     it 'adds to default handler' do
       configuration.error_handlers << super_handler
-      configuration.error_handlers.should =~ [Bumbleworks::ErrorHandler, super_handler]
+      configuration.error_handlers.should =~ [Bumbleworks::ErrorLogger, super_handler]
     end
   end
 end
