@@ -12,6 +12,7 @@ require "bumbleworks/storage_participant"
 require "bumbleworks/local_participant"
 require "bumbleworks/error_handler"
 require "bumbleworks/error_logger"
+require "bumbleworks/error_handler_participant"
 
 module Bumbleworks
   class UnsupportedMode < StandardError; end

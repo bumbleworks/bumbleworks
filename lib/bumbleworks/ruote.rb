@@ -99,7 +99,15 @@ module Bumbleworks
       def register_participants(&block)
         dashboard.register(&block) if block
         set_catchall_if_needed
+        register_error_handler
         dashboard.participant_list
+      end
+
+      def register_error_handler
+        return if Bumbleworks.error_handlers.nil? || Bumbleworks.error_handlers.empty?
+
+        dashboard.register_participant :error_handler_participant, Bumbleworks::ErrorHandlerParticipant
+        dashboard.on_error = 'error_handler_participant'
       end
 
       def set_catchall_if_needed

@@ -232,8 +232,9 @@ describe Bumbleworks::Ruote do
 
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &registration_block
-      described_class.dashboard.participant_list.should have(4).items
-      described_class.dashboard.participant_list.map(&:classname).should =~ ['BeesHoney', 'MapleSyrup', 'NewCatchall', 'Bumbleworks::StorageParticipant']
+      described_class.dashboard.participant_list.should have(5).items
+      described_class.dashboard.participant_list.map(&:classname).should =~ [
+        'BeesHoney', 'MapleSyrup', 'NewCatchall', 'Bumbleworks::ErrorHandlerParticipant', 'Bumbleworks::StorageParticipant']
     end
 
     it 'does not add storage participant catchall if already exists' do
@@ -244,15 +245,25 @@ describe Bumbleworks::Ruote do
 
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &registration_block
-      described_class.dashboard.participant_list.should have(2).items
-      described_class.dashboard.participant_list.map(&:classname).should =~ ['BeesHoney', 'Ruote::StorageParticipant']
+      described_class.dashboard.participant_list.should have(3).items
+      described_class.dashboard.participant_list.map(&:classname).should =~ [
+        'BeesHoney', 'Bumbleworks::ErrorHandlerParticipant', 'Ruote::StorageParticipant'
+      ]
     end
 
     it 'adds catchall participant if block is nil' do
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &nil
-      described_class.dashboard.participant_list.should have(1).item
+      described_class.dashboard.participant_list.should have(2).item
       described_class.dashboard.participant_list.first.classname.should == 'Bumbleworks::StorageParticipant'
+    end
+
+    it 'does not add error handler participant if no error handler is registered' do
+      Bumbleworks.stub(:error_handlers => nil)
+      described_class.dashboard.participant_list.should be_empty
+      described_class.register_participants &nil
+      described_class.dashboard.participant_list.should have(1).item
+      described_class.dashboard.participant_list.map(&:classname).should_not include 'Bumbleworks::ErrorHandlerParticipant'
     end
   end
 
