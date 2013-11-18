@@ -35,6 +35,7 @@ module Bumbleworks
         else
           worker.run_in_thread
         end
+        register_error_handler
         worker
       end
 
