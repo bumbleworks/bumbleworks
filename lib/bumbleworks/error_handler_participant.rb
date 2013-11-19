@@ -1,5 +1,7 @@
 module Bumbleworks
-  class ErrorHandlerParticipant < ::Ruote::StorageParticipant
+  class ErrorHandlerParticipant
+    include ::Ruote::LocalParticipant
+
     def on_workitem
       return if (error_handlers = Bumbleworks.error_handlers).nil?
 
