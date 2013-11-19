@@ -35,6 +35,7 @@ module Bumbleworks
         else
           worker.run_in_thread
         end
+        register_error_handler
         worker
       end
 
@@ -99,7 +100,13 @@ module Bumbleworks
       def register_participants(&block)
         dashboard.register(&block) if block
         set_catchall_if_needed
+        register_error_handler
         dashboard.participant_list
+      end
+
+      def register_error_handler
+        dashboard.register_participant :error_handler_participant, Bumbleworks::ErrorHandlerParticipant
+        dashboard.on_error = 'error_handler_participant'
       end
 
       def set_catchall_if_needed
