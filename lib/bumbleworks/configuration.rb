@@ -100,7 +100,7 @@ module Bumbleworks
     #
     # class MySpecialHandler < Bumbleworks::ErrorHandler
     #   def on_error
-    #     p workitem.error
+    #     p @workitem.error
     #   end
     # end
     #

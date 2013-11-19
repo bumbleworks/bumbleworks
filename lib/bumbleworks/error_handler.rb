@@ -5,7 +5,7 @@ module Bumbleworks
 
     attr_accessor :workitem
     def initialize(workitem)
-      self.workitem = workitem
+      @workitem = workitem
     end
 
     def on_error
