@@ -10,8 +10,8 @@ describe 'Bumbleworks Sample Application' do
 
   describe 'initializer' do
     it 'registers participants' do
-      Bumbleworks.dashboard.participant_list.should have(3).items
-      Bumbleworks.dashboard.participant_list.map(&:classname).should =~ ['HoneyParticipant', 'MolassesParticipant', 'Bumbleworks::StorageParticipant']
+      Bumbleworks.dashboard.participant_list.should have(4).items
+      Bumbleworks.dashboard.participant_list.map(&:classname).should =~ ['HoneyParticipant', 'MolassesParticipant', 'Bumbleworks::ErrorHandlerParticipant', 'Bumbleworks::StorageParticipant']
     end
 
     it 'loads process definitions' do

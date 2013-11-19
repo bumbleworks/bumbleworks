@@ -94,6 +94,24 @@ module Bumbleworks
     # default: 5 seconds
     define_setting :timeout
 
+    # When errors occur during the exection of a process, errors are captured and dispatched to
+    # the registerd error handlers.  an error handler derives from the Bumbleworks::ErrorHandler
+    # and will receive the error information through the #on_error method.
+    #
+    # class MySpecialHandler < Bumbleworks::ErrorHandler
+    #   def on_error
+    #     p @workitem.error
+    #   end
+    # end
+    #
+    # For exclusive use:
+    #   Bumbleworks.error_handlers = [MySpeicalHandler, MySpecialHandler2]
+    #
+    # To append to exisiting handlers:
+    #   Bumbleworks.error_handlers << MySpeicalHandler
+    #
+    define_setting :error_handlers
+
     def initialize
       @storage_adapters = []
       @timeout ||= 5
@@ -171,6 +189,10 @@ module Bumbleworks
       defined_settings.each {|setting| instance_variable_set("@#{setting}", nil)}
       @storage_adapters = []
       @definitions_folder = @participants_folder = @tasks_folder = nil
+    end
+
+    def error_handlers
+      @error_handlers ||= [Bumbleworks::ErrorLogger]
     end
 
     private

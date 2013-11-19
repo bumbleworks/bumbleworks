@@ -79,6 +79,7 @@ describe Bumbleworks do
   describe '.configuration' do
     before :each do
       Bumbleworks.reset!
+      Bumbleworks::StorageAdapter.auto_register = nil
     end
 
     it 'creates an instance of Bumbleworks::Configuration' do
