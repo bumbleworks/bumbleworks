@@ -262,14 +262,6 @@ describe Bumbleworks::Ruote do
       described_class.dashboard.participant_list.should have(2).item
       described_class.dashboard.participant_list.first.classname.should == 'Bumbleworks::StorageParticipant'
     end
-
-    it 'does not add error handler participant if no error handler is registered' do
-      Bumbleworks.stub(:error_handlers => nil)
-      described_class.dashboard.participant_list.should be_empty
-      described_class.register_participants &nil
-      described_class.dashboard.participant_list.should have(1).item
-      described_class.dashboard.participant_list.map(&:classname).should_not include 'Bumbleworks::ErrorHandlerParticipant'
-    end
   end
 
   describe '.register_error_handler', dev:true do

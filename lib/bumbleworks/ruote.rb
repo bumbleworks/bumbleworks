@@ -105,8 +105,6 @@ module Bumbleworks
       end
 
       def register_error_handler
-        return if Bumbleworks.error_handlers.nil? || Bumbleworks.error_handlers.empty?
-
         dashboard.register_participant :error_handler_participant, Bumbleworks::ErrorHandlerParticipant
         dashboard.on_error = 'error_handler_participant'
       end
