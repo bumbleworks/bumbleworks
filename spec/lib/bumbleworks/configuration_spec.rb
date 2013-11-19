@@ -249,4 +249,21 @@ describe Bumbleworks::Configuration do
       configuration.definitions_directory.should == '/Root/lib/bumbleworks/process_definitions'
     end
   end
+
+  describe '#error_handlers', dev:true do
+    let(:super_handler) {double('error_handler')}
+    it 'sets default error handler' do
+      configuration.error_handlers.should == [Bumbleworks::ErrorLogger]
+    end
+
+    it 'replaces default handler' do
+      configuration.error_handlers = [super_handler]
+      configuration.error_handlers.should == [super_handler]
+    end
+
+    it 'adds to default handler' do
+      configuration.error_handlers << super_handler
+      configuration.error_handlers.should =~ [Bumbleworks::ErrorLogger, super_handler]
+    end
+  end
 end
