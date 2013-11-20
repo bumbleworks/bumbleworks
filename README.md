@@ -1,5 +1,11 @@
 # Bumbleworks
 
+**IMPORTANT**: Ruote (a dependency of Bumbleworks) currently has a bug in its dependency graph.  Until this is fixed (and we'll update this readme when it is), make sure you add this to your gemfile:
+
+```ruby
+gem 'rufus-scheduler', '~> 2.0'
+```
+
 **NOTE**: This product is still pre-release, and implementation is *not* in sync with documentation yet - hence the pre-release version.  We'll follow [the Semantic Versioning Specification (Semver)](http://semver.org/), so you can assume anything at 0.x.x still has an unstable API.  But we *are* actively developing this.
 
 Bumbleworks is a gem that adds a workflow engine (via [ruote](http://github.com/jmettraux/ruote)) to your Ruby application, and adds tools for task authorization and locking.  It also establishes conventions for easily loading process definitions and registering participant classes based on configurable file locations.
