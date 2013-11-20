@@ -203,8 +203,6 @@ See the Bumbleworks::Task class for more details.
 
 ## Rake Tasks
 
-*TODO:  Actually implement these, so I'm not a liar.*
-
 If you...
 
 ```ruby
