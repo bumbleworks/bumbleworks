@@ -99,14 +99,17 @@ module Bumbleworks
 
       def register_participants(&block)
         dashboard.register(&block) if block
-        set_catchall_if_needed
         register_error_handler
+        set_catchall_if_needed
         dashboard.participant_list
       end
 
       def register_error_handler
-        dashboard.register_participant :error_handler_participant, Bumbleworks::ErrorHandlerParticipant
-        dashboard.on_error = 'error_handler_participant'
+        unless dashboard.participant_list.any? { |part| part.regex == '^error_handler_participant$' }
+          error_handler_participant = ::Ruote::ParticipantEntry.new(['^error_handler_participant$', ["Bumbleworks::ErrorHandlerParticipant", {}]])
+          dashboard.participant_list = dashboard.participant_list.unshift(error_handler_participant)
+          dashboard.on_error = 'error_handler_participant'
+        end
       end
 
       def set_catchall_if_needed
