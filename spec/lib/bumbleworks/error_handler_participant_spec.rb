@@ -8,7 +8,7 @@ describe Bumbleworks::ErrorHandlerParticipant do
       Bumbleworks.error_handlers = error_handlers
       error_handlers[0].should_receive(:new).ordered.with(workitem).and_return(instances[0])
       error_handlers[1].should_receive(:new).ordered.with(workitem).and_return(instances[1])
-      subject.stub(:workitem => workitem)
+      subject.stub(:reply => nil, :workitem => workitem)
       subject.on_workitem
     end
   end
