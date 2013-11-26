@@ -65,7 +65,7 @@ module Bumbleworks
     # two require the bumbleworks-redis and bumbleworks-sequel gems, respectively.
     # You can set the storage as follows:
     #
-    # @Exammple: Redis
+    # @Example: Redis
     #   Bumbleworks.storage = Redis.new(:host => '127.0.0.1', :db => 0, :thread_safe => true)
     #
     # @Example: Sequel with Postgres db
