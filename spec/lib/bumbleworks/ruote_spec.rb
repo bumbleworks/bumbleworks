@@ -226,12 +226,37 @@ describe Bumbleworks::Ruote do
       described_class.start_worker!
     end
 
+    it 'calls set_up_storage_history' do
+      described_class.should_receive(:set_up_storage_history)
+      described_class.start_worker!
+    end
+
     it 'does not add another error_handler_participant if already registered' do
       described_class.register_participants
       described_class.start_worker!
       described_class.dashboard.participant_list.map(&:classname).should == [
         'Bumbleworks::ErrorHandlerParticipant', 'Bumbleworks::StorageParticipant']
       Bumbleworks.dashboard.on_error.flatten[2].should == 'error_handler_participant'
+    end
+  end
+
+  describe '.set_up_storage_history' do
+    it 'adds a storage history service to the dashboard if storage adapter allows it' do
+      storage_adapter = double('adapter', :allow_history_storage? => true)
+      described_class.stub(:storage_adapter => storage_adapter)
+      described_class.stub(:storage => Ruote::HashStorage.new({}))
+      Bumbleworks.dashboard.should_receive(:add_service).with(
+        'history', 'ruote/log/storage_history', 'Ruote::StorageHistory'
+      )
+      described_class.set_up_storage_history
+    end
+
+    it 'does not add a storage history service to the dashboard if not allowed' do
+      storage_adapter = double('adapter', :allow_history_storage? => false)
+      described_class.stub(:storage_adapter => storage_adapter)
+      described_class.stub(:storage => Ruote::HashStorage.new({}))
+      Bumbleworks.dashboard.should_receive(:add_service).never
+      described_class.set_up_storage_history
     end
   end
 
@@ -324,6 +349,51 @@ describe Bumbleworks::Ruote do
       described_class.launch('foo')
       described_class.dashboard.participant_list.should have(1).item
       described_class.dashboard.participant_list.first.classname.should == 'Bumbleworks::StorageParticipant'
+    end
+  end
+
+  describe '.reset!' do
+    it 'clears storage_adapter' do
+      described_class.instance_variable_set(:@storage_adapter, 'the adapter')
+      described_class.reset!
+      described_class.instance_variable_get(:@storage_adapter).should be_nil
+    end
+
+    it 'purges and shuts down storage, then resets storage' do
+      old_storage = described_class.storage
+      old_storage.should_receive(:purge!)
+      old_storage.should_receive(:shutdown)
+      described_class.reset!
+      described_class.storage.should_not == old_storage
+    end
+
+    it 'skips purging and shutting down of storage if no storage' do
+      described_class.instance_variable_set(:@storage, nil)
+      expect {
+        described_class.reset!
+      }.not_to raise_error
+    end
+
+    it 'shuts down dashboard and detaches' do
+      old_dashboard = described_class.dashboard
+      old_dashboard.should_receive(:shutdown)
+      described_class.reset!
+      described_class.dashboard.should_not == old_dashboard
+    end
+
+    it 'skips shutting down dashboard if no dashboard' do
+      described_class.instance_variable_set(:@dashboard, nil)
+      expect {
+        described_class.reset!
+      }.not_to raise_error
+    end
+
+    it 'skips shutting down dashboard if dashboard can not be shutdown' do
+      dashboard = double('dashboard', :respond_to? => false)
+      described_class.instance_variable_set(:@dashboard, dashboard)
+      dashboard.should_receive(:shutdown).never
+      described_class.reset!
+      described_class.dashboard.should_not == dashboard
     end
   end
 end

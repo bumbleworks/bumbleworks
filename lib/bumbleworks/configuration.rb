@@ -112,6 +112,18 @@ module Bumbleworks
     #
     define_setting :error_handlers
 
+    # If #store_history is true, all messages will be logged in the storage under a special
+    # "history" key.  These messages will remain in the history even after a process has been
+    # cancelled or completed, so the history can be used for auditing.
+    #
+    # If #store_history is false, history will be stored in-memory, but only the last 1000 messages,
+    # and since this is in memory, it's useless for multiple workers in separate processes.
+    #
+    # Important Note:  This setting is *ignored* if the storage is a HashStorage, since having a
+    # persistent storage in this case wouldn't make sense (the Hash itself being in-memory).
+    #
+    define_setting :store_history
+
     def initialize
       @storage_adapters = []
       @timeout ||= 5
@@ -139,6 +151,11 @@ module Bumbleworks
     #
     def tasks_directory
       @tasks_folder ||= default_tasks_directory
+    end
+
+    # Default history storage to true
+    def store_history
+      @store_history.nil? ? true : @store_history
     end
 
     # Root folder where Bumbleworks looks for ruote assets (participants,

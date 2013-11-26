@@ -10,6 +10,10 @@ module Bumbleworks
       def storage_class
         Hash
       end
+
+      def allow_history_storage?
+        false
+      end
     end
   end
 end

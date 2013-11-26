@@ -35,6 +35,12 @@ describe Bumbleworks::StorageAdapter do
     end
   end
 
+  describe '.allow_history_storage?' do
+    it 'defaults to true' do
+      described_class.allow_history_storage?.should be_true
+    end
+  end
+
   describe '.use?' do
     before :each do
       described_class.stub(:storage_class).and_return(String)

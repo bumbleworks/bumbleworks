@@ -10,4 +10,5 @@ end
 
 Bumbleworks.register_tasks
 Bumbleworks.load_definitions!
+Bumbleworks.dashboard.add_service('history', 'ruote/log/storage_history', 'Ruote::StorageHistory')
 Bumbleworks.start_worker!

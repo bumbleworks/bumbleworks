@@ -55,6 +55,13 @@ module Bumbleworks
     end
 
     # @public
+    # Return true only if store_history (from configuration) is true.
+    #
+    def store_history?
+      configuration.store_history == true
+    end
+
+    # @public
     # Yields the global configuration to a block.
     # @yield [configuration] global configuration
     #
@@ -117,7 +124,6 @@ module Bumbleworks
     #
     def reset!
       @configuration = nil
-      @participant_block = nil
       Bumbleworks::Ruote.reset!
     end
 

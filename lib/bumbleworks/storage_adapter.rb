@@ -22,6 +22,10 @@ module Bumbleworks
       def display_name
         storage_class.name
       end
+
+      def allow_history_storage?
+        true
+      end
     end
   end
 end

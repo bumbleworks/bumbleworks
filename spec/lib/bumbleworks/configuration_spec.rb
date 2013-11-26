@@ -266,4 +266,15 @@ describe Bumbleworks::Configuration do
       configuration.error_handlers.should =~ [Bumbleworks::ErrorLogger, super_handler]
     end
   end
+
+  describe '#store_history' do
+    it 'defaults to true' do
+      subject.store_history.should be_true
+    end
+
+    it 'can be overridden' do
+      subject.store_history = false
+      subject.store_history.should be_false
+    end
+  end
 end

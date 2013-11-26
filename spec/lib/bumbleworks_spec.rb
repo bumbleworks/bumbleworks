@@ -35,6 +35,15 @@ describe Bumbleworks do
     end
   end
 
+  describe '.reset!' do
+    it 'resets configuration and resets ruote' do
+      old_config = described_class.configuration
+      Bumbleworks::Ruote.should_receive(:reset!)
+      described_class.reset!
+      described_class.configuration.should_not == old_config
+    end
+  end
+
   describe '.storage' do
     it 'can set directly' do
       storage = double("Storage")
@@ -187,6 +196,27 @@ describe Bumbleworks do
     it 'delegates to configuration.logger' do
       described_class.configuration.stub(:logger).and_return(:a_logger)
       described_class.logger.should == :a_logger
+    end
+  end
+
+  describe '.store_history' do
+    it 'delegates to configuration.logger' do
+      described_class.configuration.stub(:store_history).and_return(:why_not)
+      described_class.store_history.should == :why_not
+    end
+  end
+
+  describe '#store_history?' do
+    it 'returns true if store_history is true' do
+      subject.store_history = true
+      subject.store_history?.should be_true
+    end
+
+    it 'returns false if store_history is anything but true' do
+      subject.store_history = false
+      subject.store_history?.should be_false
+      subject.store_history = 'penguins'
+      subject.store_history?.should be_false
     end
   end
 end
