@@ -1,5 +1,6 @@
 module Bumbleworks
   class StorageAdapter
+    class UnsupportedStorage < StandardError; end
     class << self
       attr_accessor :auto_register
 
@@ -9,6 +10,11 @@ module Bumbleworks
 
       def driver
         raise "Subclass responsibility"
+      end
+
+      def new_storage(storage)
+        raise UnsupportedStorage unless use?(storage)
+        driver.new(storage)
       end
 
       def use?(storage)
