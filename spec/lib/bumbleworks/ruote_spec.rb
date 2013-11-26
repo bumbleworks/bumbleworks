@@ -243,7 +243,7 @@ describe Bumbleworks::Ruote do
   describe '.set_up_storage_history' do
     it 'adds a storage history service to the dashboard if storage adapter allows it' do
       storage_adapter = double('adapter', :allow_history_storage? => true)
-      described_class.stub(:storage_adapter => storage_adapter)
+      Bumbleworks.storage_adapter = storage_adapter
       described_class.stub(:storage => Ruote::HashStorage.new({}))
       Bumbleworks.dashboard.should_receive(:add_service).with(
         'history', 'ruote/log/storage_history', 'Ruote::StorageHistory'
@@ -253,7 +253,7 @@ describe Bumbleworks::Ruote do
 
     it 'does not add a storage history service to the dashboard if not allowed' do
       storage_adapter = double('adapter', :allow_history_storage? => false)
-      described_class.stub(:storage_adapter => storage_adapter)
+      Bumbleworks.storage_adapter = storage_adapter
       described_class.stub(:storage => Ruote::HashStorage.new({}))
       Bumbleworks.dashboard.should_receive(:add_service).never
       described_class.set_up_storage_history
@@ -323,14 +323,17 @@ describe Bumbleworks::Ruote do
   describe '.storage' do
     it 'raise error when storage is not defined' do
       Bumbleworks.storage = nil
-      expect { described_class.send(:storage) }.to raise_error Bumbleworks::UndefinedSetting
+      expect { described_class.storage }.to raise_error Bumbleworks::UndefinedSetting
     end
 
-    it 'handles Hash storage' do
+    it 'returns new storage from configured adapter' do
+      driven_storage = ::Ruote::HashStorage.new({})
       storage = {}
+      adapter = double('Adapter')
+      adapter.stub(:new_storage).with(storage).and_return(driven_storage)
       Bumbleworks.storage = storage
-      Ruote::HashStorage.should_receive(:new).with(storage)
-      described_class.send(:storage)
+      Bumbleworks.storage_adapter = adapter
+      described_class.storage.should == driven_storage
     end
   end
 
@@ -353,12 +356,6 @@ describe Bumbleworks::Ruote do
   end
 
   describe '.reset!' do
-    it 'clears storage_adapter' do
-      described_class.instance_variable_set(:@storage_adapter, 'the adapter')
-      described_class.reset!
-      described_class.instance_variable_get(:@storage_adapter).should be_nil
-    end
-
     it 'purges and shuts down storage, then resets storage' do
       old_storage = described_class.storage
       old_storage.should_receive(:purge!)

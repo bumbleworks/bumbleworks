@@ -212,11 +212,41 @@ describe Bumbleworks::Configuration do
     end
   end
 
+  describe "#storage_adapter" do
+    it 'defaults to first adapter in registered list that uses storage' do
+      right_adapter = double('right', :use? => true)
+      wrong_adapter_1 = double('wrong1', :use? => false)
+      wrong_adapter_2 = double('wrong2', :use? => false)
+      subject.stub(:storage_adapters => [wrong_adapter_1, right_adapter, wrong_adapter_2])
+      subject.storage_adapter.should == right_adapter
+    end
+
+    it 'can be set storage directly' do
+      storage = double("Storage Adapter")
+      subject.storage_adapter = storage
+      subject.storage_adapter.should == storage
+    end
+
+    it 'raises UndefinedSetting if no matching storage adapter' do
+      wrong_adapter = double('wrong1', :use? => false, :display_name => 'Wrong')
+      subject.stub(:storage_adapters => [wrong_adapter])
+      expect {
+        subject.storage_adapter
+      }.to raise_error(Bumbleworks::UndefinedSetting,
+        "Storage is missing or not supported.  Supported: Wrong")
+    end
+
+    it 'raises UndefinedSetting if no storage adapters' do
+      expect {
+        subject.storage_adapter
+      }.to raise_error(Bumbleworks::UndefinedSetting,
+        "No storage adapters configured")
+    end
+  end
+
   describe '#add_storage_adapter' do
     it 'adds storage adapter to registered list' do
-      GoodForNothingStorage = OpenStruct.new(
-        :driver => nil, :storage_class => 'Dummy', :display_name => 'Dummy', :use? => true
-      )
+      GoodForNothingStorage = double('fake_storage', :respond_to? => true)
       configuration.storage_adapters.should be_empty
       configuration.add_storage_adapter(GoodForNothingStorage)
       configuration.add_storage_adapter(Bumbleworks::HashStorage)

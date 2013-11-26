@@ -73,6 +73,17 @@ module Bumbleworks
     #
     define_setting :storage
 
+    # Normally, the first adapter in the storage_adapters list that can #use? the
+    # configured storage will be used automatically.  This may not be what you want;
+    # if you have multiple adapters that can use a Redis database or a Hash, for
+    # example, you may want to specify explicitly which one to use.  Use this setting
+    # to override the automatic adapter selection.
+    #
+    # @Example:
+    #   Bumbleworks.storage_adapter = Bumbleworks::OtherHashStorage
+    #
+    define_setting :storage_adapter
+
     # Bumbleworks will attempt to log a variety of events (tasks becoming
     # available, being claimed/released/completed, etc), and to do so it uses
     # the logger registered in configuration.  If no logger has been registered,
@@ -186,10 +197,25 @@ module Bumbleworks
     #
     def add_storage_adapter(adapter)
       raise ArgumentError, "#{adapter} is not a Bumbleworks storage adapter" unless
-        [:driver, :use?, :storage_class, :display_name].all? { |m| adapter.respond_to?(m) }
+        [:driver, :use?, :new_storage, :allow_history_storage?, :storage_class, :display_name].all? { |m| adapter.respond_to?(m) }
 
       @storage_adapters << adapter
       @storage_adapters
+    end
+
+    # If storage_adapter is not explicitly set, find first registered adapter that
+    # can use Bumbleworks.storage.
+    #
+    def storage_adapter
+      @storage_adapter ||= begin
+        all_adapters = storage_adapters
+        raise UndefinedSetting, "No storage adapters configured" if all_adapters.empty?
+        adapter = all_adapters.detect do |potential_adapter|
+          potential_adapter.use?(storage)
+        end
+        raise UndefinedSetting, "Storage is missing or not supported.  Supported: #{all_adapters.map(&:display_name).join(', ')}" unless adapter
+        adapter
+      end
     end
 
     def logger

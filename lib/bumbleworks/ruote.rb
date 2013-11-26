@@ -114,7 +114,7 @@ module Bumbleworks
       end
 
       def set_up_storage_history
-        if storage_adapter.allow_history_storage?
+        if Bumbleworks.storage_adapter.allow_history_storage?
           dashboard.add_service('history', 'ruote/log/storage_history', 'Ruote::StorageHistory')
         end
       end
@@ -128,19 +128,8 @@ module Bumbleworks
         end
       end
 
-      def storage_adapter
-        @storage_adapter ||= begin
-          all_adapters = Bumbleworks.configuration.storage_adapters
-          adapter = all_adapters.detect do |potential_adapter|
-            potential_adapter.use?(Bumbleworks.storage)
-          end
-          raise UndefinedSetting, "Storage is missing or not supported.  Supported: #{all_adapters.map(&:display_name).join(', ')}" unless adapter
-          adapter
-        end
-      end
-
       def storage
-        @storage ||= storage_adapter.driver.new(Bumbleworks.storage)
+        @storage ||= Bumbleworks.storage_adapter.new_storage(Bumbleworks.storage)
       end
 
       def reset!
@@ -149,7 +138,6 @@ module Bumbleworks
           @storage.shutdown
         end
         @dashboard.shutdown if @dashboard && @dashboard.respond_to?(:shutdown)
-        @storage_adapter = nil
         @storage = nil
         @dashboard = nil
       end
