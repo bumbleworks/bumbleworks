@@ -258,6 +258,15 @@ describe Bumbleworks::Ruote do
       Bumbleworks.dashboard.should_receive(:add_service).never
       described_class.set_up_storage_history
     end
+
+    it 'does not add a storage history service to the dashboard if turned off in config' do
+      storage_adapter = double('adapter', :allow_history_storage? => true)
+      Bumbleworks.storage_adapter = storage_adapter
+      described_class.stub(:storage => Ruote::HashStorage.new({}))
+      Bumbleworks.dashboard.should_receive(:add_service).never
+      Bumbleworks.store_history = false
+      described_class.set_up_storage_history
+    end
   end
 
   describe '.register_participants' do

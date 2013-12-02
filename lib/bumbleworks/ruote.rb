@@ -114,7 +114,7 @@ module Bumbleworks
       end
 
       def set_up_storage_history
-        if Bumbleworks.storage_adapter.allow_history_storage?
+        if Bumbleworks.store_history? && Bumbleworks.storage_adapter.allow_history_storage?
           dashboard.add_service('history', 'ruote/log/storage_history', 'Ruote::StorageHistory')
         end
       end
