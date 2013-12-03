@@ -5,7 +5,7 @@ describe Bumbleworks::HashStorage do
     end
 
     it 'is a Bumbleworks::StorageAdapter' do
-      described_class.is_a? Bumbleworks::StorageAdapter
+      described_class.superclass.should == Bumbleworks::StorageAdapter
     end
   end
 end

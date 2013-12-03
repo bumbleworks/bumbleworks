@@ -42,10 +42,10 @@ describe 'History storage' do
     end
 
     it 'keeps history of messages' do
-      Bumbleworks.dashboard.history.by_date(Date.today).should be_empty
+      Bumbleworks.dashboard.history.all.should be_empty
       wfid = Bumbleworks.launch!('make_honey')
       Bumbleworks.dashboard.wait_for(:dave)
-      Bumbleworks.dashboard.history.by_date(Date.today).should_not be_empty
+      Bumbleworks.dashboard.history.all.should_not be_empty
       Bumbleworks.dashboard.history.wfids.should include(wfid)
     end
   end
