@@ -14,6 +14,10 @@ module Bumbleworks
 
       def new_storage(storage)
         raise UnsupportedStorage unless use?(storage)
+        wrap_storage_with_driver(storage)
+      end
+
+      def wrap_storage_with_driver(storage)
         driver.new(storage)
       end
 

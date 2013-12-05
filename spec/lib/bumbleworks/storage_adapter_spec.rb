@@ -52,11 +52,21 @@ describe Bumbleworks::StorageAdapter do
     end
   end
 
-  describe '.new_storage' do
+  describe '.wrap_storage_with_driver' do
     before :each do
       storage_driver = double('storage_driver')
       storage_driver.stub(:new).with(:awesome_stuff).and_return(:new_storage)
       described_class.stub(:driver => storage_driver)
+    end
+
+    it 'returns driven storage' do
+      described_class.wrap_storage_with_driver(:awesome_stuff).should == :new_storage
+    end
+  end
+
+  describe '.new_storage' do
+    before :each do
+      described_class.stub(:wrap_storage_with_driver).with(:awesome_stuff).and_return(:new_storage)
     end
 
     it 'returns driven storage if driver can use storage' do
