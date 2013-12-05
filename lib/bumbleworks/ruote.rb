@@ -129,7 +129,7 @@ module Bumbleworks
       end
 
       def storage
-        @storage ||= Bumbleworks.storage_adapter.new_storage(Bumbleworks.storage)
+        @storage ||= Bumbleworks.storage_adapter.new_storage(Bumbleworks.storage, Bumbleworks.storage_options)
       end
 
       def reset!

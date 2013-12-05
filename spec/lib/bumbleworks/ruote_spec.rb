@@ -339,9 +339,11 @@ describe Bumbleworks::Ruote do
       driven_storage = ::Ruote::HashStorage.new({})
       storage = {}
       adapter = double('Adapter')
-      adapter.stub(:new_storage).with(storage).and_return(driven_storage)
+      options = { :thing => 'yay' }
+      adapter.stub(:new_storage).with(storage, options).and_return(driven_storage)
       Bumbleworks.storage = storage
       Bumbleworks.storage_adapter = adapter
+      Bumbleworks.storage_options = options
       described_class.storage.should == driven_storage
     end
   end

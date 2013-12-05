@@ -12,12 +12,13 @@ module Bumbleworks
         raise "Subclass responsibility"
       end
 
-      def new_storage(storage)
+      def new_storage(storage, options = {})
         raise UnsupportedStorage unless use?(storage)
-        wrap_storage_with_driver(storage)
+        wrap_storage_with_driver(storage, options)
       end
 
-      def wrap_storage_with_driver(storage)
+      def wrap_storage_with_driver(storage, options = {})
+        # the base method ignores options; use them in subclasses
         driver.new(storage)
       end
 

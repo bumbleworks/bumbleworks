@@ -84,6 +84,16 @@ module Bumbleworks
     #
     define_setting :storage_adapter
 
+    # This setting will be sent to the storage adapter's .new_storage method when
+    # initializing the storage.  The base adapter (and the Hash adapter) ignore the
+    # options argument, but for the Redis and Sequel adapters, this is a handy way
+    # to pass through any options that Ruote's drivers understand.
+    #
+    # @Example:
+    #   Bumbleworks.storage_options = { 'sequel_table_name' => 'bunnies_table' }
+    #
+    define_setting :storage_options
+
     # Bumbleworks will attempt to log a variety of events (tasks becoming
     # available, being claimed/released/completed, etc), and to do so it uses
     # the logger registered in configuration.  If no logger has been registered,
@@ -137,6 +147,7 @@ module Bumbleworks
 
     def initialize
       @storage_adapters = []
+      @storage_options = {}
       @timeout ||= 5
     end
 

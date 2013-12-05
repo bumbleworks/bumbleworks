@@ -212,6 +212,17 @@ describe Bumbleworks::Configuration do
     end
   end
 
+  describe '#storage_options' do
+    it 'defaults to empty hash' do
+      subject.storage_options.should == {}
+    end
+
+    it 'can be overridden' do
+      subject.storage_options = { :smooshie => 'wubbles' }
+      subject.storage_options.should == { :smooshie => 'wubbles' }
+    end
+  end
+
   describe "#storage_adapter" do
     it 'defaults to first adapter in registered list that uses storage' do
       right_adapter = double('right', :use? => true)

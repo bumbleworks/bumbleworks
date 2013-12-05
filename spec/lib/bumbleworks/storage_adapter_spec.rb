@@ -59,25 +59,25 @@ describe Bumbleworks::StorageAdapter do
       described_class.stub(:driver => storage_driver)
     end
 
-    it 'returns driven storage' do
-      described_class.wrap_storage_with_driver(:awesome_stuff).should == :new_storage
+    it 'ignores options, and returns driven storage' do
+      described_class.wrap_storage_with_driver(:awesome_stuff, { :a => :b }).should == :new_storage
     end
   end
 
   describe '.new_storage' do
     before :each do
-      described_class.stub(:wrap_storage_with_driver).with(:awesome_stuff).and_return(:new_storage)
+      described_class.stub(:wrap_storage_with_driver).with(:awesome_stuff, { :a => :b }).and_return(:new_storage)
     end
 
     it 'returns driven storage if driver can use storage' do
       described_class.stub(:use?).with(:awesome_stuff).and_return(true)
-      described_class.new_storage(:awesome_stuff).should == :new_storage
+      described_class.new_storage(:awesome_stuff, { :a => :b }).should == :new_storage
     end
 
     it "raises UnsupportedStorage if driver can't use storage" do
       described_class.stub(:use?).with(:awesome_stuff).and_return(false)
       expect {
-        described_class.new_storage(:awesome_stuff)
+        described_class.new_storage(:awesome_stuff, { :a => :b })
       }.to raise_error(Bumbleworks::StorageAdapter::UnsupportedStorage)
     end
   end
