@@ -24,11 +24,9 @@ module Bumbleworks
       constant = Object
 
       name_parts.each do |name_part|
-        constant_defined = if Module.method(:const_defined?).arity == 1
-          constant.const_defined?(name_part)
-        else
-          constant.const_defined?(name_part, false)
-        end
+        const_defined_args = [name_part]
+        const_defined_args << false unless Module.method(:const_defined?).arity == 1
+        constant_defined = constant.const_defined?(*const_defined_args)
         constant = constant_defined ? constant.const_get(name_part) : constant.const_missing(name_part)
       end
       constant
