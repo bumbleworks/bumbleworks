@@ -206,17 +206,17 @@ describe Bumbleworks do
     end
   end
 
-  describe '#store_history?' do
+  describe '.store_history?' do
     it 'returns true if store_history is true' do
-      subject.store_history = true
-      subject.store_history?.should be_true
+      described_class.store_history = true
+      described_class.store_history?.should be_true
     end
 
     it 'returns false if store_history is anything but true' do
-      subject.store_history = false
-      subject.store_history?.should be_false
-      subject.store_history = 'penguins'
-      subject.store_history?.should be_false
+      described_class.store_history = false
+      described_class.store_history?.should be_false
+      described_class.store_history = 'penguins'
+      described_class.store_history?.should be_false
     end
   end
 end
