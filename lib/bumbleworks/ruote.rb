@@ -56,7 +56,7 @@ module Bumbleworks
         while dashboard.process(wfid)
           if (Time.now - start_time) > options[:timeout]
             error_type = options[:method] == :cancel ? CancelTimeout : KillTimeout
-            raise error_type, "Process #{options[:method]} taking too long - #{dashboard.processes.count} processes remain.  Errors: #{dashboard.errors}"
+            raise error_type, "Process #{options[:method]} for wfid '#{wfid}' taking too long.  Errors: #{dashboard.errors(wfid)}"
           end
           sleep 0.1
         end
