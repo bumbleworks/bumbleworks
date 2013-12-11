@@ -23,7 +23,6 @@ module Bumbleworks
 
   class << self
     extend Forwardable
-    attr_accessor :env
 
     Configuration.defined_settings.each do |setting|
       def_delegators :configuration, setting, "#{setting.to_s}="
