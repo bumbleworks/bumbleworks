@@ -25,10 +25,10 @@ describe 'History storage' do
 
     it 'keeps history of messages' do
       Bumbleworks::Ruote.storage.get_many('history').should be_empty
-      wfid = Bumbleworks.launch!('make_honey')
+      process = Bumbleworks.launch!('make_honey')
       Bumbleworks.dashboard.wait_for(:dave)
       Bumbleworks::Ruote.storage.get_many('history').should_not be_empty
-      Bumbleworks.dashboard.history.wfids.should include(wfid)
+      Bumbleworks.dashboard.history.wfids.should include(process.wfid)
     end
   end
 
@@ -43,10 +43,10 @@ describe 'History storage' do
 
     it 'keeps history of messages' do
       Bumbleworks.dashboard.history.all.should be_empty
-      wfid = Bumbleworks.launch!('make_honey')
+      process = Bumbleworks.launch!('make_honey')
       Bumbleworks.dashboard.wait_for(:dave)
       Bumbleworks.dashboard.history.all.should_not be_empty
-      Bumbleworks.dashboard.history.wfids.should include(wfid)
+      Bumbleworks.dashboard.history.wfids.should include(process.wfid)
     end
   end
 end

@@ -3,6 +3,7 @@ require "bumbleworks/version"
 require "bumbleworks/configuration"
 require "bumbleworks/support"
 require "bumbleworks/process_definition"
+require "bumbleworks/process"
 require "bumbleworks/task"
 require "bumbleworks/participant_registration"
 require "bumbleworks/ruote"
@@ -14,6 +15,7 @@ require "bumbleworks/participant"
 require "bumbleworks/error_handler"
 require "bumbleworks/error_logger"
 require "bumbleworks/error_handler_participant"
+require "bumbleworks/entity"
 
 module Bumbleworks
   class UnsupportedMode < StandardError; end
@@ -135,7 +137,8 @@ module Bumbleworks
     #
     def launch!(process_definition_name, *args)
       extract_entity_from_fields!(args.first || {})
-      Bumbleworks::Ruote.launch(process_definition_name, *args)
+      pid = Bumbleworks::Ruote.launch(process_definition_name, *args)
+      Bumbleworks::Process.new(pid)
     end
 
   private
@@ -148,7 +151,7 @@ module Bumbleworks
           raise InvalidEntity, "Entity#id must be non-null" unless fields[:entity_id]
         end
       rescue NoMethodError => e
-        raise InvalidEntity, "Entity must respond to #id and #class.name"
+        raise InvalidEntity, "Entity must respond to #identifier (or #id) and #class.name"
       end
     end
   end

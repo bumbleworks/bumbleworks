@@ -33,7 +33,7 @@ describe Ruote::Exp::WaitForEventExpression do
 
     waiter = Bumbleworks.launch!('waiter')
     sender = Bumbleworks.launch!('sender')
-    Bumbleworks.dashboard.wait_for(waiter)
+    Bumbleworks.dashboard.wait_for(waiter.wfid)
     @tracer.should == ['get ready', 'oh my gosh almost there', 'hello', 'yay', 'yay2']
   end
 
@@ -53,7 +53,7 @@ describe Ruote::Exp::WaitForEventExpression do
     sender1 = Bumbleworks.launch!('sender', 'not_special' => 1)
     sender2 = Bumbleworks.launch!('sender', 'special' => 3)
 
-    Bumbleworks.dashboard.wait_for(waiter3)
+    Bumbleworks.dashboard.wait_for(waiter3.wfid)
     @tracer.should == ['specials! 3']
   end
 
@@ -73,7 +73,7 @@ describe Ruote::Exp::WaitForEventExpression do
     sender1 = Bumbleworks.launch!('sender', 'entity_type' => 'Pigeon', 'entity_id' => '13-6zoop')
     sender2 = Bumbleworks.launch!('sender', 'entity_type' => 'Rhubarb', 'entity_id' => 'spitpickle-4boof')
 
-    Bumbleworks.dashboard.wait_for(waiter3)
+    Bumbleworks.dashboard.wait_for(waiter3.wfid)
     @tracer.should == ['entities! Rhubarb,spitpickle-4boof']
   end
 end

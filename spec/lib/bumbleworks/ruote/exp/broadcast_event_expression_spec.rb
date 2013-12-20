@@ -18,7 +18,7 @@ describe Ruote::Exp::BroadcastEventExpression do
 
     waiter = Bumbleworks.launch!('waiter')
     sender = Bumbleworks.launch!('sender')
-    Bumbleworks.dashboard.wait_for(waiter)
+    Bumbleworks.dashboard.wait_for(waiter.wfid)
     @tracer.should == ['amazing']
   end
 end

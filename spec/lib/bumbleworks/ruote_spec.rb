@@ -13,11 +13,11 @@ describe Bumbleworks::Ruote do
       Bumbleworks.define_process 'do_nothing' do
         lazy_guy :task => 'absolutely_nothing'
       end
-      wfid = Bumbleworks.launch!('do_nothing')
+      process = Bumbleworks.launch!('do_nothing')
       Bumbleworks.dashboard.wait_for(:lazy_guy)
-      Bumbleworks.dashboard.process(wfid).should_not be_nil
-      described_class.cancel_process!(wfid)
-      Bumbleworks.dashboard.process(wfid).should be_nil
+      Bumbleworks.dashboard.process(process.wfid).should_not be_nil
+      described_class.cancel_process!(process.wfid)
+      Bumbleworks.dashboard.process(process.wfid).should be_nil
     end
 
     it 'times out if process is not cancelled in time' do
@@ -29,11 +29,11 @@ describe Bumbleworks::Ruote do
           wait '1s'
         end
       end
-      wfid = Bumbleworks.launch!('time_hog')
+      process = Bumbleworks.launch!('time_hog')
       Bumbleworks.dashboard.wait_for(:pigheaded)
-      Bumbleworks.dashboard.process(wfid).should_not be_nil
+      Bumbleworks.dashboard.process(process.wfid).should_not be_nil
       expect {
-        described_class.cancel_process!(wfid, :timeout => 0.5)
+        described_class.cancel_process!(process.wfid, :timeout => 0.5)
       }.to raise_error(Bumbleworks::Ruote::CancelTimeout)
     end
   end
@@ -52,11 +52,11 @@ describe Bumbleworks::Ruote do
           wait '10s'
         end
       end
-      wfid = Bumbleworks.launch!('do_nothing')
+      process = Bumbleworks.launch!('do_nothing')
       Bumbleworks.dashboard.wait_for(:lazy_guy)
-      Bumbleworks.dashboard.process(wfid).should_not be_nil
-      described_class.kill_process!(wfid)
-      Bumbleworks.dashboard.process(wfid).should be_nil
+      Bumbleworks.dashboard.process(process.wfid).should_not be_nil
+      described_class.kill_process!(process.wfid)
+      Bumbleworks.dashboard.process(process.wfid).should be_nil
     end
 
     it 'times out if process is not killed in time' do

@@ -179,6 +179,13 @@ describe Bumbleworks do
       Bumbleworks.launch!(:amazing_process, :entity => entity)
     end
 
+    it 'returns a Bumbleworks::Process instance with the wfid of the launched process' do
+      Bumbleworks::Ruote.stub(:launch).with(:amazing_process).and_return('18181818')
+      bp = Bumbleworks.launch!(:amazing_process)
+      bp.should be_a(Bumbleworks::Process)
+      bp.id.should == '18181818'
+    end
+
     it 'throws exception if entity has nil id' do
       expect {
         Bumbleworks.launch!(:amazing_process, :entity => LovelyEntity.new(nil))
