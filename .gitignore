@@ -15,3 +15,6 @@ test/tmp
 test/version_tmp
 tmp
 .bash_color
+*.sublime-*
+default.vim
+default.vim.lock
