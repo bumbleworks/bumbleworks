@@ -23,7 +23,7 @@ module Bumbleworks
       end
     end
 
-    def processes
+    def processes_by_name
       return {} unless self.class.processes
       process_names = self.class.processes.keys
       process_names.inject({}) do |memo, name|
@@ -33,8 +33,12 @@ module Bumbleworks
       end
     end
 
+    def processes
+      processes_by_name.values.compact
+    end
+
     def cancel_all_processes!
-      processes.values.compact.each do |process|
+      processes.each do |process|
         process.cancel!
       end
     end

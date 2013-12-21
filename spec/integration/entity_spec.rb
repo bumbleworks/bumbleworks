@@ -22,7 +22,7 @@ describe 'Entity Module' do
     it 'links processes with identifiers' do
       furby = Furby.new('12345')
       process = furby.launch_process(:make_honey)
-      furby.processes.should == {
+      furby.processes_by_name.should == {
         :make_honey => process
       }
     end

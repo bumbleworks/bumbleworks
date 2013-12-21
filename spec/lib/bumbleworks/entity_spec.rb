@@ -1,8 +1,8 @@
 describe Bumbleworks::Entity do
   let(:entity_class) { Class.new { include Bumbleworks::Entity } }
 
-  describe '#processes' do
-    it 'returns hash of process names and identifiers' do
+  describe '#processes_by_name' do
+    it 'returns hash of process names and process instances' do
       [:zoom, :foof, :nook].each do |pname|
         entity_class.send(:attr_accessor, :"#{pname}_pid")
         entity_class.process pname, :column => :"#{pname}_pid"
@@ -11,7 +11,7 @@ describe Bumbleworks::Entity do
       entity = entity_class.new
       entity.foof_pid = '1234'
       entity.nook_pid = 'pickles'
-      entity.processes.should == {
+      entity.processes_by_name.should == {
         :zoom => nil,
         :foof => Bumbleworks::Process.new('1234'),
         :nook => Bumbleworks::Process.new('pickles')
@@ -19,7 +19,27 @@ describe Bumbleworks::Entity do
     end
 
     it 'returns empty hash if no processes' do
-      entity_class.new.processes.should == {}
+      entity_class.new.processes_by_name.should == {}
+    end
+  end
+
+  describe '#processes' do
+    it 'returns array of process instances for all running processes' do
+      [:zoom, :foof, :nook].each do |pname|
+        entity_class.send(:attr_accessor, :"#{pname}_pid")
+        entity_class.process pname, :column => :"#{pname}_pid"
+      end
+      entity = entity_class.new
+      entity.foof_pid = '1234'
+      entity.nook_pid = 'pickles'
+      entity.processes.should =~ [
+        Bumbleworks::Process.new('1234'),
+        Bumbleworks::Process.new('pickles')
+      ]
+    end
+
+    it 'returns empty array if no processes' do
+      entity_class.new.processes.should == []
     end
   end
 
@@ -28,11 +48,7 @@ describe Bumbleworks::Entity do
       entity = entity_class.new
       bp1 = Bumbleworks::Process.new('1234')
       bp2 = Bumbleworks::Process.new('pickles')
-      entity.stub(:processes).and_return({
-        :zoom => nil,
-        :foof => bp1,
-        :nook => bp2
-      })
+      entity.stub(:processes).and_return([bp1, bp2])
       bp1.should_receive(:cancel!)
       bp2.should_receive(:cancel!)
       entity.cancel_all_processes!
