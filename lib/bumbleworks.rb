@@ -8,12 +8,9 @@ require "bumbleworks/task"
 require "bumbleworks/participant_registration"
 require "bumbleworks/ruote"
 require "bumbleworks/hash_storage"
-require "bumbleworks/storage_participant"
-require "bumbleworks/local_participant"
-require "bumbleworks/participant"
 require "bumbleworks/error_handler"
-require "bumbleworks/error_handler_participant"
 require "bumbleworks/entity"
+require "bumbleworks/participant"
 
 # default implementations
 require "bumbleworks/simple_logger"

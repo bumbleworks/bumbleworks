@@ -1,4 +1,4 @@
-describe Bumbleworks::ErrorHandlerParticipant do
+describe Bumbleworks::Participant::ErrorHandler do
   describe '#on_workitem' do
     let(:workitem) { double('workitem') }
     let(:instances) { [double(:on_error => nil), double(:on_error => nil)] }

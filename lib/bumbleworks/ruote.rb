@@ -107,7 +107,7 @@ module Bumbleworks
 
       def register_error_handler
         unless dashboard.participant_list.any? { |part| part.regex == '^error_handler_participant$' }
-          error_handler_participant = ::Ruote::ParticipantEntry.new(['^error_handler_participant$', ["Bumbleworks::ErrorHandlerParticipant", {}]])
+          error_handler_participant = ::Ruote::ParticipantEntry.new(['^error_handler_participant$', ["Bumbleworks::Participant::ErrorHandler", {}]])
           dashboard.participant_list = dashboard.participant_list.unshift(error_handler_participant)
           dashboard.on_error = 'error_handler_participant'
         end
@@ -122,8 +122,8 @@ module Bumbleworks
       def set_catchall_if_needed
         last_participant = dashboard.participant_list.last
         unless last_participant && last_participant.regex == "^.+$" &&
-            ["Ruote::StorageParticipant", "Bumbleworks::StorageParticipant"].include?(last_participant.classname)
-          catchall = ::Ruote::ParticipantEntry.new(["^.+$", ["Bumbleworks::StorageParticipant", {}]])
+            ["Ruote::StorageParticipant", "Bumbleworks::Participant::StorageParticipant"].include?(last_participant.classname)
+          catchall = ::Ruote::ParticipantEntry.new(["^.+$", ["Bumbleworks::Participant::StorageParticipant", {}]])
           dashboard.participant_list = dashboard.participant_list.push(catchall)
         end
       end

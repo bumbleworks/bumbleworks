@@ -1,11 +1,9 @@
-require "bumbleworks/local_participant"
+require "bumbleworks/participant/storage_participant"
+require "bumbleworks/participant/local_participant"
+require "bumbleworks/participant/base"
+require "bumbleworks/participant/error_handler"
 
 module Bumbleworks
-  class Participant
-    include LocalParticipant
-
-    def on_cancel
-      # default no-op method
-    end
+  module Participant
   end
 end
