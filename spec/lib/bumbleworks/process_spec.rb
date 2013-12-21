@@ -47,18 +47,18 @@ describe Bumbleworks::Process do
     end
   end
 
-  describe '#awaited_tags' do
+  describe '#all_subscribed_tags' do
     it 'lists all tags this process is waiting on' do
       bp1 = Bumbleworks.launch!('going_to_the_dance')
       bp2 = Bumbleworks.launch!('straightening_the_rocks')
       wait_until { bp1.trackers.count == 2 && bp2.trackers.count == 2 }
-      bp1.awaited_tags.should == { :global => ['an_invitation'], bp1.wfid => ['a_friend'] }
-      bp2.awaited_tags.should == { :global => ['rock_caliper_delivery', 'speedos'] }
+      bp1.all_subscribed_tags.should == { :global => ['an_invitation'], bp1.wfid => ['a_friend'] }
+      bp2.all_subscribed_tags.should == { :global => ['rock_caliper_delivery', 'speedos'] }
     end
   end
 
   describe '#subscribed_events' do
-    it 'lists all global tags this process is waiting on' do
+    it 'lists all events (global tags) this process is waiting on' do
       bp1 = Bumbleworks.launch!('going_to_the_dance')
       bp2 = Bumbleworks.launch!('straightening_the_rocks')
       wait_until { bp1.trackers.count == 2 && bp2.trackers.count == 2 }
@@ -69,19 +69,19 @@ describe Bumbleworks::Process do
 
   describe '#is_waiting_for?' do
     it 'returns true if event is in subscribed events' do
-      bp = Bumbleworks::Process.new('whatever')
+      bp = described_class.new('whatever')
       bp.stub(:subscribed_events => ['ghosts', 'mouses'])
       bp.is_waiting_for?('mouses').should be_true
     end
 
     it 'converts symbolized queries' do
-      bp = Bumbleworks::Process.new('whatever')
+      bp = described_class.new('whatever')
       bp.stub(:subscribed_events => ['ghosts', 'mouses'])
       bp.is_waiting_for?(:ghosts).should be_true
     end
 
     it 'returns false if event is not in subscribed events' do
-      bp = Bumbleworks::Process.new('whatever')
+      bp = described_class.new('whatever')
       bp.stub(:subscribed_events => ['ghosts', 'mouses'])
       bp.is_waiting_for?('organs').should be_false
     end
@@ -89,7 +89,7 @@ describe Bumbleworks::Process do
 
   describe '#kill!' do
     it 'kills process' do
-      bp = Bumbleworks::Process.new('frogheads')
+      bp = described_class.new('frogheads')
       Bumbleworks.should_receive(:kill_process!).with('frogheads')
       bp.kill!
     end
@@ -97,7 +97,7 @@ describe Bumbleworks::Process do
 
   describe '#cancel!' do
     it 'cancels process' do
-      bp = Bumbleworks::Process.new('frogheads')
+      bp = described_class.new('frogheads')
       Bumbleworks.should_receive(:cancel_process!).with('frogheads')
       bp.cancel!
     end

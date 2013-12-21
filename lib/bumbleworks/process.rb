@@ -18,7 +18,7 @@ module Bumbleworks
       }
     end
 
-    def awaited_tags
+    def all_subscribed_tags
       events = trackers.inject({}) do |memo, t|
         if t['wfid'].nil?
           (memo[:global] ||= []).concat t['conditions']['tag']
@@ -30,7 +30,7 @@ module Bumbleworks
     end
 
     def subscribed_events
-      awaited_tags[:global]
+      all_subscribed_tags[:global]
     end
 
     def is_waiting_for?(event)
