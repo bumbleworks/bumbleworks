@@ -7,7 +7,12 @@ module Bumbleworks
         @queries = queries
         @queries << proc { |wi| wi['fields']['params']['task'] }
         @task_class = task_class
+        @task_filters = []
         @wfids = nil
+      end
+
+      def available
+        unclaimed.completable
       end
 
       def by_nickname(nickname)
@@ -70,6 +75,11 @@ module Bumbleworks
         from_workitems(workitems)
       end
 
+      def completable
+        @task_filters << proc { |task| task.completable? }
+        self
+      end
+
       def each(&block)
         all.each(&block)
       end
@@ -93,10 +103,19 @@ module Bumbleworks
 
     private
 
+      def filter_tasks(tasks)
+        @task_filters.empty? ? tasks :
+          tasks.select { |task|
+            @task_filters.all? { |f| f.call(task) }
+          }
+      end
+
       def from_workitems(workitems)
         tasks = workitems.map { |wi|
           @task_class.new(wi)
         }.compact
+
+        filter_tasks(tasks)
       end
     end
   end

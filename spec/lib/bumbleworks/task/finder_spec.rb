@@ -31,4 +31,13 @@ describe Bumbleworks::Task::Finder do
       Object.send(:remove_const, :MyOwnTask)
     end
   end
+
+  describe '#available' do
+    it 'adds both unclaimed and completable filters' do
+      query = Bumbleworks::Task::Finder.new
+      query.should_receive(:unclaimed).and_return(query)
+      query.should_receive(:completable).and_return(query)
+      query.available
+    end
+  end
 end

@@ -370,6 +370,32 @@ describe Bumbleworks::Task do
     end
   end
 
+  describe '.completable' do
+    it 'returns only completable tasks' do
+      module WuggleHandsTask
+        def completable?
+          false
+        end
+      end
+
+      Bumbleworks.define_process 'hand_waggling' do
+        concurrence do
+          a_fella :task => 'waggle_hands'
+          a_monkey :task => 'wuggle_hands'
+          a_lady :task => 'wiggle_hands'
+        end
+      end
+      Bumbleworks.launch!('hand_waggling')
+      Bumbleworks.dashboard.wait_for(:a_lady)
+      tasks = described_class.completable
+      tasks.should have(2).items
+      tasks.map { |t| [t.role, t.nickname] }.should == [
+        ['a_fella', 'waggle_hands'],
+        ['a_lady', 'wiggle_hands']
+      ]
+    end
+  end
+
   describe '.all' do
     before :each do
       Bumbleworks.define_process 'dog-lifecycle' do
@@ -723,6 +749,12 @@ describe Bumbleworks::Task do
 
   describe 'chained queries' do
     it 'allows for AND-ed chained finders' do
+      module BeProudTask
+        def completable?
+          role == 'pink'
+        end
+      end
+
       Bumbleworks.define_process 'the_big_kachunko' do
         concurrence do
           red :task => 'be_really_mad'
@@ -744,6 +776,14 @@ describe Bumbleworks::Task do
         by_nickname('be_proud')
       tasks.should have(2).items
       tasks.map(&:nickname).should =~ ['be_proud', 'be_proud']
+
+      tasks = described_class.
+        for_roles(['green', 'pink', 'blue']).
+        completable.
+        by_nickname('be_proud')
+      tasks.should have(1).items
+      tasks.map(&:nickname).should =~ ['be_proud']
+      tasks.first.role.should == 'pink'
 
       tasks = described_class.
         for_claimant('crayon_box').
