@@ -250,6 +250,61 @@ describe Bumbleworks::Task do
     end
   end
 
+  describe '.for_processes' do
+    before :each do
+      Bumbleworks.define_process 'spunking' do
+        concurrence do
+          spunker :task => 'spunk'
+          nonspunker :task => 'complain'
+        end
+      end
+      Bumbleworks.define_process 'rooting' do
+        concurrence do
+          rooter :task => 'get_the_rooting_on'
+          armchair_critic :task => 'scoff'
+        end
+      end
+      @spunking_process = Bumbleworks.launch!('spunking')
+      @rooting_process_1 = Bumbleworks.launch!('rooting')
+      @rooting_process_2 = Bumbleworks.launch!('rooting')
+      Bumbleworks.dashboard.wait_for(:armchair_critic)
+    end
+
+    it 'returns tasks for given processes' do
+      spunking_tasks = described_class.for_processes([@spunking_process])
+      rooting_tasks = described_class.for_processes([@rooting_process_1])
+      tasks_for_both = described_class.for_processes([@spunking_process, @rooting_process_1])
+
+      spunking_tasks.map(&:nickname).should =~ ['spunk', 'complain']
+      rooting_tasks.map(&:nickname).should =~ ['get_the_rooting_on', 'scoff']
+      tasks_for_both.map(&:nickname).should =~ ['spunk', 'complain', 'get_the_rooting_on', 'scoff']
+    end
+
+    it 'works with process ids as well' do
+      spunking_tasks = described_class.for_processes([@spunking_process.id])
+      spunking_tasks.map(&:nickname).should =~ ['spunk', 'complain']
+    end
+
+    it 'returns empty array when no tasks for given process id' do
+      described_class.for_processes(['boop']).should be_empty
+    end
+
+    it 'returns empty array if given empty array' do
+      described_class.for_processes([]).should be_empty
+    end
+
+    it 'returns empty array if given nil' do
+      described_class.for_processes(nil).should be_empty
+    end
+  end
+
+  describe '.for_process' do
+    it 'acts as shortcut to .for_processes with one process' do
+      described_class::Finder.any_instance.should_receive(:for_processes).with([:one_guy]).and_return(:aha)
+      described_class.for_process(:one_guy).should == :aha
+    end
+  end
+
   describe '.for_role' do
     it 'returns all tasks for given role' do
       Bumbleworks.define_process 'chalking' do

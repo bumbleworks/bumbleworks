@@ -5,7 +5,9 @@ module Bumbleworks
 
       def initialize(queries = [], task_class = Bumbleworks::Task)
         @queries = queries
+        @queries << proc { |wi| wi['fields']['params']['task'] }
         @task_class = task_class
+        @wfids = nil
       end
 
       def by_nickname(nickname)
@@ -46,9 +48,24 @@ module Bumbleworks
         self
       end
 
+      def for_processes(processes)
+        process_ids = (processes || []).map { |p|
+          p.is_a?(Bumbleworks::Process) ? p.wfid : p
+        }
+        @wfids = process_ids
+        self
+      end
+
+      def for_process(process)
+        for_processes([process])
+      end
+
       def all
-        workitems = Bumbleworks.dashboard.storage_participant.send(:do_select, {}) { |wi|
+        return [] if @wfids == []
+        workitems = Bumbleworks.dashboard.context.storage.get_many('workitems', @wfids).select { |wi|
           @queries.all? { |q| q.call(wi) }
+        }.collect { |wi|
+          ::Ruote::Workitem.new(wi)
         }
         from_workitems(workitems)
       end
@@ -77,8 +94,8 @@ module Bumbleworks
     private
 
       def from_workitems(workitems)
-        workitems.map { |wi|
-          @task_class.new(wi) if wi.params['task']
+        tasks = workitems.map { |wi|
+          @task_class.new(wi)
         }.compact
       end
     end
