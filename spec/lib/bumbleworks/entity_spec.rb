@@ -140,6 +140,22 @@ describe Bumbleworks::Entity do
     end
   end
 
+  describe '#tasks' do
+    it 'returns task query for all entity tasks by default' do
+      entity = entity_class.new
+      Bumbleworks::Task.stub(:for_entity).with(entity).and_return(:full_task_query)
+      entity.tasks.should == :full_task_query
+    end
+
+    it 'filters task query by nickname if provided' do
+      entity = entity_class.new
+      task_finder = double('task_finder')
+      task_finder.stub(:by_nickname).with(:smooface).and_return(:partial_task_query)
+      Bumbleworks::Task.stub(:for_entity).with(entity).and_return(task_finder)
+      entity.tasks(:smooface).should == :partial_task_query
+    end
+  end
+
   describe '.process' do
     it 'registers a new process' do
       entity_class.stub(:process_identifier_column).with(:whatever).and_return('loob')

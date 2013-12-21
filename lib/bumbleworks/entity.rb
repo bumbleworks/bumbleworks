@@ -39,6 +39,12 @@ module Bumbleworks
       end
     end
 
+    def tasks(nickname = nil)
+      finder = Bumbleworks::Task.for_entity(self)
+      finder = finder.by_nickname(nickname) if nickname
+      finder
+    end
+
     def process_fields(process_name = nil)
       { :entity => self }
     end
