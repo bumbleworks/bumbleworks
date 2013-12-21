@@ -115,9 +115,11 @@ module Bumbleworks
     # default: 5 seconds
     define_setting :timeout
 
-    # When errors occur during the exection of a process, errors are captured and dispatched to
-    # the registerd error handlers.  an error handler derives from the Bumbleworks::ErrorHandler
-    # and will receive the error information through the #on_error method.
+    # When errors occur during the execution of a process, errors are captured and dispatched to
+    # the registered error handlers.  An error handler must take a single initialization argument
+    # (the workitem at the point of error), and implement the #on_error method.  You can subclass the
+    # Bumbleworks::ErrorHandler class for the initializer and workitem entity storage.  The default
+    # handler (Bumbleworks::ErrorLogger) will simply send the configured logger an ERROR log entry.
     #
     # class MySpecialHandler < Bumbleworks::ErrorHandler
     #   def on_error
@@ -126,11 +128,12 @@ module Bumbleworks
     # end
     #
     # For exclusive use:
-    #   Bumbleworks.error_handlers = [MySpeicalHandler, MySpecialHandler2]
+    #   Bumbleworks.error_handlers = [MySpecialHandler, MySpecialHandler2]
     #
     # To append to exisiting handlers:
-    #   Bumbleworks.error_handlers << MySpeicalHandler
+    #   Bumbleworks.error_handlers << MySpecialHandler
     #
+    # default: Bumbleworks::ErrorLogger
     define_setting :error_handlers
 
     # If #store_history is true, all messages will be logged in the storage under a special
