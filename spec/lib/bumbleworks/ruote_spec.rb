@@ -235,7 +235,10 @@ describe Bumbleworks::Ruote do
       described_class.register_participants
       described_class.start_worker!
       described_class.dashboard.participant_list.map(&:classname).should == [
-        'Bumbleworks::Participant::ErrorHandler', 'Bumbleworks::Participant::StorageParticipant']
+        'Bumbleworks::Participant::ErrorHandler',
+        'Bumbleworks::Participant::EntityInteractor',
+        'Bumbleworks::Participant::StorageParticipant'
+      ]
       Bumbleworks.dashboard.on_error.flatten[2].should == 'error_handler_participant'
     end
   end
@@ -279,9 +282,13 @@ describe Bumbleworks::Ruote do
 
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &registration_block
-      described_class.dashboard.participant_list.should have(5).items
+      described_class.dashboard.participant_list.should have(6).items
       described_class.dashboard.participant_list.map(&:classname).should == [
-        'Bumbleworks::Participant::ErrorHandler', 'BeesHoney', 'MapleSyrup', 'NewCatchall', 'Bumbleworks::Participant::StorageParticipant']
+        'Bumbleworks::Participant::ErrorHandler',
+        'Bumbleworks::Participant::EntityInteractor',
+        'BeesHoney', 'MapleSyrup', 'NewCatchall',
+        'Bumbleworks::Participant::StorageParticipant'
+      ]
     end
 
     it 'does not add storage participant catchall if already exists' do
@@ -292,18 +299,18 @@ describe Bumbleworks::Ruote do
 
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &registration_block
-      described_class.dashboard.participant_list.should have(3).items
+      described_class.dashboard.participant_list.should have(4).items
       described_class.dashboard.participant_list.map(&:classname).should == [
-        'Bumbleworks::Participant::ErrorHandler', 'BeesHoney', 'Ruote::StorageParticipant'
+        'Bumbleworks::Participant::ErrorHandler', 'Bumbleworks::Participant::EntityInteractor', 'BeesHoney', 'Ruote::StorageParticipant'
       ]
     end
 
     it 'adds catchall and error_handler participants if block is nil' do
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &nil
-      described_class.dashboard.participant_list.should have(2).item
+      described_class.dashboard.participant_list.should have(3).item
       described_class.dashboard.participant_list.map(&:classname).should ==
-        ['Bumbleworks::Participant::ErrorHandler', 'Bumbleworks::Participant::StorageParticipant']
+        ['Bumbleworks::Participant::ErrorHandler', 'Bumbleworks::Participant::EntityInteractor', 'Bumbleworks::Participant::StorageParticipant']
     end
   end
 
@@ -324,7 +331,7 @@ describe Bumbleworks::Ruote do
       end
       described_class.register_error_handler
       Bumbleworks.dashboard.participant_list.map(&:classname).should ==
-        ['Whatever', 'Bumbleworks::Participant::StorageParticipant']
+        ['Bumbleworks::Participant::EntityInteractor', 'Whatever', 'Bumbleworks::Participant::StorageParticipant']
 
     end
   end

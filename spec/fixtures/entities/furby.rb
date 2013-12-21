@@ -18,6 +18,10 @@ class Furby
     attributes.each { |k, v| self.send(:"#{k}=", v) }
   end
 
+  def cook_it_up(*foods)
+    foods.join(' and ')
+  end
+
   class << self
     def first_by_identifier(identifier)
       new(identifier)

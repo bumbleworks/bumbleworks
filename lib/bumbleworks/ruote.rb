@@ -100,9 +100,17 @@ module Bumbleworks
 
       def register_participants(&block)
         dashboard.register(&block) if block
+        register_entity_interactor
         register_error_handler
         set_catchall_if_needed
         dashboard.participant_list
+      end
+
+      def register_entity_interactor
+        unless dashboard.participant_list.any? { |part| part.regex == "^(ask|tell)_entity$" }
+          entity_interactor = ::Ruote::ParticipantEntry.new(["^(ask|tell)_entity$", ["Bumbleworks::Participant::EntityInteractor", {}]])
+          dashboard.participant_list = dashboard.participant_list.unshift(entity_interactor)
+        end
       end
 
       def register_error_handler

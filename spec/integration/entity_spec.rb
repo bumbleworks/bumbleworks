@@ -33,4 +33,17 @@ describe 'Entity Module' do
       furby.make_honey_process_identifier.should == process.wfid
     end
   end
+
+  describe 'using the entity interactor participant' do
+    it 'calls a method on the entity' do
+      Bumbleworks.define_process 'here_we_go' do
+        tell_entity :to => 'cook_it_up', :with => [2, 'orange'], :and_save_as => 'yum'
+        critic :task => 'checkit_that_foods'
+      end
+      furby = Furby.new('12345')
+      process = Bumbleworks.launch!('here_we_go', :entity => furby)
+      Bumbleworks.dashboard.wait_for(:critic)
+      process.tasks.first['yum'].should == "2 and orange"
+    end
+  end
 end
