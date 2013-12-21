@@ -48,5 +48,17 @@ module Bumbleworks
     def cancel!
       Bumbleworks.cancel_process!(wfid)
     end
+
+    def process_status
+      Bumbleworks.dashboard.process(id)
+    end
+
+    def method_missing(method, *args)
+      ps = process_status
+      if ps.respond_to?(method)
+        return ps.send(method, *args)
+      end
+      super
+    end
   end
 end

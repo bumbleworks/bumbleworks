@@ -118,4 +118,30 @@ describe Bumbleworks::Process do
       bp1.should == bp2
     end
   end
+
+  describe '#process_status' do
+    it 'returns a process_status instance for the wfid' do
+      bp = described_class.new('frogheads')
+      Bumbleworks.dashboard.stub(:process).with('frogheads').and_return(:the_status)
+      bp.process_status.should == :the_status
+    end
+  end
+
+  describe '#method_missing' do
+    it 'calls method on object returned by #process_status' do
+      ps = double('process_status')
+      ps.stub(:nuffle).with(:yay).and_return(:its_a_me)
+      bp = described_class.new('frogheads')
+      bp.stub(:process_status => ps)
+      bp.nuffle(:yay).should == :its_a_me
+    end
+
+    it 'falls back to method missing if no process status method' do
+      bp = described_class.new('blah')
+      bp.stub(:process_status => double('process status'))
+      expect {
+        bp.kerplunk!(:oh_no)
+      }.to raise_error
+    end
+  end
 end
