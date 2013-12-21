@@ -33,6 +33,14 @@ describe Bumbleworks::Process do
     end
   end
 
+  describe '#tasks' do
+    it 'returns task query filtered for this process' do
+      bp = described_class.new('chumpy')
+      Bumbleworks::Task.stub(:for_process).with('chumpy').and_return(:my_task_query)
+      bp.tasks.should == :my_task_query
+    end
+  end
+
   describe '#trackers' do
     it 'lists all trackers this process is waiting on' do
       bp1 = Bumbleworks.launch!('going_to_the_dance')

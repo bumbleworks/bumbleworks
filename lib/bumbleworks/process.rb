@@ -12,6 +12,10 @@ module Bumbleworks
       wfid == other.wfid
     end
 
+    def tasks
+      Bumbleworks::Task.for_process(wfid)
+    end
+
     def trackers
       Bumbleworks.dashboard.get_trackers.values.select { |attrs|
         attrs['msg']['fei'] && attrs['msg']['fei']['wfid'] == id
