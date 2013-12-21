@@ -1,5 +1,5 @@
 module Bumbleworks
-  module Tasks
+  class Task
     module Base
       def before_update(params); end
       def after_update(params); end

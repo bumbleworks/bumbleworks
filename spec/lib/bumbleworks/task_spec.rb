@@ -131,7 +131,7 @@ describe Bumbleworks::Task do
     it 'extends with base module and task module' do
       task = described_class.new(workflow_item)
       task.should_receive(:task_module).and_return(:task_module_double)
-      task.should_receive(:extend).with(Bumbleworks::Tasks::Base).ordered
+      task.should_receive(:extend).with(Bumbleworks::Task::Base).ordered
       task.should_receive(:extend).with(:task_module_double).ordered
       task.extend_module
     end
@@ -139,13 +139,13 @@ describe Bumbleworks::Task do
     it 'extends only with base module if no nickname' do
       task = described_class.new(workflow_item)
       task.stub(:nickname).and_return(nil)
-      task.should_receive(:extend).with(Bumbleworks::Tasks::Base)
+      task.should_receive(:extend).with(Bumbleworks::Task::Base)
       task.extend_module
     end
 
     it 'extends only with base module if task module does not exist' do
       task = described_class.new(workflow_item)
-      task.should_receive(:extend).with(Bumbleworks::Tasks::Base)
+      task.should_receive(:extend).with(Bumbleworks::Task::Base)
       task.extend_module
     end
   end

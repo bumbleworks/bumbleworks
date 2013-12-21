@@ -1,5 +1,5 @@
-require "bumbleworks/tasks/base"
 require "bumbleworks/workitem_entity_storage"
+require "bumbleworks/task/base"
 require "bumbleworks/task/finder"
 
 module Bumbleworks
@@ -80,9 +80,11 @@ module Bumbleworks
     end
 
     def extend_module
-      extend Bumbleworks::Tasks::Base
-      extend task_module if nickname
-    rescue NameError
+      extend Bumbleworks::Task::Base
+      begin
+        extend task_module if nickname
+      rescue NameError
+      end
     end
 
     def task_module
