@@ -21,14 +21,14 @@ describe Bumbleworks::Process do
 
   describe '.new' do
     it 'sets workflow id' do
-      bp = Bumbleworks::Process.new('apples')
+      bp = described_class.new('apples')
       bp.id.should == 'apples'
     end
   end
 
   describe '#wfid' do
     it 'is aliased to id' do
-      bp = Bumbleworks::Process.new('smorgatoof')
+      bp = described_class.new('smorgatoof')
       bp.wfid.should == 'smorgatoof'
     end
   end
@@ -105,8 +105,8 @@ describe Bumbleworks::Process do
 
   describe '#==' do
     it 'returns true if other object has same wfid' do
-      bp1 = Bumbleworks::Process.new('in_da_sky')
-      bp2 = Bumbleworks::Process.new('in_da_sky')
+      bp1 = described_class.new('in_da_sky')
+      bp2 = described_class.new('in_da_sky')
       bp1.should == bp2
     end
   end
