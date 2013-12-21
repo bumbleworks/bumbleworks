@@ -12,11 +12,11 @@ describe 'Bumbleworks Sample Application' do
     it 'registers participants' do
       Bumbleworks.dashboard.participant_list.should have(5).items
       Bumbleworks.dashboard.participant_list.map(&:classname).should == [
-        'Bumbleworks::Participant::ErrorHandler',
-        'Bumbleworks::Participant::EntityInteractor',
+        'Bumbleworks::ErrorDispatcher',
+        'Bumbleworks::EntityInteractor',
         'HoneyParticipant',
         'MolassesParticipant',
-        'Bumbleworks::Participant::StorageParticipant'
+        'Bumbleworks::StorageParticipant'
       ]
     end
 

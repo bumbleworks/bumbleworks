@@ -222,7 +222,7 @@ describe Bumbleworks::Ruote do
     end
 
     it 'registers error handler' do
-      described_class.should_receive(:register_error_handler)
+      described_class.should_receive(:register_error_dispatcher)
       described_class.start_worker!
     end
 
@@ -231,15 +231,15 @@ describe Bumbleworks::Ruote do
       described_class.start_worker!
     end
 
-    it 'does not add another error_handler_participant if already registered' do
+    it 'does not add another error_dispatcher if already registered' do
       described_class.register_participants
       described_class.start_worker!
       described_class.dashboard.participant_list.map(&:classname).should == [
-        'Bumbleworks::Participant::ErrorHandler',
-        'Bumbleworks::Participant::EntityInteractor',
-        'Bumbleworks::Participant::StorageParticipant'
+        'Bumbleworks::ErrorDispatcher',
+        'Bumbleworks::EntityInteractor',
+        'Bumbleworks::StorageParticipant'
       ]
-      Bumbleworks.dashboard.on_error.flatten[2].should == 'error_handler_participant'
+      Bumbleworks.dashboard.on_error.flatten[2].should == 'error_dispatcher'
     end
   end
 
@@ -284,10 +284,10 @@ describe Bumbleworks::Ruote do
       described_class.register_participants &registration_block
       described_class.dashboard.participant_list.should have(6).items
       described_class.dashboard.participant_list.map(&:classname).should == [
-        'Bumbleworks::Participant::ErrorHandler',
-        'Bumbleworks::Participant::EntityInteractor',
+        'Bumbleworks::ErrorDispatcher',
+        'Bumbleworks::EntityInteractor',
         'BeesHoney', 'MapleSyrup', 'NewCatchall',
-        'Bumbleworks::Participant::StorageParticipant'
+        'Bumbleworks::StorageParticipant'
       ]
     end
 
@@ -301,7 +301,7 @@ describe Bumbleworks::Ruote do
       described_class.register_participants &registration_block
       described_class.dashboard.participant_list.should have(4).items
       described_class.dashboard.participant_list.map(&:classname).should == [
-        'Bumbleworks::Participant::ErrorHandler', 'Bumbleworks::Participant::EntityInteractor', 'BeesHoney', 'Ruote::StorageParticipant'
+        'Bumbleworks::ErrorDispatcher', 'Bumbleworks::EntityInteractor', 'BeesHoney', 'Ruote::StorageParticipant'
       ]
     end
 
@@ -310,28 +310,28 @@ describe Bumbleworks::Ruote do
       described_class.register_participants &nil
       described_class.dashboard.participant_list.should have(3).item
       described_class.dashboard.participant_list.map(&:classname).should ==
-        ['Bumbleworks::Participant::ErrorHandler', 'Bumbleworks::Participant::EntityInteractor', 'Bumbleworks::Participant::StorageParticipant']
+        ['Bumbleworks::ErrorDispatcher', 'Bumbleworks::EntityInteractor', 'Bumbleworks::StorageParticipant']
     end
   end
 
-  describe '.register_error_handler', dev:true do
+  describe '.register_error_dispatcher', dev:true do
     it 'registers the error handler participant' do
-      described_class.register_error_handler
-      Bumbleworks.dashboard.participant_list.map(&:classname).should include('Bumbleworks::Participant::ErrorHandler')
+      described_class.register_error_dispatcher
+      Bumbleworks.dashboard.participant_list.map(&:classname).should include('Bumbleworks::ErrorDispatcher')
     end
 
-    it 'it sets the global Ruote on_error to the error_handler_participant' do
-      described_class.register_error_handler
-      Bumbleworks.dashboard.on_error.flatten[2].should == 'error_handler_participant'
+    it 'it sets the global Ruote on_error to the error_dispatcher' do
+      described_class.register_error_dispatcher
+      Bumbleworks.dashboard.on_error.flatten[2].should == 'error_dispatcher'
     end
 
-    it 'does not override existing error_handler_participant' do
+    it 'does not override existing error_dispatcher' do
       described_class.register_participants do
-        error_handler_participant 'Whatever'
+        error_dispatcher 'Whatever'
       end
-      described_class.register_error_handler
+      described_class.register_error_dispatcher
       Bumbleworks.dashboard.participant_list.map(&:classname).should ==
-        ['Bumbleworks::Participant::EntityInteractor', 'Whatever', 'Bumbleworks::Participant::StorageParticipant']
+        ['Bumbleworks::EntityInteractor', 'Whatever', 'Bumbleworks::StorageParticipant']
 
     end
   end
@@ -369,7 +369,7 @@ describe Bumbleworks::Ruote do
       described_class.dashboard.participant_list.should be_empty
       described_class.launch('foo')
       described_class.dashboard.participant_list.should have(1).item
-      described_class.dashboard.participant_list.first.classname.should == 'Bumbleworks::Participant::StorageParticipant'
+      described_class.dashboard.participant_list.first.classname.should == 'Bumbleworks::StorageParticipant'
     end
   end
 

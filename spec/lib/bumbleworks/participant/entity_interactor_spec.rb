@@ -1,4 +1,4 @@
-describe Bumbleworks::Participant::EntityInteractor do
+describe Bumbleworks::EntityInteractor do
   let(:entity) { double('entity', :cheek_depth => 'crazy deep') }
   let(:workitem) { Ruote::Workitem.new('fields' => { 'params' => { 'method' => 'cheek_depth' }}) }
   subject { part = described_class.new; part.stub(:entity => entity, :reply => nil); part }

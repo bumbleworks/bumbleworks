@@ -1,4 +1,4 @@
-describe Bumbleworks::Participant::LocalParticipant do
+describe Bumbleworks::LocalParticipant do
   it 'includes Ruote::LocalParticipant' do
     described_class.included_modules.should include(Ruote::LocalParticipant)
   end

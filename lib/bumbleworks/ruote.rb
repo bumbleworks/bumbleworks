@@ -29,7 +29,7 @@ module Bumbleworks
       #
       def start_worker!(options = {})
         set_up_storage_history
-        register_error_handler
+        register_error_dispatcher
         dashboard.noisy = options[:verbose] == true
         worker = ::Ruote::Worker.new(dashboard.context)
         if options[:join] == true
@@ -101,23 +101,23 @@ module Bumbleworks
       def register_participants(&block)
         dashboard.register(&block) if block
         register_entity_interactor
-        register_error_handler
+        register_error_dispatcher
         set_catchall_if_needed
         dashboard.participant_list
       end
 
       def register_entity_interactor
         unless dashboard.participant_list.any? { |part| part.regex == "^(ask|tell)_entity$" }
-          entity_interactor = ::Ruote::ParticipantEntry.new(["^(ask|tell)_entity$", ["Bumbleworks::Participant::EntityInteractor", {}]])
+          entity_interactor = ::Ruote::ParticipantEntry.new(["^(ask|tell)_entity$", ["Bumbleworks::EntityInteractor", {}]])
           dashboard.participant_list = dashboard.participant_list.unshift(entity_interactor)
         end
       end
 
-      def register_error_handler
-        unless dashboard.participant_list.any? { |part| part.regex == '^error_handler_participant$' }
-          error_handler_participant = ::Ruote::ParticipantEntry.new(['^error_handler_participant$', ["Bumbleworks::Participant::ErrorHandler", {}]])
-          dashboard.participant_list = dashboard.participant_list.unshift(error_handler_participant)
-          dashboard.on_error = 'error_handler_participant'
+      def register_error_dispatcher
+        unless dashboard.participant_list.any? { |part| part.regex == '^error_dispatcher$' }
+          error_dispatcher = ::Ruote::ParticipantEntry.new(['^error_dispatcher$', ["Bumbleworks::ErrorDispatcher", {}]])
+          dashboard.participant_list = dashboard.participant_list.unshift(error_dispatcher)
+          dashboard.on_error = 'error_dispatcher'
         end
       end
 
@@ -130,8 +130,8 @@ module Bumbleworks
       def set_catchall_if_needed
         last_participant = dashboard.participant_list.last
         unless last_participant && last_participant.regex == "^.+$" &&
-            ["Ruote::StorageParticipant", "Bumbleworks::Participant::StorageParticipant"].include?(last_participant.classname)
-          catchall = ::Ruote::ParticipantEntry.new(["^.+$", ["Bumbleworks::Participant::StorageParticipant", {}]])
+            ["Ruote::StorageParticipant", "Bumbleworks::StorageParticipant"].include?(last_participant.classname)
+          catchall = ::Ruote::ParticipantEntry.new(["^.+$", ["Bumbleworks::StorageParticipant", {}]])
           dashboard.participant_list = dashboard.participant_list.push(catchall)
         end
       end

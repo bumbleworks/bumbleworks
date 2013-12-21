@@ -1,10 +1,5 @@
-require "bumbleworks/participant/storage_participant"
-require "bumbleworks/participant/local_participant"
-require "bumbleworks/participant/base"
-require "bumbleworks/participant/error_handler"
-require "bumbleworks/participant/entity_interactor"
-
-module Bumbleworks
-  module Participant
-  end
-end
+require "bumbleworks/participants/storage_participant"
+require "bumbleworks/participants/local_participant"
+require "bumbleworks/participants/participant"
+require "bumbleworks/participants/error_dispatcher"
+require "bumbleworks/participants/entity_interactor"
