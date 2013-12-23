@@ -5,19 +5,19 @@ module Bumbleworks
     end
 
     def launch_process(process_name, options = {})
-      identifier_column = self.class.processes[process_name.to_sym][:column]
-      if (options[:force] == true || (process_identifier = self.send(identifier_column)).nil?)
-        workitem_fields = process_fields(process_name.to_sym)
-        variables = process_variables(process_name.to_sym)
+      identifier_attribute = attribute_for_process_name(process_name.to_sym)
+      if (options[:force] == true || (process_identifier = self.send(identifier_attribute)).nil?)
+        workitem_fields = process_fields(process_name.to_sym).merge(options[:fields] || {})
+        variables = process_variables(process_name.to_sym).merge(options[:variables] || {})
         process_identifier = Bumbleworks.launch!(process_name.to_s, workitem_fields, variables).wfid
-        persist_process_identifier(identifier_column.to_sym, process_identifier)
+        persist_process_identifier(identifier_attribute.to_sym, process_identifier)
       end
       Bumbleworks::Process.new(process_identifier)
     end
 
-    def persist_process_identifier(identifier_column, process_identifier)
+    def persist_process_identifier(identifier_attribute, process_identifier)
       if self.respond_to?(:update)
-        update(identifier_column => process_identifier)
+        update(identifier_attribute => process_identifier)
       else
         raise "Entity must define #persist_process_identifier method if missing #update method."
       end
@@ -27,7 +27,7 @@ module Bumbleworks
       return {} unless self.class.processes
       process_names = self.class.processes.keys
       process_names.inject({}) do |memo, name|
-        pid = self.send(self.class.processes[name][:column])
+        pid = self.send(attribute_for_process_name(name))
         memo[name] = pid ? Bumbleworks::Process.new(pid) : nil
         memo
       end
@@ -38,9 +38,16 @@ module Bumbleworks
     end
 
     def cancel_all_processes!
-      processes.each do |process|
+      processes_by_name.each do |name, process|
+        next unless process
+        identifier_attribute = attribute_for_process_name(name)
         process.cancel!
+        persist_process_identifier(identifier_attribute, nil)
       end
+    end
+
+    def attribute_for_process_name(name)
+      self.class.processes[name][:attribute]
     end
 
     def tasks(nickname = nil)
@@ -69,7 +76,7 @@ module Bumbleworks
       attr_reader :processes
 
       def process(process_name, options = {})
-        options[:column] ||= process_identifier_column(process_name)
+        options[:attribute] ||= default_process_identifier_attribute(process_name)
         (@processes ||= {})[process_name.to_sym] = options
       end
 
@@ -77,11 +84,11 @@ module Bumbleworks
         Bumbleworks::Support.tokenize(name)
       end
 
-      def process_identifier_column(process_name)
-        identifier_column = "#{process_name}_process_identifier"
-        identifier_column.gsub!(/^#{entity_type}_/, '')
-        identifier_column.gsub!(/process_process/, 'process')
-        identifier_column.to_sym
+      def default_process_identifier_attribute(process_name)
+        identifier_attribute = "#{process_name}_process_identifier"
+        identifier_attribute.gsub!(/^#{entity_type}_/, '')
+        identifier_attribute.gsub!(/process_process/, 'process')
+        identifier_attribute.to_sym
       end
     end
   end

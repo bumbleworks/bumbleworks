@@ -5,7 +5,7 @@ describe Bumbleworks::Entity do
     it 'returns hash of process names and process instances' do
       [:zoom, :foof, :nook].each do |pname|
         entity_class.send(:attr_accessor, :"#{pname}_pid")
-        entity_class.process pname, :column => :"#{pname}_pid"
+        entity_class.process pname, :attribute => :"#{pname}_pid"
       end
 
       entity = entity_class.new
@@ -27,7 +27,7 @@ describe Bumbleworks::Entity do
     it 'returns array of process instances for all running processes' do
       [:zoom, :foof, :nook].each do |pname|
         entity_class.send(:attr_accessor, :"#{pname}_pid")
-        entity_class.process pname, :column => :"#{pname}_pid"
+        entity_class.process pname, :attribute => :"#{pname}_pid"
       end
       entity = entity_class.new
       entity.foof_pid = '1234'
@@ -45,12 +45,21 @@ describe Bumbleworks::Entity do
 
   describe '#cancel_all_processes!' do
     it 'cancels all processes with registered identifiers' do
+      [:zoom, :foof, :nook].each do |pname|
+        entity_class.send(:attr_accessor, :"#{pname}_pid")
+        entity_class.process pname, :attribute => :"#{pname}_pid"
+      end
       entity = entity_class.new
-      bp1 = Bumbleworks::Process.new('1234')
-      bp2 = Bumbleworks::Process.new('pickles')
-      entity.stub(:processes).and_return([bp1, bp2])
+      entity.foof_pid = '1234'
+      entity.nook_pid = 'pickles'
+      entity.stub(:processes_by_name => {
+        :foof => bp1 = Bumbleworks::Process.new('1234'),
+        :nook => bp2 = Bumbleworks::Process.new('pickles')
+      })
       bp1.should_receive(:cancel!)
       bp2.should_receive(:cancel!)
+      entity.should_receive(:update).with(:foof_pid => nil)
+      entity.should_receive(:update).with(:nook_pid => nil)
       entity.cancel_all_processes!
     end
   end
@@ -80,8 +89,8 @@ describe Bumbleworks::Entity do
   describe '#persist_process_identifier' do
     it 'calls #update if method exists' do
       entity = entity_class.new
-      entity.should_receive(:update).with(:a_column => :a_value)
-      entity.persist_process_identifier(:a_column, :a_value)
+      entity.should_receive(:update).with(:a_attribute => :a_value)
+      entity.persist_process_identifier(:a_attribute, :a_value)
     end
 
     it 'raises exception if #update method does not exist' do
@@ -89,7 +98,7 @@ describe Bumbleworks::Entity do
       entity.stub(:respond_to?).with(:update).and_return(false)
       entity.should_receive(:update).never
       expect {
-        entity.persist_process_identifier(:a_column, :a_value)
+        entity.persist_process_identifier(:a_attribute, :a_value)
       }.to raise_error("Entity must define #persist_process_identifier method if missing #update method.")
     end
   end
@@ -97,33 +106,71 @@ describe Bumbleworks::Entity do
   describe '#launch_process' do
     it 'launches process and return process if identifier not set' do
       bp = Bumbleworks::Process.new('12345')
-      entity_class.process :noodles, :column => :noodles_pid
+      entity_class.process :noodles, :attribute => :noodles_pid
       entity = entity_class.new
       entity.stub(:noodles_pid)
-      entity.stub(:process_fields).with(:noodles).and_return('the_fields')
-      entity.stub(:process_variables).with(:noodles).and_return('the_variables')
-      Bumbleworks.stub(:launch!).with('noodles', 'the_fields', 'the_variables').and_return(bp)
+      entity.stub(:process_fields).with(:noodles).and_return({:f => 1})
+      entity.stub(:process_variables).with(:noodles).and_return({:v => 2})
+      Bumbleworks.stub(:launch!).with('noodles', {:f => 1}, {:v => 2}).and_return(bp)
       entity.should_receive(:persist_process_identifier).with(:noodles_pid, '12345')
       entity.launch_process('noodles').should == bp
     end
 
-    it 'does nothing but returns existing process if identifier column already set' do
+    it 'does nothing but returns existing process if identifier attribute already set' do
       bp = Bumbleworks::Process.new('already set')
-      entity_class.process :noodles, :column => :noodles_pid
+      entity_class.process :noodles, :attribute => :noodles_pid
       entity = entity_class.new
       entity.stub(:noodles_pid => 'already set')
       Bumbleworks.should_receive(:launch!).never
       entity.launch_process('noodles').should == bp
     end
 
-    it 'launches new process anyway if identifier column already set but force is true' do
+    it 'launches new process anyway if identifier attribute already set but force is true' do
       bp = Bumbleworks::Process.new('12345')
-      entity_class.process :noodles, :column => :noodles_pid
+      entity_class.process :noodles, :attribute => :noodles_pid
       entity = entity_class.new
       entity.stub(:noodles_pid => 'already set')
       Bumbleworks.stub(:launch! => bp)
       entity.should_receive(:persist_process_identifier).with(:noodles_pid, '12345')
       entity.launch_process('noodles', :force => true).should == bp
+    end
+
+    it 'sends additional fields and variables to launch' do
+      entity_class.process :noodles, :attribute => :noodles_pid
+      entity = entity_class.new
+      entity.stub(:noodles_pid)
+      entity.stub(:persist_process_identifier)
+      Bumbleworks.should_receive(:launch!).with(
+        'noodles',
+        { :entity => entity, :drink => 'apathy smoothie', :berry => 'black' },
+        { :so_you_said => :well_so_did_i }
+      ).and_return(Bumbleworks::Process.new(1))
+      entity.launch_process(:noodles,
+        :fields => { :drink => 'apathy smoothie', :berry => 'black' },
+        :variables => { :so_you_said => :well_so_did_i }
+      )
+    end
+  end
+
+  describe '#attribute_for_process_name' do
+    it 'returns attribute set for given process' do
+      entity_class.stub(:processes).and_return({
+        :goose => { :attribute => :goose_pid },
+        :the_punisher => { :attribute => :your_skin }
+      })
+      entity = entity_class.new
+      entity.attribute_for_process_name(:goose).should == :goose_pid
+      entity.attribute_for_process_name(:the_punisher).should == :your_skin
+    end
+
+    it 'raises exception if no process found for given name' do
+      entity_class.stub(:processes).and_return({
+        :goose => { :attribute => :goose_pid },
+      })
+      entity = entity_class.new
+      expect {
+        entity.attribute_for_process_name(:the_punisher)
+      }.to raise_error
     end
   end
 
@@ -174,28 +221,28 @@ describe Bumbleworks::Entity do
 
   describe '.process' do
     it 'registers a new process' do
-      entity_class.stub(:process_identifier_column).with(:whatever).and_return('loob')
+      entity_class.stub(:default_process_identifier_attribute).with(:whatever).and_return('loob')
       entity_class.process :whatever
       entity_class.processes.should == {
         :whatever => {
-          :column => 'loob'
+          :attribute => 'loob'
         }
       }
     end
   end
 
-  describe '.process_identifier_column' do
+  describe '.default_process_identifier_attribute' do
     it 'adds _process_identifier to end of given process name' do
-      entity_class.process_identifier_column('zoof').should == :zoof_process_identifier
+      entity_class.default_process_identifier_attribute('zoof').should == :zoof_process_identifier
     end
 
     it 'ensures no duplication of _process' do
-      entity_class.process_identifier_column('zoof_process').should == :zoof_process_identifier
+      entity_class.default_process_identifier_attribute('zoof_process').should == :zoof_process_identifier
     end
 
     it 'removes entity_type from beginning of identifier' do
       entity_class.stub(:entity_type).and_return('zoof')
-      entity_class.process_identifier_column('zoof_process').should == :process_identifier
+      entity_class.default_process_identifier_attribute('zoof_process').should == :process_identifier
     end
   end
 
