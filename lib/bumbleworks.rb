@@ -11,6 +11,7 @@ require "bumbleworks/hash_storage"
 require "bumbleworks/error_handler"
 require "bumbleworks/entity"
 require "bumbleworks/participant"
+require "bumbleworks/workitem"
 
 # default implementations
 require "bumbleworks/simple_logger"
@@ -21,6 +22,7 @@ module Bumbleworks
   class UndefinedSetting < StandardError; end
   class InvalidSetting < StandardError; end
   class InvalidEntity < StandardError; end
+  class EntityNotFound < StandardError; end
 
   class << self
     extend Forwardable

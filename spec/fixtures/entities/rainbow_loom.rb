@@ -1,10 +1,12 @@
-class Furby
+class RainbowLoom
   include Bumbleworks::Entity
 
   process :make_honey
+  process :make_molasses, :attribute => :molasses_pid
 
-  attr_reader :identifier
+  attr_accessor :identifier
   attr_accessor :make_honey_process_identifier
+  attr_accessor :molasses_pid
 
   def initialize(identifier)
     @identifier = identifier
@@ -24,6 +26,7 @@ class Furby
 
   class << self
     def first_by_identifier(identifier)
+      return nil unless identifier
       new(identifier)
     end
   end
