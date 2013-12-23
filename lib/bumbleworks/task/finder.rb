@@ -11,6 +11,32 @@ module Bumbleworks
         @wfids = nil
       end
 
+      def where(filters)
+        key_method_map = {
+          :available => :available,
+          :nickname => :by_nickname,
+          :roles => :for_roles,
+          :role => :for_role,
+          :unclaimed => :unclaimed,
+          :claimed => :claimed,
+          :fields => :with_fields,
+          :claimant => :for_claimant,
+          :entity => :for_entity,
+          :processes => :for_processes,
+          :process => :for_process,
+          :completable => :completable
+        }
+        fields = filters.select { |k,v| !key_method_map.keys.include? k }
+        methods = filters.select { |k,v| key_method_map.keys.include? k }
+        query = methods.inject(self) { |query, (method, args)|
+          query.send(key_method_map[method], args)
+        }
+        unless fields.empty?
+          query.with_fields(fields)
+        end
+        query
+      end
+
       def available
         unclaimed.completable
       end
@@ -37,6 +63,11 @@ module Bumbleworks
 
       def claimed
         unclaimed(false)
+      end
+
+      def with_fields(field_hash)
+        @queries << proc { |wi| field_hash.all? { |k, v| wi['fields'][k.to_s] == v } }
+        self
       end
 
       def for_claimant(token)
@@ -75,8 +106,8 @@ module Bumbleworks
         from_workitems(workitems)
       end
 
-      def completable
-        @task_filters << proc { |task| task.completable? }
+      def completable(true_or_false = true)
+        @task_filters << proc { |task| task.completable? == true_or_false }
         self
       end
 

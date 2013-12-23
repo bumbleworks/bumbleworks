@@ -371,7 +371,7 @@ describe Bumbleworks::Task do
   end
 
   describe '.completable' do
-    it 'returns only completable tasks' do
+    it 'filters by completability' do
       module WuggleHandsTask
         def completable?
           false
@@ -392,6 +392,11 @@ describe Bumbleworks::Task do
       tasks.map { |t| [t.role, t.nickname] }.should == [
         ['a_fella', 'waggle_hands'],
         ['a_lady', 'wiggle_hands']
+      ]
+      tasks = described_class.completable(false)
+      tasks.should have(1).item
+      tasks.map { |t| [t.role, t.nickname] }.should == [
+        ['a_monkey', 'wuggle_hands']
       ]
     end
   end
@@ -469,7 +474,7 @@ describe Bumbleworks::Task do
     end
   end
 
-  context '.for_claimant' do
+  describe '.for_claimant' do
     it 'returns all tasks claimed by given claimant' do
       Bumbleworks.define_process 'dog-lifecycle' do
         concurrence do
@@ -493,7 +498,34 @@ describe Bumbleworks::Task do
     end
   end
 
-  context '.for_entity' do
+  describe '.with_fields' do
+    it 'returns all tasks with given fields' do
+      Bumbleworks.define_process 'divergination' do
+        concurrence do
+          sequence do
+            set 'bumby' => 'fancy'
+            bumber :task => 'wear_monocle'
+          end
+          sequence do
+            set 'bumby' => 'not_fancy'
+            concurrence do
+              bumber :task => 'wear_natties'
+              loofer :task => 'snuffle'
+            end
+          end
+        end
+      end
+      Bumbleworks.launch!('divergination', :grumbles => true)
+      Bumbleworks.dashboard.wait_for(:loofer)
+      described_class.with_fields(:grumbles => true).count.should == 3
+      described_class.with_fields(:bumby => 'fancy').count.should == 1
+      described_class.with_fields(:bumby => 'not_fancy').count.should == 2
+      described_class.with_fields(:grumbles => false, :bumby => 'not_fancy').should be_empty
+      described_class.with_fields(:what => 'ever').should be_empty
+    end
+  end
+
+  describe '.for_entity' do
     it 'returns all tasks associated with given entity' do
       fake_sandwich = OpenStruct.new(:identifier => 'rubies')
       Bumbleworks.define_process 'existential_pb_and_j' do
