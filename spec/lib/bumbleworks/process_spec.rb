@@ -1,3 +1,5 @@
+require File.expand_path(File.join(fixtures_path, 'entities', 'rainbow_loom'))
+
 describe Bumbleworks::Process do
   before :each do
     Bumbleworks.reset!
@@ -116,6 +118,45 @@ describe Bumbleworks::Process do
       bp1 = described_class.new('in_da_sky')
       bp2 = described_class.new('in_da_sky')
       bp1.should == bp2
+    end
+  end
+
+  describe '#entity' do
+    it 'returns nil if process not ready yet' do
+      bp = described_class.new('nothing')
+      bp.entity.should be_nil
+    end
+
+    it 'returns entity provided at launch' do
+      rainbow_loom = RainbowLoom.new('1234')
+      bp = Bumbleworks.launch!('going_to_the_dance', :entity => rainbow_loom)
+      wait_until { bp.trackers.count > 0 }
+      bp.entity.should == rainbow_loom
+    end
+
+    it 'raises exception if multiple workitems have conflicting entity info' do
+      Bumbleworks.define_process 'conflict_this' do
+        concurrence do
+          sequence do
+            set 'entity_id' => 'swoo'
+            just_wait
+          end
+          sequence do
+            set 'entity_id' => 'fwee'
+            just_wait
+          end
+        end
+      end
+      bp = Bumbleworks.launch!('conflict_this', :entity => RainbowLoom.new('1234'))
+      Bumbleworks.dashboard.wait_for(:just_wait)
+      expect {
+        bp.entity
+      }.to raise_error(Bumbleworks::Process::EntityConflict)
+    end
+
+    it 'returns nil if no entity' do
+      bp = Bumbleworks.launch!('going_to_the_dance')
+      bp.entity.should be_nil
     end
   end
 

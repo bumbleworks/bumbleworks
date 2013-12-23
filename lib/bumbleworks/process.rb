@@ -1,5 +1,7 @@
 module Bumbleworks
   class Process
+    class EntityConflict < StandardError; end
+
     attr_reader :id
 
     def initialize(wfid)
@@ -10,6 +12,16 @@ module Bumbleworks
 
     def ==(other)
       wfid == other.wfid
+    end
+
+    def entity
+      return nil unless process_status
+      workitems = leaves.map(&:applied_workitem).map { |wi| Bumbleworks::Workitem.new(wi) }
+      if workitems.map(&:entity_fields).uniq.length == 1
+        workitems.first.entity
+      else
+        raise EntityConflict
+      end
     end
 
     def tasks
