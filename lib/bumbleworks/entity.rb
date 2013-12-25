@@ -37,12 +37,14 @@ module Bumbleworks
       processes_by_name.values.compact
     end
 
-    def cancel_all_processes!
+    def cancel_all_processes!(options = {})
       processes_by_name.each do |name, process|
         next unless process
-        identifier_attribute = attribute_for_process_name(name)
         process.cancel!
-        persist_process_identifier(identifier_attribute, nil)
+        unless options[:clear_identifiers] == false
+          identifier_attribute = attribute_for_process_name(name)
+          persist_process_identifier(identifier_attribute, nil)
+        end
       end
     end
 

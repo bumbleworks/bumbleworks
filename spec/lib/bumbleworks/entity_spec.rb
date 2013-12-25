@@ -45,22 +45,27 @@ describe Bumbleworks::Entity do
 
   describe '#cancel_all_processes!' do
     it 'cancels all processes with registered identifiers' do
-      [:zoom, :foof, :nook].each do |pname|
-        entity_class.send(:attr_accessor, :"#{pname}_pid")
-        entity_class.process pname, :attribute => :"#{pname}_pid"
-      end
       entity = entity_class.new
-      entity.foof_pid = '1234'
-      entity.nook_pid = 'pickles'
       entity.stub(:processes_by_name => {
         :foof => bp1 = Bumbleworks::Process.new('1234'),
         :nook => bp2 = Bumbleworks::Process.new('pickles')
       })
       bp1.should_receive(:cancel!)
       bp2.should_receive(:cancel!)
+      entity.stub(:attribute_for_process_name) { |name| :"#{name}_pid" }
       entity.should_receive(:update).with(:foof_pid => nil)
       entity.should_receive(:update).with(:nook_pid => nil)
       entity.cancel_all_processes!
+    end
+
+    it 'does not clear identifiers if clear_identifiers option is false' do
+      entity = entity_class.new
+      entity.stub(:processes_by_name => {
+        :foof => bp = Bumbleworks::Process.new('1234')
+      })
+      bp.should_receive(:cancel!)
+      entity.should_receive(:update).never
+      entity.cancel_all_processes!(:clear_identifiers => false)
     end
   end
 
