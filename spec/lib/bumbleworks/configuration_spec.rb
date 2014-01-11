@@ -21,7 +21,7 @@ describe Bumbleworks::Configuration do
         end
       end
 
-      configuration.root.should == '/Rails/Root'
+      configuration.root.should == '/Rails/Root/lib/bumbleworks'
       Object.send(:remove_const, :Rails)
     end
 
@@ -32,7 +32,7 @@ describe Bumbleworks::Configuration do
         end
       end
 
-      configuration.root.should == '/Padrino/Root'
+      configuration.root.should == '/Padrino/Root/lib/bumbleworks'
       Object.send(:remove_const, :Padrino)
     end
 
@@ -45,7 +45,7 @@ describe Bumbleworks::Configuration do
         end
       end
 
-      configuration.root.should == '/Sinatra/Root'
+      configuration.root.should == '/Sinatra/Root/lib/bumbleworks'
       Object.send(:remove_const, :Sinatra)
     end
 
@@ -56,7 +56,7 @@ describe Bumbleworks::Configuration do
         end
       end
 
-      configuration.root.should == '/Rory/Root'
+      configuration.root.should == '/Rory/Root/lib/bumbleworks'
       Object.send(:remove_const, :Rory)
     end
 
@@ -82,14 +82,14 @@ describe Bumbleworks::Configuration do
     it 'returns the default folder if not set by client app' do
       File.stub(:directory? => true)
       configuration.root = '/Root'
-      configuration.definitions_directory.should == '/Root/lib/bumbleworks/process_definitions'
+      configuration.definitions_directory.should == '/Root/process_definitions'
     end
 
     it 'returns the second default folder if first does not exist' do
-      File.stub(:directory?).with('/Root/lib/bumbleworks/process_definitions').and_return(false)
-      File.stub(:directory?).with('/Root/lib/bumbleworks/processes').and_return(true)
+      File.stub(:directory?).with('/Root/process_definitions').and_return(false)
+      File.stub(:directory?).with('/Root/processes').and_return(true)
       configuration.root = '/Root'
-      configuration.definitions_directory.should == '/Root/lib/bumbleworks/processes'
+      configuration.definitions_directory.should == '/Root/processes'
     end
 
     it 'raises an error if default folder not found' do
@@ -98,7 +98,7 @@ describe Bumbleworks::Configuration do
         configuration.definitions_directory
       }.to raise_error(
         Bumbleworks::InvalidSetting,
-        "Definitions folder not found (looked in lib/bumbleworks/process_definitions, lib/bumbleworks/processes)"
+        "Definitions folder not found (looked in process_definitions, processes)"
       )
     end
 
@@ -121,9 +121,9 @@ describe Bumbleworks::Configuration do
     end
 
     it 'returns the default folder if not set by client app' do
-      File.stub(:directory?).with('/Root/lib/bumbleworks/participants').and_return(true)
+      File.stub(:directory?).with('/Root/participants').and_return(true)
       configuration.root = '/Root'
-      configuration.participants_directory.should == '/Root/lib/bumbleworks/participants'
+      configuration.participants_directory.should == '/Root/participants'
     end
 
     it 'raises an error if default folder not found' do
@@ -132,7 +132,7 @@ describe Bumbleworks::Configuration do
         configuration.participants_directory
       }.to raise_error(
         Bumbleworks::InvalidSetting,
-        "Participants folder not found (looked in lib/bumbleworks/participants)"
+        "Participants folder not found (looked in participants)"
       )
     end
 
@@ -155,9 +155,9 @@ describe Bumbleworks::Configuration do
     end
 
     it 'returns the default folder if not set by client app' do
-      File.stub(:directory?).with('/Root/lib/bumbleworks/tasks').and_return(true)
+      File.stub(:directory?).with('/Root/tasks').and_return(true)
       configuration.root = '/Root'
-      configuration.tasks_directory.should == '/Root/lib/bumbleworks/tasks'
+      configuration.tasks_directory.should == '/Root/tasks'
     end
 
     it 'raises an error if default folder not found' do
@@ -166,7 +166,7 @@ describe Bumbleworks::Configuration do
         configuration.tasks_directory
       }.to raise_error(
         Bumbleworks::InvalidSetting,
-        "Tasks folder not found (looked in lib/bumbleworks/tasks)"
+        "Tasks folder not found (looked in tasks)"
       )
     end
 
@@ -287,7 +287,7 @@ describe Bumbleworks::Configuration do
       configuration.clear!
 
       configuration.root = '/Root'
-      configuration.definitions_directory.should == '/Root/lib/bumbleworks/process_definitions'
+      configuration.definitions_directory.should == '/Root/process_definitions'
     end
   end
 

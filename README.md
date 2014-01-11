@@ -96,7 +96,7 @@ If you want to use Sequel:
 
 Bumbleworks uses [ruote](http://github.com/jmettraux/ruote), which allows process definitions to be written using a [Ruby DSL](http://ruote.rubyforge.org/definitions.html#ruby).
 
-By default, your process definitions will be loaded from the `lib/process_definitions` directory at `Bumbleworks.root` (see Determining the Root Directory for more info).  This directory can have as many subdirectories as you want, and Bumbleworks will load everything recursively; note, however, that the directory hierarchy doesn't mean anything to Bumbleworks, and is only for your own organization.  The directory is configurable by setting Bumbleworks.definitions_directory:
+By default, your process definitions will be loaded from the `processes` or `process_definitions` directory at `Bumbleworks.root` (see Determining the Root Directory for more info).  This directory can have as many subdirectories as you want, and Bumbleworks will load everything recursively; note, however, that the directory hierarchy doesn't mean anything to Bumbleworks, and is only for your own organization.  The directory is configurable by setting Bumbleworks.definitions_directory:
 
 ```ruby
 Bumbleworks.configure do |c|
@@ -109,7 +109,7 @@ Note that if you override the default path, you can either specify an absolute p
 
 ### Participant Class Directory
 
-If your app has a `participants` or `app/participants` directory at the root (see Determining the Root Directory), Bumbleworks will require all files in that directory by default before running your `register_participants` block (see below).  You can customize this directory by setting Bumbleworks.participants_directory:
+If your app has a `participants` directory at Bumbleworks.root (see Determining the Root Directory), Bumbleworks will require all files in that directory by default before running your `register_participants` block (see below).  You can customize this directory by setting Bumbleworks.participants_directory:
 
 ```ruby
 Bumbleworks.configure do |c|
@@ -118,11 +118,26 @@ Bumbleworks.configure do |c|
 end
 ```
 
+### Task Class Directory
+
+If your app has a `tasks` directory at Bumbleworks.root (see Determining the Root Directory), Bumbleworks will require all files in that directory when you run `Bumbleworks.register_tasks`.  You can customize this directory by setting Bumbleworks.tasks_directory:
+
+```ruby
+Bumbleworks.configure do |c|
+  c.tasks_directory = '/absolute/path/to/your/task/class/files'
+  # ...
+end
+```
+
 ### Determining the Root Directory
 
-By default, Bumbleworks will attempt in several ways to find your root directory.  In the most common cases (Rails, Sinatra, or Rory), it usually won't have trouble guessing the directory.
+By default, Bumbleworks will attempt in several ways to find your root directory.  In the most common cases (Rails, Sinatra, or Rory), it usually won't have trouble guessing the directory.  The default `Bumbleworks.root` directory will be the framework's root with `lib/bumbleworks` appended.
 
-If you're not using Rails, Sinatra, or Rory, Bumbleworks will complain when you call `bootstrap!` or `update!`, **unless** both your definitions directory and your participants directory (see above) are specified as absolute paths.
+If you're not using Rails, Sinatra, or Rory, and you haven't explicitly set `Bumbleworks.root`, Bumbleworks will complain when you call any of the following methods:
+- `Bumbleworks.load_definitions!`
+- `Bumbleworks.register_tasks`
+- `Bumbleworks.register_participants`
+... **unless** your definitions directory, tasks directory, and participants directory (see above) are specified as absolute paths.
 
 ## Usage
 

@@ -31,9 +31,9 @@ describe Bumbleworks::Task do
     it 'autoloads all task modules in directory' do
       Bumbleworks.root = File.join(fixtures_path, 'apps', 'with_default_directories')
       Object.should_receive(:autoload).with(:MakeSomeHoneyTask,
-        File.join(Bumbleworks.root, 'lib', 'bumbleworks', 'tasks', 'make_some_honey_task.rb'))
+        File.join(Bumbleworks.root, 'tasks', 'make_some_honey_task.rb'))
       Object.should_receive(:autoload).with(:TasteThatMolassesTask,
-        File.join(Bumbleworks.root, 'lib', 'bumbleworks', 'tasks', 'taste_that_molasses_task.rb'))
+        File.join(Bumbleworks.root, 'tasks', 'taste_that_molasses_task.rb'))
       Bumbleworks::Task.autoload_all
     end
   end

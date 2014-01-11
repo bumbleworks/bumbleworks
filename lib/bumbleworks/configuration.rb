@@ -26,15 +26,24 @@ module Bumbleworks
     end
 
 
-    # Path to the root folder where Bumbleworks assets can be found.
-    # This includes the following structure:
-    #   /lib
-    #     /process_definitions
-    #   /participants
-    #   /app/participants
+    # Path to the root folder where Bumbleworks assets can be found.  By default,
+    # this path will be the root returned by the detected framework (see the
+    # #root method below), with "/lib/bumbleworks" appended, but you can override
+    # this by defining root explicitly.
+    # The definitions, tasks, and participants directories should exist here, if
+    # you're using the defaults for these directories, or if they're overridden
+    # with relative paths.  So in a default install, the hierarchy should look
+    # like this:
+    #   [defined root, or framework root]
+    #     /lib
+    #       /bumbleworks
+    #         /participants
+    #         /processes
+    #         /tasks
     #
-    # default: none, must be specified
-    # Exceptions: raises Bumbleworks::UndefinedSetting if not defined by the client
+    # default: ${Framework root}/lib/bumbleworks (or no default if not in framework)
+    # Exceptions: raises Bumbleworks::UndefinedSetting if no framework and not
+    #   defined by the client
     #
     define_setting :root
 
@@ -42,14 +51,14 @@ module Bumbleworks
     # will load all definition files by recursively traversing the directory
     # tree under this folder. No specific loading order is guaranteed
     #
-    # default: ${Bumbleworks.root}/lib/bumbleworks/process_definitions then ${Bumbleworks.root}/lib/bumbleworks/processes
+    # default: ${Bumbleworks.root}/process_definitions then ${Bumbleworks.root}/processes
     define_setting :definitions_directory
 
     # Path to the folder which holds the ruote participant files. Bumbleworks
     # will recursively traverse the directory tree under this folder and ensure
     # that all found files are autoloaded before registration of participants.
     #
-    # default: ${Bumbleworks.root}/lib/bumbleworks/participants
+    # default: ${Bumbleworks.root}/participants
     define_setting :participants_directory
 
     # Path to the folder which holds the optional task module files, which are
@@ -57,7 +66,7 @@ module Bumbleworks
     # callbacks). Bumbleworks will recursively traverse the directory tree under
     # this folder and ensure that all found files are autoloaded.
     #
-    # default: ${Bumbleworks.root}/lib/bumbleworks/tasks
+    # default: ${Bumbleworks.root}/tasks
     define_setting :tasks_directory
 
     # Bumbleworks requires a dedicated key-value storage for process information.  Three
@@ -192,18 +201,14 @@ module Bumbleworks
     #   Bumbleworks.root = '/somewhere/else/'
     #
     # If the root is not defined, Bumbleworks will use the root of known
-    # frameworks (Rails, Sinatra and Rory).  Otherwise, it will raise an
-    # error if not defined.
+    # frameworks (Rails, Sinatra and Rory), appending "lib/bumbleworks".
+    # Otherwise, it will raise an error if not defined.
     #
     def root
-      @root ||= case
-        when defined?(Rails) then Rails.root
-        when defined?(Rory) then Rory.root
-        when defined?(Padrino) then Padrino.root
-        when defined?(Sinatra::Application) then Sinatra::Application.root
+      @root ||= begin
+        raise UndefinedSetting.new("Bumbleworks.root must be set") unless framework_root
+        File.join(framework_root, "lib", "bumbleworks")
       end
-      raise UndefinedSetting.new("Bumbleworks.root must be set") unless @root
-      @root
     end
 
     # Add a storage adapter to the set of possible adapters.  Takes an object
@@ -257,18 +262,27 @@ module Bumbleworks
       self.class.defined_settings
     end
 
+    def framework_root
+      case
+        when defined?(Rails) then Rails.root
+        when defined?(Rory) then Rory.root
+        when defined?(Padrino) then Padrino.root
+        when defined?(Sinatra::Application) then Sinatra::Application.root
+      end
+    end
+
     def default_definition_directory
-      default_folders = ['lib/bumbleworks/process_definitions', 'lib/bumbleworks/processes']
+      default_folders = ['process_definitions', 'processes']
       find_folder(default_folders, @definitions_directory, "Definitions folder not found")
     end
 
     def default_participant_directory
-      default_folders = ['lib/bumbleworks/participants']
+      default_folders = ['participants']
       find_folder(default_folders, @participants_directory, "Participants folder not found")
     end
 
     def default_tasks_directory
-      default_folders = ['lib/bumbleworks/tasks']
+      default_folders = ['tasks']
       find_folder(default_folders, @tasks_directory, "Tasks folder not found")
     end
 
