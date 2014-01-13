@@ -18,7 +18,7 @@ module Bumbleworks
       return nil unless process_status
       workitems = leaves.map(&:applied_workitem).map { |wi| Bumbleworks::Workitem.new(wi) }
       if workitems.map(&:entity_fields).uniq.length == 1
-        workitems.first.entity
+        workitems.first.entity if workitems.first.has_entity?
       else
         raise EntityConflict
       end

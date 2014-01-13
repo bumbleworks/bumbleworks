@@ -156,6 +156,7 @@ describe Bumbleworks::Process do
 
     it 'returns nil if no entity' do
       bp = Bumbleworks.launch!('going_to_the_dance')
+      wait_until { bp.trackers.count > 0 }
       bp.entity.should be_nil
     end
   end
