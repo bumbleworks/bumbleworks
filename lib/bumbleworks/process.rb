@@ -35,9 +35,9 @@ module Bumbleworks
     end
 
     def all_subscribed_tags
-      events = trackers.inject({}) do |memo, t|
+      trackers.inject({ :global => [] }) do |memo, t|
         if t['wfid'].nil?
-          (memo[:global] ||= []).concat t['conditions']['tag']
+          memo[:global].concat t['conditions']['tag']
         else
           (memo[t['wfid']] ||= []).concat t['conditions']['tag']
         end

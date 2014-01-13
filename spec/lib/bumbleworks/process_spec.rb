@@ -19,6 +19,9 @@ describe Bumbleworks::Process do
         wait_for_event :speedos
       end
     end
+    Bumbleworks.define_process 'i_wait_for_nobody' do
+      tough_guy :task => 'blow_this_thing_wide_open'
+    end
   end
 
   describe '.new' do
@@ -65,6 +68,12 @@ describe Bumbleworks::Process do
       bp1.all_subscribed_tags.should == { :global => ['an_invitation'], bp1.wfid => ['a_friend'] }
       bp2.all_subscribed_tags.should == { :global => ['rock_caliper_delivery', 'speedos'] }
     end
+
+    it 'sets global tags to empty array by default' do
+      bp = Bumbleworks.launch!('i_wait_for_nobody')
+      wait_until { bp.tasks.count == 1 }
+      bp.all_subscribed_tags.should == { :global => [] }
+    end
   end
 
   describe '#subscribed_events' do
@@ -74,6 +83,12 @@ describe Bumbleworks::Process do
       wait_until { bp1.trackers.count == 2 && bp2.trackers.count == 2 }
       bp1.subscribed_events.should == ['an_invitation']
       bp2.subscribed_events.should == ['rock_caliper_delivery', 'speedos']
+    end
+
+    it 'returns empty array if no global tags' do
+      bp = Bumbleworks.launch!('i_wait_for_nobody')
+      wait_until { bp.tasks.count == 1 }
+      bp.subscribed_events.should == []
     end
   end
 
