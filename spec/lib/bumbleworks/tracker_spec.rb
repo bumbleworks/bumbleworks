@@ -72,6 +72,18 @@ describe Bumbleworks::Tracker do
     end
   end
 
+  describe '#tags' do
+    it 'returns array of tags' do
+      described_class.new('global_tracker').tags.should == [ "the_event" ]
+      described_class.new('local_tracker').tags.should == [ "local_event" ]
+    end
+
+    it 'returns empty array if no tags' do
+      described_class.new('local_error_intercept').tags.should == []
+      described_class.new('participant_tracker').tags.should == []
+    end
+  end
+
   describe '#action' do
     it 'returns action being awaited' do
       described_class.new('global_tracker').action.should == 'left_tag'

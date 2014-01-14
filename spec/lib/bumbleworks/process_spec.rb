@@ -11,6 +11,7 @@ describe Bumbleworks::Process do
       concurrence do
         wait_for_event :an_invitation
         await :left_tag => 'a_friend'
+        await :participant => 'some_darling_cat'
       end
     end
     Bumbleworks.define_process 'straightening_the_rocks' do
@@ -50,12 +51,12 @@ describe Bumbleworks::Process do
     it 'lists all trackers this process is waiting on' do
       bp1 = Bumbleworks.launch!('going_to_the_dance')
       bp2 = Bumbleworks.launch!('straightening_the_rocks')
-      wait_until { bp1.trackers.count == 2 && bp2.trackers.count == 2 }
-      bp1.trackers.map { |t| t.process }.should == [bp1, bp1]
+      wait_until { bp1.trackers.count == 3 && bp2.trackers.count == 2 }
+      bp1.trackers.map { |t| t.process }.should == [bp1, bp1, bp1]
       bp2.trackers.map { |t| t.process }.should == [bp2, bp2]
-      bp1.trackers.map { |t| t.action }.should == ['left_tag', 'left_tag']
+      bp1.trackers.map { |t| t.action }.should == ['left_tag', 'left_tag', 'dispatch']
       bp2.trackers.map { |t| t.action }.should == ['left_tag', 'left_tag']
-      bp1.trackers.map { |t| t.conditions['tag'] }.should == [['an_invitation'], ['a_friend']]
+      bp1.trackers.map { |t| t.conditions['tag'] }.should == [['an_invitation'], ['a_friend'], nil]
       bp2.trackers.map { |t| t.conditions['tag'] }.should == [['rock_caliper_delivery'], ['speedos']]
     end
   end
@@ -64,7 +65,7 @@ describe Bumbleworks::Process do
     it 'lists all tags this process is waiting on' do
       bp1 = Bumbleworks.launch!('going_to_the_dance')
       bp2 = Bumbleworks.launch!('straightening_the_rocks')
-      wait_until { bp1.trackers.count == 2 && bp2.trackers.count == 2 }
+      wait_until { bp1.trackers.count == 3 && bp2.trackers.count == 2 }
       bp1.all_subscribed_tags.should == { :global => ['an_invitation'], bp1.wfid => ['a_friend'] }
       bp2.all_subscribed_tags.should == { :global => ['rock_caliper_delivery', 'speedos'] }
     end
@@ -80,7 +81,7 @@ describe Bumbleworks::Process do
     it 'lists all events (global tags) this process is waiting on' do
       bp1 = Bumbleworks.launch!('going_to_the_dance')
       bp2 = Bumbleworks.launch!('straightening_the_rocks')
-      wait_until { bp1.trackers.count == 2 && bp2.trackers.count == 2 }
+      wait_until { bp1.trackers.count == 3 && bp2.trackers.count == 2 }
       bp1.subscribed_events.should == ['an_invitation']
       bp2.subscribed_events.should == ['rock_caliper_delivery', 'speedos']
     end

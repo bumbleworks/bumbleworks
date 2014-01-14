@@ -25,6 +25,10 @@ module Bumbleworks
       @original_hash['conditions'] || {}
     end
 
+    def tags
+      [conditions['tag']].flatten.compact
+    end
+
     def action
       @original_hash['action']
     end
