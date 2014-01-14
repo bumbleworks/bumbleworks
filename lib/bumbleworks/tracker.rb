@@ -22,7 +22,7 @@ module Bumbleworks
     end
 
     def conditions
-      @original_hash['conditions']
+      @original_hash['conditions'] || {}
     end
 
     def action

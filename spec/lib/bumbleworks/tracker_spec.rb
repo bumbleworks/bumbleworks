@@ -67,8 +67,8 @@ describe Bumbleworks::Tracker do
       described_class.new('participant_tracker').conditions.should == { "participant_name" => [ "goose","bunnies" ] }
     end
 
-    it 'returns nil when no conditions' do
-      described_class.new('on_error').conditions.should be_nil
+    it 'returns empty hash when no conditions' do
+      described_class.new('on_error').conditions.should == {}
     end
   end
 
