@@ -31,7 +31,7 @@ module Bumbleworks
 
     def waiting_expression
       return nil unless fei
-      process.expressions.detect { |e| e.fei.expid == fei['expid'] }.updated_tree
+      process.expressions.detect { |e| e.fei.expid == fei['expid'] }.tree
     end
 
     def where_clause
