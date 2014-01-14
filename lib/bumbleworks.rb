@@ -12,6 +12,7 @@ require "bumbleworks/error_handler"
 require "bumbleworks/entity"
 require "bumbleworks/participant"
 require "bumbleworks/workitem"
+require "bumbleworks/tracker"
 
 # default implementations
 require "bumbleworks/simple_logger"

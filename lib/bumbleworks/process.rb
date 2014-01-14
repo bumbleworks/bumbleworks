@@ -29,17 +29,19 @@ module Bumbleworks
     end
 
     def trackers
-      Bumbleworks.dashboard.get_trackers.values.select { |attrs|
+      Bumbleworks.dashboard.get_trackers.select { |tid, attrs|
         attrs['msg']['fei'] && attrs['msg']['fei']['wfid'] == id
+      }.map { |tid, original_hash|
+        Bumbleworks::Tracker.new(tid, original_hash)
       }
     end
 
     def all_subscribed_tags
       trackers.inject({ :global => [] }) do |memo, t|
-        if t['wfid'].nil?
-          memo[:global].concat t['conditions']['tag']
+        if t.global?
+          memo[:global].concat t.conditions['tag']
         else
-          (memo[t['wfid']] ||= []).concat t['conditions']['tag']
+          (memo[t.wfid] ||= []).concat t.conditions['tag']
         end
         memo
       end

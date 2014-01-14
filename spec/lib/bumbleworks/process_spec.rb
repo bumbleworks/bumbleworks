@@ -51,12 +51,12 @@ describe Bumbleworks::Process do
       bp1 = Bumbleworks.launch!('going_to_the_dance')
       bp2 = Bumbleworks.launch!('straightening_the_rocks')
       wait_until { bp1.trackers.count == 2 && bp2.trackers.count == 2 }
-      bp1.trackers.map { |t| t['msg']['fei']['wfid'] }.should == [bp1.wfid, bp1.wfid]
-      bp2.trackers.map { |t| t['msg']['fei']['wfid'] }.should == [bp2.wfid, bp2.wfid]
-      bp1.trackers.map { |t| t['action'] }.should == ['left_tag', 'left_tag']
-      bp2.trackers.map { |t| t['action'] }.should == ['left_tag', 'left_tag']
-      bp1.trackers.map { |t| t['conditions']['tag'] }.should == [['an_invitation'], ['a_friend']]
-      bp2.trackers.map { |t| t['conditions']['tag'] }.should == [['rock_caliper_delivery'], ['speedos']]
+      bp1.trackers.map { |t| t.process }.should == [bp1, bp1]
+      bp2.trackers.map { |t| t.process }.should == [bp2, bp2]
+      bp1.trackers.map { |t| t.action }.should == ['left_tag', 'left_tag']
+      bp2.trackers.map { |t| t.action }.should == ['left_tag', 'left_tag']
+      bp1.trackers.map { |t| t.conditions['tag'] }.should == [['an_invitation'], ['a_friend']]
+      bp2.trackers.map { |t| t.conditions['tag'] }.should == [['rock_caliper_delivery'], ['speedos']]
     end
   end
 
