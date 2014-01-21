@@ -34,7 +34,7 @@ module Bumbleworks
 
     def tokenize(string)
       return nil if string.nil?
-      string = string.gsub(/&/, ' and ').
+      string = string.to_s.gsub(/&/, ' and ').
         gsub(/[ \/]+/, '_').
         gsub(/([a-z\d])([A-Z])/,'\1_\2').
         downcase

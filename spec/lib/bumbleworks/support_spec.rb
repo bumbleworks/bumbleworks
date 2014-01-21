@@ -72,6 +72,10 @@ describe Bumbleworks::Support do
     it 'returns nil if given nil' do
       described_class.tokenize(nil).should be_nil
     end
+
+    it 'also handles symbols' do
+      described_class.tokenize(:yourFaceIsNice).should == 'your_face_is_nice'
+    end
   end
 
   describe '.humanize' do
