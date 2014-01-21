@@ -49,7 +49,11 @@ module Bumbleworks
 
     # Path to the folder which holds the ruote definition files. Bumbleworks
     # will load all definition files by recursively traversing the directory
-    # tree under this folder. No specific loading order is guaranteed
+    # tree under this folder. No specific loading order is guaranteed.
+    # These definition files will be loaded when Bumbleworks.bootstrap! is
+    # called, not Bootstrap.initialize! (since you don't want to re-register
+    # the participant list every time Bumbleworks is set up, but rather as an
+    # explicit task, for instance on deploy).
     #
     # default: ${Bumbleworks.root}/process_definitions then ${Bumbleworks.root}/processes
     define_setting :definitions_directory
@@ -68,6 +72,14 @@ module Bumbleworks
     #
     # default: ${Bumbleworks.root}/tasks
     define_setting :tasks_directory
+
+    # Path to the file in which participant registration is defined.  This file will
+    # be `load`ed when Bumbleworks.bootstrap! is called, not Bootstrap.initialize!
+    # (since you don't want to re-register the participant list every time Bumbleworks
+    # is set up, but rather as an explicit task, for instance on deploy).
+    #
+    # default: ${Bumbleworks.root}/participants.rb
+    define_setting :participant_registration_file
 
     # Bumbleworks requires a dedicated key-value storage for process information.  Three
     # storage solutions are currently supported: Hash, Redis and Sequel.  The latter
@@ -160,6 +172,7 @@ module Bumbleworks
     def initialize
       @storage_adapters = []
       @storage_options = {}
+      @cached_paths = {}
       @timeout ||= 5
     end
 
@@ -168,7 +181,10 @@ module Bumbleworks
     # relative to Bumbleworks.root.
     #
     def definitions_directory
-      @definitions_folder ||= default_definition_directory
+      @cached_paths[:definitions_directory] ||= look_up_configured_path(
+        :definitions_directory,
+        :defaults => ['process_definitions', 'processes']
+      )
     end
 
     # Path where Bumbleworks will look for ruote participants to load.
@@ -176,7 +192,10 @@ module Bumbleworks
     # relative to Bumbleworks.root.
     #
     def participants_directory
-      @participants_folder ||= default_participant_directory
+      look_up_configured_path(
+        :participants_directory,
+        :defaults => ['participants']
+      )
     end
 
     # Path where Bumbleworks will look for task modules to load.
@@ -184,7 +203,22 @@ module Bumbleworks
     # relative to Bumbleworks.root.
     #
     def tasks_directory
-      @tasks_folder ||= default_tasks_directory
+      @cached_paths[:tasks_directory] ||= look_up_configured_path(
+        :tasks_directory,
+        :defaults => ['tasks']
+      )
+    end
+
+    # Path where Bumbleworks will look for the participant registration
+    # file. The path can be relative or absolute.  Relative paths are
+    # relative to Bumbleworks.root.
+    #
+    def participant_registration_file
+      @cached_paths[:participant_registration_file] ||= look_up_configured_path(
+        :participant_registration_file,
+        :defaults => ['participants.rb'],
+        :file => true
+      )
     end
 
     # Default history storage to true
@@ -250,14 +284,15 @@ module Bumbleworks
     def clear!
       defined_settings.each {|setting| instance_variable_set("@#{setting}", nil)}
       @storage_adapters = []
-      @definitions_folder = @participants_folder = @tasks_folder = nil
+      @cached_paths = {}
     end
 
     def error_handlers
       @error_handlers ||= [Bumbleworks::ErrorLogger]
     end
 
-    private
+  private
+
     def defined_settings
       self.class.defined_settings
     end
@@ -271,41 +306,46 @@ module Bumbleworks
       end
     end
 
-    def default_definition_directory
-      default_folders = ['process_definitions', 'processes']
-      find_folder(default_folders, @definitions_directory, "Definitions folder not found")
-    end
-
-    def default_participant_directory
-      default_folders = ['participants']
-      find_folder(default_folders, @participants_directory, "Participants folder not found")
-    end
-
-    def default_tasks_directory
-      default_folders = ['tasks']
-      find_folder(default_folders, @tasks_directory, "Tasks folder not found")
-    end
-
-    def find_folder(default_directories, user_defined_directory, message)
-      if user_defined_directory
-        # use user-defined directory if specified
-        defined_directory = if user_defined_directory[0] == '/'
-          user_defined_directory
-        else
-          File.join(root, user_defined_directory)
-        end
+    def path_resolves?(path, options = {})
+      if options[:file]
+        File.file?(path.to_s)
       else
-        # next look in default directory structure
-        defined_directory = default_directories.detect do |default_folder|
-          folder = File.join(root, default_folder)
-          next unless File.directory?(folder)
-          break folder
+        File.directory?(path.to_s)
+      end
+    end
+
+    def user_configured_path(path_type)
+      user_defined_path = instance_variable_get("@#{path_type}")
+      if user_defined_path
+        if user_defined_path[0] == '/'
+          user_defined_path
+        else
+          File.join(root, user_defined_path)
+        end
+      end
+    end
+
+    def first_existing_default_path(possible_paths, options = {})
+      defaults = [possible_paths].flatten.compact.map { |d| File.join(root, d) }
+      defaults.detect do |default|
+        path_resolves?(default, :file => options[:file])
+      end
+    end
+
+    # If the user explicitly declared a path, raises an exception if the
+    # path was not found.  Missing default paths do not raise an exception
+    # since no paths are required.
+    def look_up_configured_path(path_type, options = {})
+      return @cached_paths[path_type] if @cached_paths.has_key?(path_type)
+      if user_defined_path = user_configured_path(path_type)
+        if path_resolves?(user_defined_path, :file => options[:file])
+          return user_defined_path
+        else
+          raise Bumbleworks::InvalidSetting, "#{Bumbleworks::Support.humanize(path_type)} not found (looked for #{user_defined_path || defaults.join(', ')})"
         end
       end
 
-      return defined_directory if File.directory?(defined_directory.to_s)
-
-      raise Bumbleworks::InvalidSetting, "#{message} (looked in #{user_defined_directory || default_directories.join(', ')})"
+      first_existing_default_path(options[:defaults], :file => options[:file])
     end
   end
 end

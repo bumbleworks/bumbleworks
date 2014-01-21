@@ -9,9 +9,18 @@ module Bumbleworks
       # should define `GoatChallenge`.
       #
       def autoload_all(options = {})
-        options[:directory] ||= Bumbleworks.participants_directory
-        Bumbleworks::Support.all_files(options[:directory], :camelize => true).each do |path, name|
-          Object.autoload name.to_sym, path
+        if directory = options[:directory] || Bumbleworks.participants_directory
+          Bumbleworks::Support.all_files(directory, :camelize => true).each do |path, name|
+            Object.autoload name.to_sym, path
+          end
+        end
+      end
+
+      def register!(options = {})
+        if file = options[:file] || Bumbleworks.participant_registration_file
+          Kernel.load file
+        else
+          Bumbleworks.register_default_participants
         end
       end
     end

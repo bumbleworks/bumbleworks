@@ -25,9 +25,10 @@ module Bumbleworks
       # should define `ChewCudTask`.
       #
       def autoload_all(options = {})
-        options[:directory] ||= Bumbleworks.tasks_directory
-        Bumbleworks::Support.all_files(options[:directory], :camelize => true).each do |path, name|
-          Object.autoload name.to_sym, path
+        if directory = options[:directory] || Bumbleworks.tasks_directory
+          Bumbleworks::Support.all_files(directory, :camelize => true).each do |path, name|
+            Object.autoload name.to_sym, path
+          end
         end
       end
 

@@ -92,23 +92,18 @@ describe Bumbleworks::Configuration do
       configuration.definitions_directory.should == '/Root/processes'
     end
 
-    it 'raises an error if default folder not found' do
+    it 'returns nil if default folder not found' do
       configuration.root = '/Root'
-      expect {
-        configuration.definitions_directory
-      }.to raise_error(
-        Bumbleworks::InvalidSetting,
-        "Definitions folder not found (looked in process_definitions, processes)"
-      )
+      configuration.definitions_directory.should be_nil
     end
 
-    it 'raises an error if specific folder not found' do
+    it 'raises error if specific folder not found' do
       configuration.definitions_directory = '/mumbo/jumbo'
       expect {
         configuration.definitions_directory
       }.to raise_error(
         Bumbleworks::InvalidSetting,
-        "Definitions folder not found (looked in /mumbo/jumbo)"
+        "Definitions directory not found (looked for /mumbo/jumbo)"
       )
     end
   end
@@ -126,23 +121,18 @@ describe Bumbleworks::Configuration do
       configuration.participants_directory.should == '/Root/participants'
     end
 
-    it 'raises an error if default folder not found' do
+    it 'returns nil if default folder not found' do
       configuration.root = '/Root'
-      expect {
-        configuration.participants_directory
-      }.to raise_error(
-        Bumbleworks::InvalidSetting,
-        "Participants folder not found (looked in participants)"
-      )
+      configuration.participants_directory.should be_nil
     end
 
-    it 'raises an error if specific folder not found' do
+    it 'raises error if specific folder not found' do
       configuration.participants_directory = '/mumbo/jumbo'
       expect {
         configuration.participants_directory
       }.to raise_error(
         Bumbleworks::InvalidSetting,
-        "Participants folder not found (looked in /mumbo/jumbo)"
+        "Participants directory not found (looked for /mumbo/jumbo)"
       )
     end
   end
@@ -160,23 +150,47 @@ describe Bumbleworks::Configuration do
       configuration.tasks_directory.should == '/Root/tasks'
     end
 
-    it 'raises an error if default folder not found' do
+    it 'returns nil if default folder not found' do
       configuration.root = '/Root'
-      expect {
-        configuration.tasks_directory
-      }.to raise_error(
-        Bumbleworks::InvalidSetting,
-        "Tasks folder not found (looked in tasks)"
-      )
+      configuration.tasks_directory.should be_nil
     end
 
-    it 'raises an error if specific folder not found' do
+    it 'raises error if specific folder not found' do
       configuration.tasks_directory = '/mumbo/jumbo'
       expect {
         configuration.tasks_directory
       }.to raise_error(
         Bumbleworks::InvalidSetting,
-        "Tasks folder not found (looked in /mumbo/jumbo)"
+        "Tasks directory not found (looked for /mumbo/jumbo)"
+      )
+    end
+  end
+
+  describe "#participant_registration_file" do
+    it 'returns the path which was set by the client app' do
+      File.stub(:file?).with('/can/i/get/a/rooster.rb').and_return(true)
+      configuration.participant_registration_file = '/can/i/get/a/rooster.rb'
+      configuration.participant_registration_file.should == '/can/i/get/a/rooster.rb'
+    end
+
+    it 'returns the default folder if not set by client app' do
+      File.stub(:file?).with('/Root/participants.rb').and_return(true)
+      configuration.root = '/Root'
+      configuration.participant_registration_file.should == '/Root/participants.rb'
+    end
+
+    it 'returns nil if default path not found' do
+      configuration.root = '/Root'
+      configuration.participant_registration_file.should be_nil
+    end
+
+    it 'raises error if specific path not found' do
+      configuration.participant_registration_file = '/do/not/eat/friendly/people.rb'
+      expect {
+        configuration.participant_registration_file
+      }.to raise_error(
+        Bumbleworks::InvalidSetting,
+        "Participant registration file not found (looked for /do/not/eat/friendly/people.rb)"
       )
     end
   end

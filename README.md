@@ -33,18 +33,23 @@ Bumbleworks.configure do |c|
   # c.storage = {}
 end
 
-# this next block is optional - it's only needed
-# if you want to load custom participants
-Bumbleworks.register_participants do
-  # foo FooParticipant
-  # bar BarParticipant
-  # ...
-end
+# Initialize Bumbleworks (autoloads necessary classes/modules)
+Bumbleworks.initialize!
 
-# Load all process definitions in lib/process_definitions
-Bumbleworks.load_definitions!
+# Optionally, bootstrap in the initializer - don't do this in
+# production, since every time this file is loaded, definitions and
+# participant registrations will be overwritten, which will cause
+# problems with any running workers.  But if you've configured
+# a Hash storage (see above) for dev/test, you have to bootstrap within
+# the same process.
+# In production, you'd separately run the `bumbleworks:bootstrap` rake
+# task to load definitions and participant registration.
+Bumbleworks.bootstrap!
 
-# Start a worker in the background
+# Start a worker in the background - this, too, should not be done
+# in the initializer in a production environment - instead, the worker
+# should be run in a separate process, using the `bumbleworks:start_worker`
+# rake task.
 Bumbleworks.start_worker!
 ```
 
@@ -129,6 +134,27 @@ Bumbleworks.configure do |c|
 end
 ```
 
+### Participant Registration File
+
+If your app has a `participants.rb` file at Bumbleworks.root (see Determining the Root Directory), Bumbleworks will load this file when you run `Bumbleworks.bootstrap!` (or run the `bumbleworks:bootstrap` rake task), which will create the registered participant list.  The file should contain a block such as the following:
+
+```ruby
+Bumbleworks.register_participants do
+  # foo FooParticipant
+  # bar BarParticipant
+  # ...
+end
+```
+
+You can customize the path to this file by setting Bumbleworks.participant_registration_file:
+
+```ruby
+Bumbleworks.configure do |c|
+  c.participant_registration_file = '/absolute/path/to/participant/registration/file.rb'
+  # ...
+end
+```
+
 ### Determining the Root Directory
 
 By default, Bumbleworks will attempt in several ways to find your root directory.  In the most common cases (Rails, Sinatra, or Rory), it usually won't have trouble guessing the directory.  The default `Bumbleworks.root` directory will be the framework's root with `lib/bumbleworks` appended.
@@ -150,7 +176,7 @@ Process definitions are just ruby files with blocks following Ruote's [Ruby DSL 
 To actually load your process definitions from the directory:
 
 ```ruby
-Bumbleworks.load_definitions!
+Bumbleworks.bootstrap!
 ```
 
 Keep in mind that any changed process definitions will overwrite previously loaded ones - in other words, after running this command successfully, all process definitions loaded into Bumbleworks will be in sync with the files in your definitions directory.
@@ -172,6 +198,8 @@ end
 
 Unless you add it yourself, Bumbleworks will register a "catchall" participant at the end of your participant list, which will catch any workitems not picked up by a participant higher in the list.  Those workitems then fall into ruote's StorageParticipant, from where Bumbleworks will assemble its task queue.
 
+This block should be placed in the Participant Registration File (see above), and then it will automatically be loaded when running `Bumbleworks.bootstrap!` (or the `bumbleworks:bootstrap` rake task).
+
 ### Starting Work
 
 Without running a "worker," Bumbleworks won't do anything behind the scenes - no workitems will proceed through their workflow, no schedules will be checked, etc.  Running a worker is done using the following command:
@@ -182,7 +210,7 @@ Bumbleworks.start_worker!
 
 You can add this to the end of your initializer, but, while this is handy in development and testing, it's not a good practice to follow in production.  In an actual production environment, you will likely have multiple workers running in their own threads, or even on separate servers.  So the **preferred way** is to call the `Bumbleworks.start_worker!` method outside of the initializer, most likely in a Rake task that has your environment loaded.
 
-> Strictly speaking, the entire environment doesn't need to be loaded; only Bumbleworks.storage needs to be set before starting a worker.  However, it's best practice to configure Bumbleworks in one place, to ensure you don't get your storage configurations out of sync.
+> Strictly speaking, the entire environment doesn't need to be loaded; only Bumbleworks.storage and Bumbleworks.root need to be set (the latter will have a reasonable default if using a popular framework), and `Bumbleworks.initialize!` must be run, before starting a worker.  However, it's best practice to configure Bumbleworks in one place, to ensure you don't get your storage configurations out of sync.
 
 You can run as many workers as you want in parallel, and as long as they're accessing the same storage, no concurrency issues should arise.
 
@@ -226,9 +254,9 @@ The tasks are:
 
   This task starts a Bumbleworks worker, and does not return.  It will expect Bumbleworks to be required and for Bumbleworks' storage to be configured.
 
-2. `rake bumbleworks:reload_definitions`
+2. `rake bumbleworks:bootstrap`
 
-  All process definitions will be reloaded from the configured `definitions_directory`.
+  All process definitions will be loaded from the configured `definitions_directory`, and the participant registration file (at the configured `participant_registration_file` path) will be loaded.  This operation will overwrite the current definitions and participant list, which is fine as long as no workers are currently running.
 
 ## Contributing
 

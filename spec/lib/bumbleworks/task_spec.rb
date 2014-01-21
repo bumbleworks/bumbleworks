@@ -34,7 +34,20 @@ describe Bumbleworks::Task do
         File.join(Bumbleworks.root, 'tasks', 'make_some_honey_task.rb'))
       Object.should_receive(:autoload).with(:TasteThatMolassesTask,
         File.join(Bumbleworks.root, 'tasks', 'taste_that_molasses_task.rb'))
-      Bumbleworks::Task.autoload_all
+      described_class.autoload_all
+    end
+
+    it 'does nothing if using default path and directory does not exist' do
+      Bumbleworks.root = File.join(fixtures_path, 'apps', 'minimal')
+      described_class.autoload_all
+    end
+
+    it 'raises exception if using custom path and participants file does not exist' do
+      Bumbleworks.root = File.join(fixtures_path, 'apps', 'minimal')
+      Bumbleworks.tasks_directory = 'oysters'
+      expect {
+        described_class.autoload_all
+      }.to raise_error(Bumbleworks::InvalidSetting)
     end
   end
 

@@ -28,7 +28,7 @@
         c.storage = Redis.new
     end
 
-    Bumbleworks.load_definitions!
+    Bumbleworks.initialize!
   ```
 
 1. Add your first process definition at `lib/bumbleworks/process_definitions/` (or `lib/bumbleworks/processes`):
@@ -43,24 +43,18 @@
 
 1. (*optional*) Put any [custom participants](http://ruote.rubyforge.org/implementing_participants.html) in `lib/bumbleworks/participants`.
 
-1. Create an initializer file (e.g. `config/initializers/bumbleworks.rb` for Rails) with the following:
+1. (*optional*) Create a participant registration file at `lib/bumbleworks/participants.rb` with the following:
 
   ```ruby
-    Bumbleworks.configure do |c|
-        c.storage = Hash.new
-    end
-
-    # this next block is optional - it's only needed
-    # if you want to load custom participants
     Bumbleworks.register_participants do
         # foo FooParticipant
         # bar BarParticipant
-        # ...
+        # ... any other custom participants you created
     end
-
-    Bumbleworks.load_definitions!
-    Bumbleworks.start_worker!
   ```
+
+1. Run the `bumbleworks:bootstrap` rake task to load your process definitions and participant list
+into your process storage (the Redis database).
 
 1. You can now launch processes using `Bumbleworks.launch!('process_definition_name')`.  `#launch!` takes a hash as an optional second argument - anything set here will become workitem fields.  A special key, `:entity`, can be used to specify a persistent business entity for the process, which will be retrievable from process tasks (using `Task#entity`).
 

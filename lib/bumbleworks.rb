@@ -102,14 +102,30 @@ module Bumbleworks
     #     plumber PlumberClass
     #   end
     def register_participants(&block)
-      Bumbleworks::ParticipantRegistration.autoload_all
+      autoload_participants
       Bumbleworks::Ruote.register_participants(&block)
+    end
+
+    # @public
+    # Syntactic sugar to register participants without supplying a
+    # block - ends up registering only default participants (such
+    # as the error handler and storage).
+    #
+    def register_default_participants
+      register_participants
+    end
+
+    # @public
+    # Autoloads all files in the configured participants_directory.
+    #
+    def autoload_participants
+      Bumbleworks::ParticipantRegistration.autoload_all
     end
 
     # @public
     # Autoloads all files in the configured tasks_directory.
     #
-    def register_tasks(&block)
+    def autoload_tasks
       Bumbleworks::Task.autoload_all
     end
 
@@ -118,7 +134,9 @@ module Bumbleworks
     # with the Ruote engine.
     #
     def load_definitions!(options = {})
-      Bumbleworks::ProcessDefinition.create_all_from_directory!(definitions_directory, options)
+      if directory = definitions_directory
+        Bumbleworks::ProcessDefinition.create_all_from_directory!(directory, options)
+      end
     end
 
     # @public
@@ -128,6 +146,23 @@ module Bumbleworks
     def reset!
       @configuration = nil
       Bumbleworks::Ruote.reset!
+    end
+
+    # @public
+    # Autoloads all necessary files for the Bumbleworks environment
+    #
+    def initialize!
+      autoload_tasks
+      autoload_participants
+    end
+
+    # @public
+    # Loads process definitions, and loads participant registration file at
+    # configured participant_registration_file path.
+    #
+    def bootstrap!(options = {})
+      load_definitions!(options)
+      Bumbleworks::ParticipantRegistration.register!
     end
 
     # @public

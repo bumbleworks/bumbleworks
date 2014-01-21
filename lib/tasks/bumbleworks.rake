@@ -5,10 +5,10 @@ namespace :bumbleworks do
     Bumbleworks.start_worker!(:join => true, :verbose => verbose)
   end
 
-  desc 'Reload all process definitions from directory'
-  task :reload_definitions => :environment do
-    puts "Reloading all Bumbleworks process definitions..." if verbose == true
-    Bumbleworks.load_definitions!(:verbose => verbose)
+  desc 'Load process definitions and participant list'
+  task :bootstrap => :environment do
+    puts "Bootstrapping Bumbleworks definitions and participant list..." if verbose == true
+    Bumbleworks.bootstrap!(:verbose => verbose)
   end
 
   desc 'Launch a given Bumbleworks process'

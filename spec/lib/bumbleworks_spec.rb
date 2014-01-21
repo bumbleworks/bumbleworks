@@ -60,28 +60,75 @@ describe Bumbleworks do
     end
   end
 
-  describe '.register_tasks' do
+  describe '.autoload_tasks' do
     it 'autoloads task modules' do
       Bumbleworks::Task.should_receive(:autoload_all)
-      described_class.register_tasks
+      described_class.autoload_tasks
+    end
+  end
+
+  describe '.autoload_participants' do
+    it 'autoloads participant classes' do
+      Bumbleworks::ParticipantRegistration.should_receive(:autoload_all)
+      described_class.autoload_participants
+    end
+  end
+
+  describe '.initialize!' do
+    it 'autoloads task modules and participant classes' do
+      described_class.should_receive(:autoload_participants)
+      described_class.should_receive(:autoload_tasks)
+      described_class.initialize!
     end
   end
 
   describe '.register_participants' do
-    it 'autoloads and registers participants' do
+    it 'autoloads participant classes and registers given participant list' do
       the_block = lambda {  }
-      Bumbleworks::ParticipantRegistration.should_receive(:autoload_all)
+      described_class.should_receive(:autoload_participants)
       Bumbleworks::Ruote.should_receive(:register_participants).with(&the_block)
       described_class.register_participants &the_block
+    end
+  end
+
+  describe '.register_default_participants' do
+    it 'registers default participants' do
+      described_class.should_receive(:autoload_participants).never
+      described_class.should_receive(:register_participants)
+      described_class.register_default_participants
     end
   end
 
   describe '.load_definitions!' do
     it 'creates all definitions from directory' do
       described_class.stub(:definitions_directory).and_return(:defs_dir)
-      described_class.storage = {}
+      # described_class.storage = {}
       Bumbleworks::ProcessDefinition.should_receive(:create_all_from_directory!).with(:defs_dir, :fake_options)
       described_class.load_definitions!(:fake_options)
+    end
+
+    it 'does nothing if using default path and directory does not exist' do
+      described_class.reset!
+      described_class.root = File.join(fixtures_path, 'apps', 'minimal')
+      Bumbleworks::ProcessDefinition.should_receive(:create_all_from_directory!).never
+      described_class.load_definitions!
+    end
+
+    it 'raises exception if using custom path and directory does not exist' do
+      described_class.reset!
+      described_class.root = File.join(fixtures_path, 'apps', 'minimal')
+      described_class.definitions_directory = 'oysters'
+      expect {
+        described_class.load_definitions!
+      }.to raise_error(Bumbleworks::InvalidSetting)
+    end
+  end
+
+  describe '.bootstrap!' do
+    it 'loads definitions and participant registration list' do
+      described_class.should_receive(:load_definitions!)
+      Bumbleworks::ParticipantRegistration.should_receive(:register!)
+      described_class.bootstrap!
     end
   end
 
