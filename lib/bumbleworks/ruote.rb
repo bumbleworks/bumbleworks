@@ -51,8 +51,8 @@ module Bumbleworks
           options[:method] = :cancel
         end
 
-        if options[:method] == :cancel
-          dashboard.cancel(wfid)
+        if options[:method] == :cancel || !options[:force]
+          dashboard.send(options[:method], wfid)
         else
           storage.remove_process(wfid)
         end
@@ -82,7 +82,7 @@ module Bumbleworks
         start_time = Time.now
         while dashboard.process_wfids.count > 0
           new_process_wfids = dashboard.process_wfids - notified_process_wfids
-          if options[:method] == :cancel
+          if options[:method] == :cancel || !options[:force]
             send_cancellation_message(options[:method], new_process_wfids)
           else
             storage.clear
@@ -99,11 +99,7 @@ module Bumbleworks
 
       def send_cancellation_message(method, process_wfids)
         process_wfids.each do |wfid|
-          if method == :cancel
-            dashboard.cancel(wfid)
-          else
-            storage.remove_process(wfid)
-          end
+          dashboard.send(method, wfid)
         end
       end
 

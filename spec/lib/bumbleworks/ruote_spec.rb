@@ -65,6 +65,12 @@ describe Bumbleworks::Ruote do
         described_class.kill_process!('woot', :timeout => 0.5)
       }.to raise_error(Bumbleworks::Ruote::KillTimeout)
     end
+
+    it 'uses storage.remove_process if force option is true' do
+      Bumbleworks.dashboard.storage.should_receive(:remove_process).with('woot')
+      Bumbleworks.dashboard.stub(:process).with('woot').and_return(nil)
+      described_class.kill_process!('woot', :force => true)
+    end
   end
 
   describe ".cancel_all_processes!" do
@@ -176,6 +182,12 @@ describe Bumbleworks::Ruote do
         described_class.kill_all_processes!(:timeout => 0.5)
       }.to raise_error(Bumbleworks::Ruote::KillTimeout)
     end
+
+    it 'uses storage.clear if force option is true' do
+      Bumbleworks.dashboard.stub(:process_wfids).and_return(['wfid'], [])
+      Bumbleworks.dashboard.storage.should_receive(:clear)
+      described_class.kill_all_processes!(:force => true)
+    end
   end
 
   describe '.send_cancellation_message' do
@@ -185,9 +197,9 @@ describe Bumbleworks::Ruote do
       described_class.send_cancellation_message(:cancel, ['wfid1', 'wfid2'])
     end
 
-    it 'removes given processes from storage if method is kill' do
-      Bumbleworks.dashboard.storage.should_receive(:remove_process).with('wfid1')
-      Bumbleworks.dashboard.storage.should_receive(:remove_process).with('wfid2')
+    it 'sends kill message to given wfids if method is kill' do
+      Bumbleworks.dashboard.should_receive(:kill).with('wfid1')
+      Bumbleworks.dashboard.should_receive(:kill).with('wfid2')
       described_class.send_cancellation_message(:kill, ['wfid1', 'wfid2'])
     end
   end
