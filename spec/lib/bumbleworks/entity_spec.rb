@@ -1,6 +1,23 @@
 describe Bumbleworks::Entity do
   let(:entity_class) { Class.new { include Bumbleworks::Entity } }
 
+  describe '#identifier' do
+    it 'returns id by default' do
+      entity = entity_class.new
+      entity.stub(:id => 'berf')
+      entity.identifier.should == 'berf'
+    end
+  end
+
+  describe '#to_s' do
+    it 'returns string with titleized class name and identifier' do
+      entity_class.stub(:name => 'GiantAngryPlum')
+      entity = entity_class.new
+      entity.stub(:identifier => 1490)
+      entity.to_s.should == 'Giant Angry Plum 1490'
+    end
+  end
+
   describe '#processes_by_name' do
     it 'returns hash of process names and process instances' do
       [:zoom, :foof, :nook].each do |pname|

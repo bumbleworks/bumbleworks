@@ -76,10 +76,9 @@ module Bumbleworks
       end
 
       def for_entity(entity)
-        entity_id = entity.respond_to?(:identifier) ? entity.identifier : entity.id
         @queries << proc { |wi|
           (wi['fields'][:entity_type] || wi['fields']['entity_type']) == entity.class.name &&
-            (wi['fields'][:entity_id] || wi['fields']['entity_id']) == entity_id
+            (wi['fields'][:entity_id] || wi['fields']['entity_id']) == entity.identifier
         }
         self
       end

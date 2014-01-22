@@ -183,12 +183,12 @@ module Bumbleworks
     def extract_entity_from_fields!(fields)
       begin
         if entity = fields.delete(:entity)
-          fields[:entity_id] = entity.respond_to?(:identifier) ? entity.identifier : entity.id
+          fields[:entity_id] = entity.identifier
           fields[:entity_type] = entity.class.name
-          raise InvalidEntity, "Entity#id must be non-null" unless fields[:entity_id]
+          raise InvalidEntity, "Entity#identifier must be non-null" unless fields[:entity_id]
         end
       rescue NoMethodError => e
-        raise InvalidEntity, "Entity must respond to #identifier (or #id) and #class.name"
+        raise InvalidEntity, "Entity must respond to #identifier and #class.name"
       end
     end
   end

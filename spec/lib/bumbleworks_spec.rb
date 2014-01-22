@@ -193,9 +193,9 @@ describe Bumbleworks do
   describe '.launch!' do
     before :all do
       class LovelyEntity
-        attr_accessor :id
-        def initialize(id)
-          @id = id
+        attr_accessor :identifier
+        def initialize(identifier)
+          @identifier = identifier
         end
       end
     end
@@ -217,13 +217,6 @@ describe Bumbleworks do
     it 'expands entity params when entity object provided' do
       Bumbleworks::Ruote.should_receive(:launch).with(:amazing_process, { :entity_id => :wiley_e_coyote, :entity_type => 'LovelyEntity' }, :et_cetera)
       Bumbleworks.launch!(:amazing_process, { :entity => LovelyEntity.new(:wiley_e_coyote) }, :et_cetera)
-    end
-
-    it 'uses "identifier" method instead of id, if entity has one' do
-      entity = LovelyEntity.new(5)
-      entity.stub(:identifier).and_return(:five)
-      Bumbleworks::Ruote.should_receive(:launch).with(:amazing_process, :entity_id => :five, :entity_type => 'LovelyEntity')
-      Bumbleworks.launch!(:amazing_process, :entity => entity)
     end
 
     it 'returns a Bumbleworks::Process instance with the wfid of the launched process' do

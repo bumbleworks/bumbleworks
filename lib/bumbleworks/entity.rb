@@ -4,6 +4,14 @@ module Bumbleworks
       klass.extend ClassMethods
     end
 
+    def identifier
+      id
+    end
+
+    def to_s
+      "#{Bumbleworks::Support.titleize(self.class.name)} #{identifier}"
+    end
+
     def launch_process(process_name, options = {})
       identifier_attribute = attribute_for_process_name(process_name.to_sym)
       if (options[:force] == true || (process_identifier = self.send(identifier_attribute)).nil?)
