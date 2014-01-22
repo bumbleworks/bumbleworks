@@ -25,6 +25,16 @@ describe Bumbleworks::Process do
     end
   end
 
+  describe '.all' do
+    it 'returns instances for all process wfids' do
+      bp1 = Bumbleworks.launch!('going_to_the_dance')
+      bp2 = Bumbleworks.launch!('going_to_the_dance')
+      bp3 = Bumbleworks.launch!('straightening_the_rocks')
+      wait_until { Bumbleworks.dashboard.process_wfids.count == 3 }
+      described_class.all.should =~ [bp1, bp2, bp3]
+    end
+  end
+
   describe '.new' do
     it 'sets workflow id' do
       bp = described_class.new('apples')

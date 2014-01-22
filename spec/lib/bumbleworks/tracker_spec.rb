@@ -7,7 +7,21 @@ describe Bumbleworks::Tracker do
     Bumbleworks.storage = {}
     Bumbleworks.dashboard.stub(:get_trackers => fake_trackers)
   end
-  
+
+  describe '.all' do
+    it 'returns instances for each tracker in system' do
+      trackers = described_class.all
+      trackers.all? { |t| t.class == Bumbleworks::Tracker }.should be_true
+      trackers.map(&:id).should =~ [
+        'on_error',
+        'global_tracker',
+        'local_tracker',
+        'local_error_intercept',
+        'participant_tracker'
+      ]
+    end
+  end
+
   describe '.new' do
     it 'sets tracker id and fetches original_hash from dashboard' do
       tr = described_class.new('global_tracker')

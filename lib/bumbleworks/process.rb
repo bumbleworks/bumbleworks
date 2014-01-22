@@ -4,6 +4,14 @@ module Bumbleworks
 
     attr_reader :id
 
+    class << self
+      def all
+        Bumbleworks.dashboard.process_wfids.map do |wfid|
+          new(wfid)
+        end
+      end
+    end
+
     def initialize(wfid)
       @id = wfid
     end

@@ -2,6 +2,14 @@ module Bumbleworks
   class Tracker
     attr_reader :id, :original_hash
 
+    class << self
+      def all
+        Bumbleworks.dashboard.get_trackers.map do |tid, attrs|
+          new(tid, attrs)
+        end
+      end
+    end
+
     def initialize(id, original_hash = nil)
       @id = id
       @original_hash = original_hash || Bumbleworks.dashboard.get_trackers[id]
