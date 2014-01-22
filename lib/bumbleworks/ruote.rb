@@ -51,7 +51,12 @@ module Bumbleworks
           options[:method] = :cancel
         end
 
-        dashboard.send(options[:method], wfid)
+        if options[:method] == :cancel
+          dashboard.cancel(wfid)
+        else
+          storage.remove_process(wfid)
+        end
+
         start_time = Time.now
         while dashboard.process(wfid)
           if (Time.now - start_time) > options[:timeout]
@@ -72,25 +77,33 @@ module Bumbleworks
           options[:method] = :cancel
         end
 
-        notified_processes = []
+        notified_process_wfids = []
 
         start_time = Time.now
-        while dashboard.processes.count > 0
-          new_processes = dashboard.processes - notified_processes
-          send_cancellation_message(options[:method], new_processes)
-          notified_processes += new_processes
+        while dashboard.process_wfids.count > 0
+          new_process_wfids = dashboard.process_wfids - notified_process_wfids
+          if options[:method] == :cancel
+            send_cancellation_message(options[:method], new_process_wfids)
+          else
+            storage.clear
+          end
+          notified_process_wfids += new_process_wfids
 
           if (Time.now - start_time) > options[:timeout]
             error_type = options[:method] == :cancel ? CancelTimeout : KillTimeout
-            raise error_type, "Process #{options[:method]} taking too long - #{dashboard.processes.count} processes remain.  Errors: #{dashboard.errors}"
+            raise error_type, "Process #{options[:method]} taking too long - #{dashboard.process_wfids.count} processes remain.  Errors: #{dashboard.errors}"
           end
           sleep 0.1
         end
       end
 
-      def send_cancellation_message(method, processes)
-        processes.each do |ps|
-          dashboard.send(method, ps.wfid)
+      def send_cancellation_message(method, process_wfids)
+        process_wfids.each do |wfid|
+          if method == :cancel
+            dashboard.cancel(wfid)
+          else
+            storage.remove_process(wfid)
+          end
         end
       end
 

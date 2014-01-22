@@ -60,7 +60,6 @@ describe Bumbleworks::Ruote do
     end
 
     it 'times out if process is not killed in time' do
-      Bumbleworks.dashboard.stub(:kill)
       Bumbleworks.dashboard.stub(:process).with('woot').and_return(:i_exist)
       expect {
         described_class.kill_process!('woot', :timeout => 0.5)
@@ -121,12 +120,12 @@ describe Bumbleworks::Ruote do
         Bumbleworks.dashboard.wait_for("lazy_guy_#{i}".to_sym)
       end
 
-      Bumbleworks.dashboard.processes.count.should == 5
+      Bumbleworks.dashboard.process_wfids.count.should == 5
 
       described_class.cancel_all_processes!(:timeout => 30)
 
       # 4. When this is all done, all processes should be cancelled.
-      Bumbleworks.dashboard.processes.count.should == 0
+      Bumbleworks.dashboard.process_wfids.count.should == 0
     end
 
     it 'times out if processes are not cancelled in time' do
@@ -140,7 +139,7 @@ describe Bumbleworks::Ruote do
       end
       Bumbleworks.launch!('time_hog')
       Bumbleworks.dashboard.wait_for(:pigheaded)
-      Bumbleworks.dashboard.processes.count.should == 1
+      Bumbleworks.dashboard.process_wfids.count.should == 1
       expect {
         described_class.cancel_all_processes!(:timeout => 0.5)
       }.to raise_error(Bumbleworks::Ruote::CancelTimeout)
@@ -172,12 +171,24 @@ describe Bumbleworks::Ruote do
     end
 
     it 'times out if processes are not killed in time' do
-      Bumbleworks.dashboard.stub(:kill)
-      ps1 = double('process', :wfid => nil)
-      Bumbleworks.dashboard.stub(:processes).and_return([ps1])
+      Bumbleworks.dashboard.stub(:process_wfids).and_return(['immortal_wfid'])
       expect {
         described_class.kill_all_processes!(:timeout => 0.5)
       }.to raise_error(Bumbleworks::Ruote::KillTimeout)
+    end
+  end
+
+  describe '.send_cancellation_message' do
+    it 'sends cancel message to given wfids if method is cancel' do
+      Bumbleworks.dashboard.should_receive(:cancel).with('wfid1')
+      Bumbleworks.dashboard.should_receive(:cancel).with('wfid2')
+      described_class.send_cancellation_message(:cancel, ['wfid1', 'wfid2'])
+    end
+
+    it 'removes given processes from storage if method is kill' do
+      Bumbleworks.dashboard.storage.should_receive(:remove_process).with('wfid1')
+      Bumbleworks.dashboard.storage.should_receive(:remove_process).with('wfid2')
+      described_class.send_cancellation_message(:kill, ['wfid1', 'wfid2'])
     end
   end
 
