@@ -48,6 +48,7 @@ describe Bumbleworks::Task::Finder do
       query.should_receive(:by_nickname).with(:nicholas).and_return(query)
       query.should_receive(:for_roles).with([:dinner, :barca]).and_return(query)
       query.should_receive(:unclaimed).and_return(query)
+      query.should_receive(:claimed).and_return(query)
       query.should_receive(:for_claimant).with(:dr_clam).and_return(query)
       query.should_receive(:for_entity).with(:a_luffly_pirate).and_return(query)
       query.should_receive(:for_processes).with([:jasmine, :mulan]).and_return(query)
@@ -58,6 +59,7 @@ describe Bumbleworks::Task::Finder do
         :nickname => :nicholas,
         :roles => [:dinner, :barca],
         :unclaimed => true,
+        :claimed => true,
         :claimant => :dr_clam,
         :entity => :a_luffly_pirate,
         :processes => [:jasmine, :mulan],

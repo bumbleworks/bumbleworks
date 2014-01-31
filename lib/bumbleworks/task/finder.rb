@@ -61,8 +61,8 @@ module Bumbleworks
         self
       end
 
-      def claimed
-        unclaimed(false)
+      def claimed(check = true)
+        unclaimed(!check)
       end
 
       def with_fields(field_hash)
