@@ -4,6 +4,14 @@ describe Bumbleworks::Workitem do
   let(:ruote_workitem) { Ruote::Workitem.new('fields' => {'entity_id' => '123', 'entity_type' => 'RainbowLoom'} ) }
   let(:workitem) { Bumbleworks::Workitem.new(ruote_workitem)}
 
+  describe '#==' do
+    it 'returns true if other object has same raw workitem' do
+      bw1 = described_class.new('in_da_sky')
+      bw2 = described_class.new('in_da_sky')
+      bw1.should == bw2
+    end
+  end
+
   describe '#has_entity_fields?' do
     it 'returns true if workitem fields include entity fields' do
       workitem.should have_entity_fields

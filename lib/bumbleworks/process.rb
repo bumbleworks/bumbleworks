@@ -6,14 +6,29 @@ module Bumbleworks
 
     class << self
       def all
-        Bumbleworks.dashboard.process_wfids.map do |wfid|
+        ids.map do |wfid|
           new(wfid)
         end
+      end
+
+      def ids
+        Bumbleworks.dashboard.process_wfids
+      end
+
+      def count
+        ids.count
       end
     end
 
     def initialize(wfid)
       @id = wfid
+    end
+
+    def reload
+      (instance_variables - [:@id]).each do |memo|
+        instance_variable_set(memo, nil)
+      end
+      self
     end
 
     alias_method :wfid, :id
@@ -22,22 +37,48 @@ module Bumbleworks
       wfid == other.wfid
     end
 
-    def entity
-      return nil unless process_status
-      workitems = leaves.map(&:applied_workitem).map { |wi| Bumbleworks::Workitem.new(wi) }
+    def entity_fields
+      return {} if workitems.empty?
       if workitems.map(&:entity_fields).uniq.length == 1
-        workitems.first.entity if workitems.first.has_entity?
+        workitems.first.entity_fields
       else
         raise EntityConflict
       end
     end
 
+    def entity
+      return nil if entity_fields.empty?
+      workitems.first.entity
+    end
+
+    def expressions
+      @expressions ||= begin
+        context = Bumbleworks.dashboard.context
+        raw_expressions = context.storage.get_many('expressions', [wfid])
+        raw_expressions.collect { |e|
+          ::Ruote::Exp::FlowExpression.from_h(context, e)
+        }.sort_by { |e|
+          e.fei.expid
+        }
+      end
+    end
+
+    def leaves
+      @leaves ||= expressions.inject([]) { |a, exp|
+        a.select { |e| ! exp.ancestor?(e.fei) } + [ exp ]
+      }
+    end
+
+    def workitems
+      @workitems ||= leaves.map(&:applied_workitem).map { |wi| Bumbleworks::Workitem.new(wi) }
+    end
+
     def tasks
-      Bumbleworks::Task.for_process(wfid)
+      @tasks ||= Bumbleworks::Task.for_process(wfid)
     end
 
     def trackers
-      Bumbleworks.dashboard.get_trackers.select { |tid, attrs|
+      @trackers ||= Bumbleworks.dashboard.get_trackers.select { |tid, attrs|
         attrs['msg']['fei'] && attrs['msg']['fei']['wfid'] == id
       }.map { |tid, original_hash|
         Bumbleworks::Tracker.new(tid, original_hash)
@@ -45,7 +86,7 @@ module Bumbleworks
     end
 
     def all_subscribed_tags
-      trackers.inject({ :global => [] }) do |memo, t|
+      @all_subscribed_tags ||= trackers.inject({ :global => [] }) do |memo, t|
         if t.global?
           memo[:global].concat t.tags
         else
@@ -72,7 +113,7 @@ module Bumbleworks
     end
 
     def process_status
-      Bumbleworks.dashboard.process(id)
+      @process_status ||= Bumbleworks.dashboard.process(id)
     end
 
     def method_missing(method, *args)

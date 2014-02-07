@@ -1,7 +1,13 @@
 module Bumbleworks
   class Workitem
+    attr_reader :raw_workitem
+
     def initialize(raw_workitem)
       @raw_workitem = raw_workitem
+    end
+
+    def ==(other)
+      raw_workitem == other.raw_workitem
     end
 
     def entity(options = {})
