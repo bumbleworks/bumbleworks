@@ -67,7 +67,7 @@ describe Bumbleworks::Process do
   end
 
   describe '#workitems' do
-    it 'returns task query filtered for this process' do
+    it 'returns array of applied workitems from each leaf' do
       bp = described_class.new('chumpy')
       l1 = double(:applied_workitem => 'aw1')
       l2 = double(:applied_workitem => 'aw2')
@@ -81,23 +81,36 @@ describe Bumbleworks::Process do
     end
   end
 
-  describe '#entity_fields' do
-    it 'returns empty hash if process not ready yet' do
+  it_behaves_like "an entity holder" do
+    let(:entity_workitem) { Bumbleworks::Workitem.new(:fake_workitem) }
+    let(:holder) {
+      holder = described_class.new('nothing')
+      holder.stub(:entity_workitem => entity_workitem)
+      holder
+    }
+    let(:storage_workitem) { entity_workitem }
+  end
+
+  describe '#entity_workitem' do
+    it 'returns first workitem from workitems array, if no entity fields conflict' do
       bp = described_class.new('nothing')
-      bp.entity_fields.should == {}
+      w1 = double(:entity_fields => :some_fields)
+      w2 = double(:entity_fields => :some_fields)
+      bp.stub(:workitems => [w1, w2])
+      bp.entity_workitem.should == w1
     end
 
-    it 'returns empty hash if no entity' do
-      bp = Bumbleworks.launch!('going_to_the_dance')
-      wait_until { bp.reload.trackers.count > 0 }
-      bp.entity_fields.should == {}
+    it 'returns nil if no process' do
+      bp = described_class.new('nothing')
+      bp.entity_workitem.should be_nil
     end
 
-    it 'returns entity_fields provided at launch' do
+    it 'returns workitem with entity reference from process launch' do
       rainbow_loom = RainbowLoom.new('1234')
       bp = Bumbleworks.launch!('going_to_the_dance', :entity => rainbow_loom)
       wait_until { bp.reload.trackers.count > 0 }
-      bp.entity_fields.should == { :type => 'RainbowLoom', :identifier => '1234'}
+      ew = bp.entity_workitem
+      ew.entity.should == rainbow_loom
     end
 
     it 'raises exception if multiple workitems have conflicting entity info' do
@@ -116,7 +129,17 @@ describe Bumbleworks::Process do
       bp = Bumbleworks.launch!('conflict_this', :entity => RainbowLoom.new('1234'))
       Bumbleworks.dashboard.wait_for(:just_wait)
       expect {
-        bp.entity_fields
+        bp.entity_workitem
+      }.to raise_error(Bumbleworks::Process::EntityConflict)
+    end
+  end
+
+  describe '#entity' do
+    it 'bubbles EntityConflict from entity_workitem' do
+      bp = described_class.new('whatever')
+      bp.stub(:entity_workitem).and_raise(Bumbleworks::Process::EntityConflict)
+      expect {
+        bp.entity
       }.to raise_error(Bumbleworks::Process::EntityConflict)
     end
   end
@@ -216,29 +239,6 @@ describe Bumbleworks::Process do
       bp1 = described_class.new('in_da_sky')
       bp2 = described_class.new('in_da_sky')
       bp1.should == bp2
-    end
-  end
-
-  describe '#entity' do
-    it 'returns nil if entity_fields is empty' do
-      bp = described_class.new('nothing')
-      bp.stub(:entity_fields => {})
-      bp.entity.should be_nil
-    end
-
-    it 'returns entity provided at launch' do
-      rainbow_loom = RainbowLoom.new('1234')
-      bp = Bumbleworks.launch!('going_to_the_dance', :entity => rainbow_loom)
-      wait_until { bp.reload.trackers.count > 0 }
-      bp.entity.should == rainbow_loom
-    end
-
-    it 'bubbles EntityConflict from entity_fields' do
-      bp = described_class.new('whatever')
-      bp.stub(:entity_fields).and_raise(Bumbleworks::Process::EntityConflict)
-      expect {
-        bp.entity
-      }.to raise_error(Bumbleworks::Process::EntityConflict)
     end
   end
 

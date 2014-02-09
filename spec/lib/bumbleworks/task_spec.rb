@@ -8,15 +8,9 @@ describe Bumbleworks::Task do
     Bumbleworks.start_worker!
   end
 
-  describe 'entity storage' do
-    it 'includes WorkitemEntityStorage' do
-      described_class.included_modules.should include(Bumbleworks::WorkitemEntityStorage)
-    end
-
-    it 'has a workitem method that returns workitem' do
-      task = described_class.new(workflow_item)
-      task.workitem.should == workflow_item
-    end
+  it_behaves_like "an entity holder" do
+    let(:holder) { described_class.new(workflow_item) }
+    let(:storage_workitem) { Bumbleworks::Workitem.new(workflow_item) }
   end
 
   describe '#not_completable_error_message' do

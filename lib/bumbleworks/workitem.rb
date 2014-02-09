@@ -45,6 +45,11 @@ module Bumbleworks
       }
     end
 
+    def entity_name
+      fields = entity_fields(:titleize => true)
+      "#{fields[:type]} #{fields[:identifier]}"
+    end
+
   private
 
     def entity_id

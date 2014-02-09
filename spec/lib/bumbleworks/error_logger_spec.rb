@@ -1,6 +1,12 @@
 describe Bumbleworks::ErrorLogger do
   subject {described_class.new(workitem)}
   let(:workitem) {double(:wf_name => 'armadillo', :error => 'something is amiss in dillo land', :wfid => 'zabme123', :fields => {})}
+
+  it_behaves_like "an entity holder" do
+    let(:holder) { described_class.new(workitem) }
+    let(:storage_workitem) { Bumbleworks::Workitem.new(workitem) }
+  end
+
   it 'calls registered logger and logs error information' do
     Bumbleworks.logger.should_receive(:error).with({
       :actor => 'armadillo',

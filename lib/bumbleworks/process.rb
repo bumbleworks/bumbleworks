@@ -1,6 +1,10 @@
+require "bumbleworks/workitem_entity_storage"
+
 module Bumbleworks
   class Process
     class EntityConflict < StandardError; end
+
+    include WorkitemEntityStorage
 
     attr_reader :id
 
@@ -37,18 +41,16 @@ module Bumbleworks
       wfid == other.wfid
     end
 
-    def entity_fields
-      return {} if workitems.empty?
-      if workitems.map(&:entity_fields).uniq.length == 1
-        workitems.first.entity_fields
+    def entity_workitem
+      @entity_workitem ||= if workitems.map(&:entity_fields).uniq.length <= 1
+        workitems.first
       else
         raise EntityConflict
       end
     end
 
-    def entity
-      return nil if entity_fields.empty?
-      workitems.first.entity
+    def entity_storage_workitem
+      super(entity_workitem)
     end
 
     def expressions

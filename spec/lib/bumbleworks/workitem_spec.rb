@@ -93,4 +93,10 @@ describe Bumbleworks::Workitem do
       workitem.entity_fields(:titleize => true).should == { :type => 'Rainbow Loom', :identifier => '123' }
     end
   end
+
+  describe "#entity_name" do
+    it 'returns entity fields in displayable string' do
+      workitem.entity_name.should == 'Rainbow Loom 123'
+    end
+  end
 end
