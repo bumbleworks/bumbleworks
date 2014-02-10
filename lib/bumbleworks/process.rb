@@ -65,6 +65,12 @@ module Bumbleworks
       end
     end
 
+    def errors
+      @errors ||= Bumbleworks.dashboard.context.storage.get_many('errors', [wfid]).map { |err|
+        ::Ruote::ProcessError.new(err)
+      }
+    end
+
     def leaves
       @leaves ||= expressions.inject([]) { |a, exp|
         a.select { |e| ! exp.ancestor?(e.fei) } + [ exp ]

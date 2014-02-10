@@ -66,6 +66,24 @@ describe Bumbleworks::Process do
     end
   end
 
+  describe '#errors' do
+    it 'returns all process errors' do
+      Bumbleworks.define_process 'error_process' do
+        concurrence do
+          error 'first error'
+          error 'second error'
+        end
+      end
+      bp = Bumbleworks.launch!('error_process')
+      Bumbleworks.dashboard.wait_for('error_intercepted')
+      errors = bp.errors
+      errors.map(&:message).should =~ [
+        '#<Ruote::ForcedError: first error>',
+        '#<Ruote::ForcedError: second error>'
+      ]
+    end
+  end
+
   describe '#workitems' do
     it 'returns array of applied workitems from each leaf' do
       bp = described_class.new('chumpy')
