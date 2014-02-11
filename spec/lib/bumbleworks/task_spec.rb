@@ -408,6 +408,43 @@ describe Bumbleworks::Task do
     end
   end
 
+  context 'iterators' do
+    before :each do
+      Bumbleworks.define_process 'life_on_tha_street' do
+        concurrence do
+          oscar :task => 'grouch_it_up'
+          elmo :task => 'sing_a_tune'
+          elmo :task => 'steal_booze'
+          snuffy :task => 'eat_cabbage'
+        end
+      end
+      Bumbleworks.launch!('life_on_tha_street')
+      Bumbleworks.dashboard.wait_for(:snuffy)
+    end
+
+    describe '.each' do
+      it 'executes for each found task' do
+        list = []
+        described_class.each { |t| list << t.nickname }
+        list.should =~ ['grouch_it_up', 'sing_a_tune', 'steal_booze', 'eat_cabbage']
+      end
+    end
+
+    describe '.map' do
+      it 'maps result of yielding block with each task' do
+        list = described_class.map { |t| t.nickname }
+        list.should =~ ['grouch_it_up', 'sing_a_tune', 'steal_booze', 'eat_cabbage']
+      end
+    end
+
+    context 'with queries' do
+      it 'checks filters' do
+        list = described_class.for_role('elmo').map { |t| t.nickname }
+        list.should =~ ['sing_a_tune', 'steal_booze']
+      end
+    end
+  end
+
   describe '.all' do
     before :each do
       Bumbleworks.define_process 'dog-lifecycle' do
@@ -506,7 +543,7 @@ describe Bumbleworks::Task do
   end
 
   describe '.with_fields' do
-    it 'returns all tasks with given fields' do
+    before(:each) do
       Bumbleworks.define_process 'divergination' do
         concurrence do
           sequence do
@@ -524,11 +561,23 @@ describe Bumbleworks::Task do
       end
       Bumbleworks.launch!('divergination', :grumbles => true)
       Bumbleworks.dashboard.wait_for(:loofer)
+    end
+
+    it 'returns all tasks with given field' do
       described_class.with_fields(:grumbles => true).count.should == 3
       described_class.with_fields(:bumby => 'fancy').count.should == 1
       described_class.with_fields(:bumby => 'not_fancy').count.should == 2
-      described_class.with_fields(:grumbles => false, :bumby => 'not_fancy').should be_empty
       described_class.with_fields(:what => 'ever').should be_empty
+    end
+
+    it 'looks up multiple fields at once' do
+      described_class.with_fields(:grumbles => true, :bumby => 'not_fancy').count.should == 2
+      described_class.with_fields(:grumbles => false, :bumby => 'not_fancy').should be_empty
+    end
+
+    it 'can be chained' do
+      described_class.with_fields(:grumbles => true).with_fields(:bumby => 'fancy').count.should == 1
+      described_class.with_fields(:grumbles => false).with_fields(:bumby => 'not_fancy').should be_empty      
     end
   end
 

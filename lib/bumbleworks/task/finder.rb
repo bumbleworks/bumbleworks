@@ -76,11 +76,10 @@ module Bumbleworks
       end
 
       def for_entity(entity)
-        @queries << proc { |wi|
-          (wi['fields'][:entity_type] || wi['fields']['entity_type']) == entity.class.name &&
-            (wi['fields'][:entity_id] || wi['fields']['entity_id']) == entity.identifier
-        }
-        self
+        with_fields({
+          :entity_type => entity.class.name,
+          :entity_id => entity.identifier
+        })
       end
 
       def for_processes(processes)
@@ -95,57 +94,57 @@ module Bumbleworks
         for_processes([process])
       end
 
-      def all
-        return [] if @wfids == []
-        workitems = Bumbleworks.dashboard.context.storage.get_many('workitems', @wfids).select { |wi|
-          @queries.all? { |q| q.call(wi) }
-        }.collect { |wi|
-          ::Ruote::Workitem.new(wi)
-        }
-        from_workitems(workitems)
-      end
-
       def completable(true_or_false = true)
         @task_filters << proc { |task| task.completable? == true_or_false }
         self
-      end
-
-      def each(&block)
-        all.each(&block)
-      end
-
-      def empty?
-        all.empty?
       end
 
       def next_available(options = {})
         options[:timeout] ||= Bumbleworks.timeout
 
         start_time = Time.now
-        while first.nil?
+        while (first_task = first).nil?
           if (Time.now - start_time) > options[:timeout]
             raise @task_class::AvailabilityTimeout, "No tasks found matching criteria in time"
           end
           sleep 0.1
         end
-        first
+        first_task
+      end
+
+      def each
+        return to_enum(:each) unless block_given?
+        return if @wfids == []
+        workitems = Bumbleworks.dashboard.context.storage.get_many('workitems', @wfids).each { |wi|
+          if task = filtered_task_from_raw_workitem(wi)
+            yield task
+          end
+        }
+      end
+
+      def all
+        to_a
+      end
+
+      def empty?
+        !any?
       end
 
     private
 
-      def filter_tasks(tasks)
-        @task_filters.empty? ? tasks :
-          tasks.select { |task|
-            @task_filters.all? { |f| f.call(task) }
-          }
+      def filtered_task_from_raw_workitem(workitem)
+        if @queries.all? { |q| q.call(workitem) }
+          task = from_workitem(::Ruote::Workitem.new(workitem))
+          task if check_filters(task)
+        end
       end
 
-      def from_workitems(workitems)
-        tasks = workitems.map { |wi|
-          @task_class.new(wi)
-        }.compact
+      def check_filters(task)
+        @task_filters.all? { |f| f.call(task) }
+      end
 
-        filter_tasks(tasks)
+      def from_workitem(workitem)
+        task = @task_class.new(workitem)
       end
     end
   end
