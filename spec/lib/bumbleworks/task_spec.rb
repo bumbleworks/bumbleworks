@@ -218,6 +218,107 @@ describe Bumbleworks::Task do
     end
   end
 
+  context 'ordering' do
+    before :each do
+      Bumbleworks.define_process 'emergency_hamster_bullet' do
+        concurrence do
+          doctor :task => 'evince_concern', :priority => 3, :importance => 1000
+          patient :task => 'panic', :priority => 2, :importance => 5
+          nurse :task => 'roll_eyes', :priority => 4, :importance => 1000
+          officer :task => 'appear_authoritative', :priority => 1, :importance => 1000
+        end
+      end
+    end
+
+    context 'by params' do
+      before(:each) do
+        Bumbleworks.launch!('emergency_hamster_bullet')
+        Bumbleworks.dashboard.wait_for(:officer)
+      end
+
+      describe '.order_by_param' do
+        it 'orders returned tasks by given param ascending by default' do
+          tasks = described_class.order_by_param(:priority)
+          tasks.map(&:nickname).should == [
+            'appear_authoritative',
+            'panic',
+            'evince_concern',
+            'roll_eyes'
+          ]
+        end
+
+        it 'can order in reverse' do
+          tasks = described_class.order_by_param(:priority, :desc)
+          tasks.map(&:nickname).should == [
+            'roll_eyes',
+            'evince_concern',
+            'panic',
+            'appear_authoritative'
+          ]
+        end
+      end
+
+      describe '.order_by_params' do
+        it 'orders by multiple parameters' do
+          tasks = described_class.order_by_params(:importance => :desc, :priority => :asc)
+          tasks.map(&:nickname).should == [
+            'appear_authoritative',
+            'evince_concern',
+            'roll_eyes',
+            'panic'
+          ]
+        end
+      end
+    end
+
+    context 'by fields' do
+      before(:each) do
+        @wf3 = Bumbleworks.launch!('emergency_hamster_bullet', :group => 2, :strength => 3)
+        Bumbleworks.dashboard.wait_for(:officer)
+        @wf1 = Bumbleworks.launch!('emergency_hamster_bullet', :group => 2, :strength => 1)
+        Bumbleworks.dashboard.wait_for(:officer)
+        @wf2 = Bumbleworks.launch!('emergency_hamster_bullet', :group => 1, :strength => 2)
+        Bumbleworks.dashboard.wait_for(:officer)
+        @wf4 = Bumbleworks.launch!('emergency_hamster_bullet', :group => 1, :strength => 4)
+        Bumbleworks.dashboard.wait_for(:officer)
+      end
+
+      describe '.order_by_field' do
+        it 'orders returned tasks by given param ascending by default' do
+          tasks = described_class.for_role('doctor').order_by_field(:strength)
+          tasks.map { |t| [t.nickname, t.wfid] }.should == [
+            ['evince_concern', @wf1.wfid],
+            ['evince_concern', @wf2.wfid],
+            ['evince_concern', @wf3.wfid],
+            ['evince_concern', @wf4.wfid]
+          ]
+        end
+
+        it 'can order in reverse' do
+          tasks = described_class.for_role('doctor').order_by_field(:strength, :desc)
+          tasks.map { |t| [t.nickname, t.wfid] }.should == [
+            ['evince_concern', @wf4.wfid],
+            ['evince_concern', @wf3.wfid],
+            ['evince_concern', @wf2.wfid],
+            ['evince_concern', @wf1.wfid]
+          ]
+        end
+      end
+
+      describe '.order_by_fields' do
+        it 'orders by multiple parameters' do
+          tasks = described_class.for_role('doctor').order_by_fields(:group => :asc, :strength => :desc)
+          tasks.map { |t| [t.nickname, t.wfid] }.should == [
+            ['evince_concern', @wf4.wfid],
+            ['evince_concern', @wf2.wfid],
+            ['evince_concern', @wf3.wfid],
+            ['evince_concern', @wf1.wfid]
+          ]
+        end
+      end
+    end
+  end
+
   describe '.for_roles' do
     before :each do
       Bumbleworks.define_process 'lowering_penguin_self_esteem' do

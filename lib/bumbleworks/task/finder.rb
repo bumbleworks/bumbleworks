@@ -8,6 +8,7 @@ module Bumbleworks
         @queries << proc { |wi| wi['fields']['params']['task'] }
         @task_class = task_class
         @task_filters = []
+        @orderers = []
         @wfids = nil
       end
 
@@ -94,6 +95,22 @@ module Bumbleworks
         for_processes([process])
       end
 
+      def order_by_field(field, direction = :asc)
+        order_by_fields(field => direction)
+      end
+
+      def order_by_param(param, direction = :asc)
+        order_by_params(param => direction)
+      end
+
+      def order_by_fields(fields)
+        add_orderer(fields)
+      end
+
+      def order_by_params(params)
+        add_orderer(params, 'params')
+      end
+
       def completable(true_or_false = true)
         @task_filters << proc { |task| task.completable? == true_or_false }
         self
@@ -115,7 +132,11 @@ module Bumbleworks
       def each
         return to_enum(:each) unless block_given?
         return if @wfids == []
-        workitems = Bumbleworks.dashboard.context.storage.get_many('workitems', @wfids).each { |wi|
+        workitems = raw_workitems(@wfids)
+        @orderers.each do |order_proc|
+          workitems.sort! &order_proc
+        end
+        workitems.each { |wi|
           if task = filtered_task_from_raw_workitem(wi)
             yield task
           end
@@ -132,6 +153,21 @@ module Bumbleworks
 
     private
 
+      def add_orderer(fields, field_type = 'fields')
+        @orderers << proc { |wi_x, wi_y|
+          relevant_direction, result = :asc, 0
+          fields.each do |field, direction|
+            sets = [wi_x['fields'], wi_y['fields']]
+            sets.map! { |s| s['params'] } if field_type.to_s == 'params'
+            result = sets[0][field.to_s] <=> sets[1][field.to_s]
+            relevant_direction = direction
+            break if !result.zero?
+          end
+          relevant_direction == :desc ? -result : result
+        }
+        self
+      end
+
       def filtered_task_from_raw_workitem(workitem)
         if @queries.all? { |q| q.call(workitem) }
           task = from_workitem(::Ruote::Workitem.new(workitem))
@@ -145,6 +181,10 @@ module Bumbleworks
 
       def from_workitem(workitem)
         task = @task_class.new(workitem)
+      end
+
+      def raw_workitems(wfids)
+        Bumbleworks.dashboard.context.storage.get_many('workitems', wfids)
       end
     end
   end
