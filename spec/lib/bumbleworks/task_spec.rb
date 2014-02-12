@@ -335,7 +335,6 @@ describe Bumbleworks::Task do
     it 'returns tasks for all given roles' do
       Bumbleworks.dashboard.wait_for(:father)
       tasks = described_class.for_roles(['heckler', 'mother'])
-      tasks.should have(2).items
       tasks.map(&:nickname).should == [
         'comment_on_dancing_ability',
         'ignore_pleas_for_attention'
@@ -949,29 +948,25 @@ describe Bumbleworks::Task do
       tasks = described_class.
         for_roles(['green', 'pink']).
         by_nickname('be_proud')
-      tasks.should have(2).items
       tasks.map(&:nickname).should =~ ['be_proud', 'be_proud']
 
       tasks = described_class.
         for_roles(['green', 'pink', 'blue']).
         completable.
         by_nickname('be_proud')
-      tasks.should have(1).items
       tasks.map(&:nickname).should =~ ['be_proud']
       tasks.first.role.should == 'pink'
 
       tasks = described_class.
         for_claimant('crayon_box').
         for_roles(['red', 'yellow', 'green'])
-      tasks.should have(2).items
       tasks.map(&:nickname).should =~ ['be_really_mad', 'be_scared']
 
       tasks = described_class.
         for_claimant('crayon_box').
         by_nickname('be_a_bit_sad').
         for_role('blue')
-      tasks.should have(1).item
-      tasks.first.nickname.should == 'be_a_bit_sad'
+      tasks.map(&:nickname).should == ['be_a_bit_sad']
     end
   end
 
