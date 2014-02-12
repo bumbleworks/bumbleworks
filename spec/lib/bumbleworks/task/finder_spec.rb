@@ -77,10 +77,15 @@ describe Bumbleworks::Task::Finder do
 
   describe '#available' do
     it 'adds both unclaimed and completable filters' do
-      subject.should_receive(:unclaimed).and_return(subject)
-      subject.should_receive(:completable).and_return(subject)
+      subject.should_receive(:where_all).with(:unclaimed => true, :completable => true).and_return(subject)
       subject.available
     end
+
+    it 'adds OR-ed claimed and not-completable filters if passed false' do
+      subject.should_receive(:where_any).with(:claimed => true, :completable => false).and_return(subject)
+      subject.available(false)
+    end
+  end
 
   [:all, :any].each do |join_type|
     describe "#where_#{join_type}" do

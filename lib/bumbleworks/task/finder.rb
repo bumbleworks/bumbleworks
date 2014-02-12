@@ -52,7 +52,11 @@ module Bumbleworks
       end
 
       def available(check = true)
-        unclaimed.completable
+        if check
+          where_all(:unclaimed => true, :completable => true)
+        else
+          where_any(:claimed => true, :completable => false)
+        end
       end
 
       def by_nickname(nickname)
