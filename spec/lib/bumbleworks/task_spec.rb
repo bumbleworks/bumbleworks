@@ -226,6 +226,7 @@ describe Bumbleworks::Task do
           patient :task => 'panic', :priority => 2, :importance => 5
           nurse :task => 'roll_eyes', :priority => 4, :importance => 1000
           officer :task => 'appear_authoritative', :priority => 1, :importance => 1000
+          rhubarb :task => 'sit_quietly', :importance => 80
         end
       end
     end
@@ -243,13 +244,15 @@ describe Bumbleworks::Task do
             'appear_authoritative',
             'panic',
             'evince_concern',
-            'roll_eyes'
+            'roll_eyes',
+            'sit_quietly'
           ]
         end
 
         it 'can order in reverse' do
           tasks = described_class.order_by_param(:priority, :desc)
           tasks.map(&:nickname).should == [
+            'sit_quietly',
             'roll_eyes',
             'evince_concern',
             'panic',
@@ -265,6 +268,7 @@ describe Bumbleworks::Task do
             'appear_authoritative',
             'evince_concern',
             'roll_eyes',
+            'sit_quietly',
             'panic'
           ]
         end
@@ -281,6 +285,8 @@ describe Bumbleworks::Task do
         Bumbleworks.dashboard.wait_for(:officer)
         @wf4 = Bumbleworks.launch!('emergency_hamster_bullet', :group => 1, :strength => 4)
         Bumbleworks.dashboard.wait_for(:officer)
+        @wf5 = Bumbleworks.launch!('emergency_hamster_bullet', :group => 1)
+        Bumbleworks.dashboard.wait_for(:officer)
       end
 
       describe '.order_by_field' do
@@ -290,13 +296,15 @@ describe Bumbleworks::Task do
             ['evince_concern', @wf1.wfid],
             ['evince_concern', @wf2.wfid],
             ['evince_concern', @wf3.wfid],
-            ['evince_concern', @wf4.wfid]
+            ['evince_concern', @wf4.wfid],
+            ['evince_concern', @wf5.wfid]
           ]
         end
 
         it 'can order in reverse' do
           tasks = described_class.for_role('doctor').order_by_field(:strength, :desc)
           tasks.map { |t| [t.nickname, t.wfid] }.should == [
+            ['evince_concern', @wf5.wfid],
             ['evince_concern', @wf4.wfid],
             ['evince_concern', @wf3.wfid],
             ['evince_concern', @wf2.wfid],
@@ -309,6 +317,7 @@ describe Bumbleworks::Task do
         it 'orders by multiple parameters' do
           tasks = described_class.for_role('doctor').order_by_fields(:group => :asc, :strength => :desc)
           tasks.map { |t| [t.nickname, t.wfid] }.should == [
+            ['evince_concern', @wf5.wfid],
             ['evince_concern', @wf4.wfid],
             ['evince_concern', @wf2.wfid],
             ['evince_concern', @wf3.wfid],

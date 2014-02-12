@@ -200,7 +200,11 @@ module Bumbleworks
           fields.each do |field, direction|
             sets = [wi_x['fields'], wi_y['fields']]
             sets.map! { |s| s['params'] } if field_type.to_s == 'params'
-            result = sets[0][field.to_s] <=> sets[1][field.to_s]
+            wi_x_field, wi_y_field = sets[0][field.to_s], sets[1][field.to_s]
+            result = wi_x_field <=> wi_y_field
+            if result.nil?
+              result = wi_x_field.nil? ? 1 : -1
+            end
             relevant_direction = direction
             break if !result.zero?
           end
