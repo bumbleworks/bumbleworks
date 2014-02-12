@@ -608,7 +608,7 @@ describe Bumbleworks::Task do
       described_class.new(workflow_item).nickname.should == 'go_to_work'
     end
 
-    it 'is immutable; cannot be changed by modified the param' do
+    it 'is immutable; cannot be changed by modifying the param' do
       task = described_class.new(workflow_item)
       task.nickname.should == 'go_to_work'
       task.params['task'] = 'what_is_wrong_with_you?'
