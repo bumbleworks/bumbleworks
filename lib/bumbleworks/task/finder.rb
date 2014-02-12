@@ -1,6 +1,21 @@
 module Bumbleworks
   class Task
     class Finder
+      WhereKeyToMethodMap = {
+        :available => :available,
+        :nickname => :by_nickname,
+        :roles => :for_roles,
+        :role => :for_role,
+        :unclaimed => :unclaimed,
+        :claimed => :claimed,
+        :fields => :with_fields,
+        :claimant => :for_claimant,
+        :entity => :for_entity,
+        :processes => :for_processes,
+        :process => :for_process,
+        :completable => :completable
+      }
+
       include Enumerable
 
       def initialize(task_class = Bumbleworks::Task)
@@ -13,28 +28,13 @@ module Bumbleworks
       end
 
       def where(filters)
-        key_method_map = {
-          :available => :available,
-          :nickname => :by_nickname,
-          :roles => :for_roles,
-          :role => :for_role,
-          :unclaimed => :unclaimed,
-          :claimed => :claimed,
-          :fields => :with_fields,
-          :claimant => :for_claimant,
-          :entity => :for_entity,
-          :processes => :for_processes,
-          :process => :for_process,
-          :completable => :completable
+        query = filters.inject(self) { |query, (key, args)|
+          if method = WhereKeyToMethodMap[key]
+            query.send(method, args)
+          else
+            query.with_fields(key => args)
+          end
         }
-        fields = filters.select { |k,v| !key_method_map.keys.include? k }
-        methods = filters.select { |k,v| key_method_map.keys.include? k }
-        query = methods.inject(self) { |query, (method, args)|
-          query.send(key_method_map[method], args)
-        }
-        unless fields.empty?
-          query.with_fields(fields)
-        end
         query
       end
 

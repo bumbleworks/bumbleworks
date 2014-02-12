@@ -81,7 +81,8 @@ describe Bumbleworks::Task::Finder do
       subject.should_receive(:for_entity).with(:a_luffly_pirate).and_return(subject)
       subject.should_receive(:for_processes).with([:jasmine, :mulan]).and_return(subject)
       subject.should_receive(:completable).with(true).and_return(subject)
-      subject.should_receive(:with_fields).with({ :horse => :giant_pony, :pie => :silly_cake }).and_return(subject)
+      subject.should_receive(:with_fields).with(:horse => :giant_pony).and_return(subject)
+      subject.should_receive(:with_fields).with(:pie => :silly_cake).and_return(subject)
       subject.where({
         :available => true,
         :nickname => :nicholas,
