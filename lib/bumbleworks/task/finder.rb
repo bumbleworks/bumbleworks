@@ -6,6 +6,7 @@ module Bumbleworks
 
       WhereKeyToMethodMap = {
         :available => :available,
+        :unavailable => :unavailable,
         :nickname => :by_nickname,
         :roles => :for_roles,
         :role => :for_role,
@@ -57,6 +58,10 @@ module Bumbleworks
         else
           where_any(:claimed => true, :completable => false)
         end
+      end
+
+      def unavailable(check = true)
+        available(!check)
       end
 
       def by_nickname(nickname)

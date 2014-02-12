@@ -96,6 +96,18 @@ describe Bumbleworks::Task::Finder do
     end
   end
 
+  describe '#unavailable' do
+    it 'checks if not available' do
+      subject.should_receive(:available).with(false).and_return(subject)
+      subject.unavailable
+    end
+
+    it 'checks if available when passed false' do
+      subject.should_receive(:available).with(true).and_return(subject)
+      subject.unavailable(false)
+    end
+  end
+
   [:all, :any].each do |join_type|
     describe "#where_#{join_type}" do
       it "sets join to #{join_type} if no args" do
@@ -117,6 +129,7 @@ describe Bumbleworks::Task::Finder do
       described_class.stub(:new).with(:a_class).and_return(child)
       child.should_receive(:where_all)
       child.should_receive(:available).and_return(child)
+      child.should_receive(:unavailable).and_return(child)
       child.should_receive(:by_nickname).with(:nicholas).and_return(child)
       child.should_receive(:for_roles).with([:dinner, :barca]).and_return(child)
       child.should_receive(:unclaimed).and_return(child)
@@ -130,6 +143,7 @@ describe Bumbleworks::Task::Finder do
       parent.should_receive(:add_subfinder).with(child)
       parent.where({
         :available => true,
+        :unavailable => true,
         :nickname => :nicholas,
         :roles => [:dinner, :barca],
         :unclaimed => true,
