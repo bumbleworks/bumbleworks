@@ -14,6 +14,15 @@ describe Bumbleworks::Task::Finder do
     end
   end
 
+  describe '#check_queries' do
+    it 'raises an exception in case a query type is unrecognized' do
+      subject.instance_variable_set(:@queries, ['not a real query'])
+      expect {
+        subject.check_queries(:wi, :task)
+      }.to raise_error("Unrecognized query type")
+    end
+  end
+
   describe '#add_query' do
     it 'adds given block as new raw workitem query' do
       Bumbleworks.launch!('dog-lifecycle')
