@@ -14,6 +14,36 @@ describe Bumbleworks::Task::Finder do
     end
   end
 
+  describe '#add_query' do
+    it 'adds given block as new raw workitem query' do
+      Bumbleworks.launch!('dog-lifecycle')
+      Bumbleworks.dashboard.wait_for(:cat)
+      finder = subject.add_query { |wi|
+        wi['fields']['params']['task'] != 'pet_dog'
+      }
+      finder.map(&:nickname).should =~ [
+        'eat',
+        'bark',
+        'skip_and_jump'
+      ]
+    end
+  end
+
+  describe '#add_filter' do
+    it 'adds given block as new task filter' do
+      Bumbleworks.launch!('dog-lifecycle')
+      Bumbleworks.dashboard.wait_for(:cat)
+      finder = subject.add_filter { |task|
+        task.nickname != 'pet_dog'
+      }
+      finder.map(&:nickname).should =~ [
+        'eat',
+        'bark',
+        'skip_and_jump'
+      ]
+    end
+  end
+
   describe '#all' do
     it 'uses Bumbleworks::Task class by default for task generation' do
       Bumbleworks.launch!('dog-lifecycle')

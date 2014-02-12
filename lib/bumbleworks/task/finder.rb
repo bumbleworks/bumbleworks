@@ -5,11 +5,11 @@ module Bumbleworks
 
       def initialize(queries = [], task_class = Bumbleworks::Task)
         @queries = queries
-        @queries << proc { |wi| wi['fields']['params']['task'] }
         @task_class = task_class
         @task_filters = []
         @orderers = []
         @wfids = nil
+        add_query { |wi| wi['fields']['params']['task'] }
       end
 
       def where(filters)
@@ -43,14 +43,12 @@ module Bumbleworks
       end
 
       def by_nickname(nickname)
-        @queries << proc { |wi| wi['fields']['params']['task'] == nickname }
-        self
+        add_query { |wi| wi['fields']['params']['task'] == nickname }
       end
 
       def for_roles(identifiers)
         identifiers ||= []
-        @queries << proc { |wi| identifiers.include?(wi['participant_name']) }
-        self
+        add_query { |wi| identifiers.include?(wi['participant_name']) }
       end
 
       def for_role(identifier)
@@ -58,8 +56,7 @@ module Bumbleworks
       end
 
       def unclaimed(check = true)
-        @queries << proc { |wi| wi['fields']['params']['claimant'].nil? == check }
-        self
+        add_query { |wi| wi['fields']['params']['claimant'].nil? == check }
       end
 
       def claimed(check = true)
@@ -67,13 +64,11 @@ module Bumbleworks
       end
 
       def with_fields(field_hash)
-        @queries << proc { |wi| field_hash.all? { |k, v| wi['fields'][k.to_s] == v } }
-        self
+        add_query { |wi| field_hash.all? { |k, v| wi['fields'][k.to_s] == v } }
       end
 
       def for_claimant(token)
-        @queries << proc { |wi| wi['fields']['params']['claimant'] == token }
-        self
+        add_query { |wi| wi['fields']['params']['claimant'] == token }
       end
 
       def for_entity(entity)
@@ -112,7 +107,16 @@ module Bumbleworks
       end
 
       def completable(true_or_false = true)
-        @task_filters << proc { |task| task.completable? == true_or_false }
+        add_filter { |task| task.completable? == true_or_false }
+      end
+
+      def add_query(&block)
+        @queries << block
+        self
+      end
+
+      def add_filter(&block)
+        @task_filters << block
         self
       end
 
