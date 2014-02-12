@@ -48,6 +48,7 @@ module Bumbleworks
 
       def for_roles(identifiers)
         identifiers ||= []
+        identifiers.map! { |i| i.to_s }
         add_query { |wi| identifiers.include?(wi['participant_name']) }
       end
 

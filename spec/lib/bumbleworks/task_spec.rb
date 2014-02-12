@@ -341,6 +341,15 @@ describe Bumbleworks::Task do
       ]
     end
 
+    it 'works with symbolized role names' do
+      Bumbleworks.dashboard.wait_for(:father)
+      tasks = described_class.for_roles([:heckler, :mother])
+      tasks.map(&:nickname).should == [
+        'comment_on_dancing_ability',
+        'ignore_pleas_for_attention'
+      ]
+    end
+
     it 'returns empty array if no tasks found for given roles' do
       Bumbleworks.dashboard.wait_for(:father)
       described_class.for_roles(['elephant']).should be_empty
