@@ -48,7 +48,7 @@ describe Bumbleworks::Task::Finder do
     it 'uses Bumbleworks::Task class by default for task generation' do
       Bumbleworks.launch!('dog-lifecycle')
       Bumbleworks.dashboard.wait_for(:cat)
-      tasks = Bumbleworks::Task::Finder.new.all
+      tasks = subject.all
       tasks.should be_all { |t| t.class == Bumbleworks::Task }
     end
 
@@ -56,7 +56,7 @@ describe Bumbleworks::Task::Finder do
       class MyOwnTask < Bumbleworks::Task; end
       Bumbleworks.launch!('dog-lifecycle')
       Bumbleworks.dashboard.wait_for(:cat)
-      tasks = Bumbleworks::Task::Finder.new([], MyOwnTask).all
+      tasks = described_class.new([], MyOwnTask).all
       tasks.should be_all { |t| t.class == MyOwnTask }
       Object.send(:remove_const, :MyOwnTask)
     end
@@ -64,27 +64,25 @@ describe Bumbleworks::Task::Finder do
 
   describe '#available' do
     it 'adds both unclaimed and completable filters' do
-      query = Bumbleworks::Task::Finder.new
-      query.should_receive(:unclaimed).and_return(query)
-      query.should_receive(:completable).and_return(query)
-      query.available
+      subject.should_receive(:unclaimed).and_return(subject)
+      subject.should_receive(:completable).and_return(subject)
+      subject.available
     end
   end
 
   describe '#where' do
     it 'compiles a finder' do
-      query = Bumbleworks::Task::Finder.new
-      query.should_receive(:available).and_return(query)
-      query.should_receive(:by_nickname).with(:nicholas).and_return(query)
-      query.should_receive(:for_roles).with([:dinner, :barca]).and_return(query)
-      query.should_receive(:unclaimed).and_return(query)
-      query.should_receive(:claimed).and_return(query)
-      query.should_receive(:for_claimant).with(:dr_clam).and_return(query)
-      query.should_receive(:for_entity).with(:a_luffly_pirate).and_return(query)
-      query.should_receive(:for_processes).with([:jasmine, :mulan]).and_return(query)
-      query.should_receive(:completable).with(true).and_return(query)
-      query.should_receive(:with_fields).with({ :horse => :giant_pony, :pie => :silly_cake }).and_return(query)
-      query.where({
+      subject.should_receive(:available).and_return(subject)
+      subject.should_receive(:by_nickname).with(:nicholas).and_return(subject)
+      subject.should_receive(:for_roles).with([:dinner, :barca]).and_return(subject)
+      subject.should_receive(:unclaimed).and_return(subject)
+      subject.should_receive(:claimed).and_return(subject)
+      subject.should_receive(:for_claimant).with(:dr_clam).and_return(subject)
+      subject.should_receive(:for_entity).with(:a_luffly_pirate).and_return(subject)
+      subject.should_receive(:for_processes).with([:jasmine, :mulan]).and_return(subject)
+      subject.should_receive(:completable).with(true).and_return(subject)
+      subject.should_receive(:with_fields).with({ :horse => :giant_pony, :pie => :silly_cake }).and_return(subject)
+      subject.where({
         :available => true,
         :nickname => :nicholas,
         :roles => [:dinner, :barca],
