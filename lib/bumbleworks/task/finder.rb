@@ -40,16 +40,20 @@ module Bumbleworks
 
       def where(filters, group_type = nil)
         group_type = :all unless group_type == :any
-        new_finder = self.class.new(@task_class)
-        new_finder.send(:"where_#{group_type}")
-        new_finder = filters.inject(new_finder) { |finder, (key, args)|
+        if group_type != @join
+          finder = self.class.new(@task_class)
+          finder.send(:"where_#{group_type}")
+        else
+          finder = self
+        end
+        finder = filters.inject(finder) { |query_target, (key, args)|
           if method = WhereKeyToMethodMap[key]
-            finder.send(method, args)
+            query_target.send(method, args)
           else
-            finder.with_fields(key => args)
+            query_target.with_fields(key => args)
           end
         }
-        add_subfinder new_finder
+        finder == self ? self : add_subfinder(finder)
       end
 
       def available(check = true)
@@ -164,12 +168,13 @@ module Bumbleworks
       def each
         return to_enum(:each) unless block_given?
         return if @wfids == []
+        only_workitem_queries = @queries.all? { |q| q.is_a? WorkitemQuery }
         workitems = raw_workitems(@wfids)
         @orderers.each do |order_proc|
           workitems.sort! &order_proc
         end
         workitems.each { |wi|
-          if task = filtered_task_from_raw_workitem(wi)
+          if task = filtered_task_from_raw_workitem(wi, only_workitem_queries)
             yield task
           end
         }
@@ -204,9 +209,15 @@ module Bumbleworks
         self
       end
 
-      def filtered_task_from_raw_workitem(workitem)
-        task = from_workitem(::Ruote::Workitem.new(workitem))
-        task if check_queries(workitem, task)
+      def filtered_task_from_raw_workitem(workitem, only_workitem_queries = false)
+        if only_workitem_queries
+          if check_queries(workitem, nil)
+            task = from_workitem(::Ruote::Workitem.new(workitem))
+          end
+        else
+          task = from_workitem(::Ruote::Workitem.new(workitem))
+          task if check_queries(workitem, task)
+        end
       end
 
       def grouped_queries(group_type)

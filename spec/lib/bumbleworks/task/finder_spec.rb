@@ -123,11 +123,11 @@ describe Bumbleworks::Task::Finder do
   end
 
   describe '#where' do
-    it 'creates a new finder and adds it to queries' do
-      parent = described_class.new(:a_class)
+    it 'creates a new finder and adds it to queries, when join type mismatch' do
+      parent = described_class.new(:dummy_task_class).where_all
       child = described_class.new
-      described_class.stub(:new).with(:a_class).and_return(child)
-      child.should_receive(:where_all)
+      described_class.stub(:new).with(:dummy_task_class).and_return(child)
+      child.should_receive(:where_any)
       child.should_receive(:available).and_return(child)
       child.should_receive(:unavailable).and_return(child)
       child.should_receive(:by_nickname).with(:nicholas).and_return(child)
@@ -140,7 +140,7 @@ describe Bumbleworks::Task::Finder do
       child.should_receive(:completable).with(true).and_return(child)
       child.should_receive(:with_fields).with(:horse => :giant_pony).and_return(child)
       child.should_receive(:with_fields).with(:pie => :silly_cake).and_return(child)
-      parent.should_receive(:add_subfinder).with(child)
+      parent.should_receive(:add_subfinder).with(child).and_return(parent)
       parent.where({
         :available => true,
         :unavailable => true,
@@ -154,7 +154,37 @@ describe Bumbleworks::Task::Finder do
         :completable => true,
         :horse => :giant_pony,
         :pie => :silly_cake
-      })
+      }, :any).should == parent
+    end
+
+    it 'adds queries to current finder, when join type matches' do
+      subject.should_receive(:available).and_return(subject)
+      subject.should_receive(:unavailable).and_return(subject)
+      subject.should_receive(:by_nickname).with(:nicholas).and_return(subject)
+      subject.should_receive(:for_roles).with([:dinner, :barca]).and_return(subject)
+      subject.should_receive(:unclaimed).and_return(subject)
+      subject.should_receive(:claimed).and_return(subject)
+      subject.should_receive(:for_claimant).with(:dr_clam).and_return(subject)
+      subject.should_receive(:for_entity).with(:a_luffly_pirate).and_return(subject)
+      subject.should_receive(:for_processes).with([:jasmine, :mulan]).and_return(subject)
+      subject.should_receive(:completable).with(true).and_return(subject)
+      subject.should_receive(:with_fields).with(:horse => :giant_pony).and_return(subject)
+      subject.should_receive(:with_fields).with(:pie => :silly_cake).and_return(subject)
+      subject.should_receive(:add_subfinder).never
+      subject.where({
+        :available => true,
+        :unavailable => true,
+        :nickname => :nicholas,
+        :roles => [:dinner, :barca],
+        :unclaimed => true,
+        :claimed => true,
+        :claimant => :dr_clam,
+        :entity => :a_luffly_pirate,
+        :processes => [:jasmine, :mulan],
+        :completable => true,
+        :horse => :giant_pony,
+        :pie => :silly_cake
+      }).should == subject
     end
   end
 end
