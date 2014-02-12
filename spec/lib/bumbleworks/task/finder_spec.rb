@@ -56,7 +56,7 @@ describe Bumbleworks::Task::Finder do
       class MyOwnTask < Bumbleworks::Task; end
       Bumbleworks.launch!('dog-lifecycle')
       Bumbleworks.dashboard.wait_for(:cat)
-      tasks = described_class.new([], MyOwnTask).all
+      tasks = described_class.new(MyOwnTask).all
       tasks.should be_all { |t| t.class == MyOwnTask }
       Object.send(:remove_const, :MyOwnTask)
     end

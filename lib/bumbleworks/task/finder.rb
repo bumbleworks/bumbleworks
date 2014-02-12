@@ -3,9 +3,9 @@ module Bumbleworks
     class Finder
       include Enumerable
 
-      def initialize(queries = [], task_class = Bumbleworks::Task)
-        @queries = queries
+      def initialize(task_class = Bumbleworks::Task)
         @task_class = task_class
+        @queries = []
         @task_filters = []
         @orderers = []
         @wfids = nil
