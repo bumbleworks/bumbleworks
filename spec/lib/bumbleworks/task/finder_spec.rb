@@ -44,6 +44,19 @@ describe Bumbleworks::Task::Finder do
     end
   end
 
+  describe '#add_subfinder' do
+    it 'adds given finder as new sub' do
+      Bumbleworks.launch!('dog-lifecycle')
+      Bumbleworks.dashboard.wait_for(:cat)
+      finder = subject.add_subfinder(
+        Bumbleworks::Task::Finder.new.for_role(:cat)
+      )
+      finder.map(&:nickname).should =~ [
+        'skip_and_jump'
+      ]
+    end
+  end
+
   describe '#all' do
     it 'uses Bumbleworks::Task class by default for task generation' do
       Bumbleworks.launch!('dog-lifecycle')
@@ -68,22 +81,40 @@ describe Bumbleworks::Task::Finder do
       subject.should_receive(:completable).and_return(subject)
       subject.available
     end
+
+  [:all, :any].each do |join_type|
+    describe "#where_#{join_type}" do
+      it "sets join to #{join_type} if no args" do
+        subject.should_receive(:join=).with(join_type)
+        subject.send(:"where_#{join_type}")
+      end
+
+      it "calls where with :#{join_type} type if args" do
+        subject.should_receive(:where).with(:filters, join_type)
+        subject.send(:"where_#{join_type}", :filters)
+      end
+    end
   end
 
   describe '#where' do
-    it 'compiles a finder' do
-      subject.should_receive(:available).and_return(subject)
-      subject.should_receive(:by_nickname).with(:nicholas).and_return(subject)
-      subject.should_receive(:for_roles).with([:dinner, :barca]).and_return(subject)
-      subject.should_receive(:unclaimed).and_return(subject)
-      subject.should_receive(:claimed).and_return(subject)
-      subject.should_receive(:for_claimant).with(:dr_clam).and_return(subject)
-      subject.should_receive(:for_entity).with(:a_luffly_pirate).and_return(subject)
-      subject.should_receive(:for_processes).with([:jasmine, :mulan]).and_return(subject)
-      subject.should_receive(:completable).with(true).and_return(subject)
-      subject.should_receive(:with_fields).with(:horse => :giant_pony).and_return(subject)
-      subject.should_receive(:with_fields).with(:pie => :silly_cake).and_return(subject)
-      subject.where({
+    it 'creates a new finder and adds it to queries' do
+      parent = described_class.new(:a_class)
+      child = described_class.new
+      described_class.stub(:new).with(:a_class).and_return(child)
+      child.should_receive(:where_all)
+      child.should_receive(:available).and_return(child)
+      child.should_receive(:by_nickname).with(:nicholas).and_return(child)
+      child.should_receive(:for_roles).with([:dinner, :barca]).and_return(child)
+      child.should_receive(:unclaimed).and_return(child)
+      child.should_receive(:claimed).and_return(child)
+      child.should_receive(:for_claimant).with(:dr_clam).and_return(child)
+      child.should_receive(:for_entity).with(:a_luffly_pirate).and_return(child)
+      child.should_receive(:for_processes).with([:jasmine, :mulan]).and_return(child)
+      child.should_receive(:completable).with(true).and_return(child)
+      child.should_receive(:with_fields).with(:horse => :giant_pony).and_return(child)
+      child.should_receive(:with_fields).with(:pie => :silly_cake).and_return(child)
+      parent.should_receive(:add_subfinder).with(child)
+      parent.where({
         :available => true,
         :nickname => :nicholas,
         :roles => [:dinner, :barca],

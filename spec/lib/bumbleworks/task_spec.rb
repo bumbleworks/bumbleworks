@@ -931,7 +931,7 @@ describe Bumbleworks::Task do
   end
 
   describe 'chained queries' do
-    it 'allows for AND-ed chained finders' do
+    before(:each) do
       module BeProudTask
         def completable?
           role == 'pink'
@@ -953,7 +953,9 @@ describe Bumbleworks::Task do
       described_class.by_nickname('be_really_mad').first.claim('crayon_box')
       described_class.by_nickname('be_a_bit_sad').first.claim('crayon_box')
       described_class.by_nickname('be_scared').first.claim('crayon_box')
+    end
 
+    it 'allows for AND-ed chained finders' do
       tasks = described_class.
         for_roles(['green', 'pink']).
         by_nickname('be_proud')
@@ -976,6 +978,26 @@ describe Bumbleworks::Task do
         by_nickname('be_a_bit_sad').
         for_role('blue')
       tasks.map(&:nickname).should == ['be_a_bit_sad']
+    end
+
+    it 'allows for OR-ed chained finders' do
+      tasks = described_class.where_any.
+        for_role('blue').
+        by_nickname('be_proud')
+      tasks.map(&:nickname).should =~ ['be_a_bit_sad', 'be_proud', 'be_proud']
+
+      tasks = described_class.where_any.
+        completable.
+        claimed
+      tasks.map(&:nickname).should =~ ['be_really_mad', 'be_scared', 'be_a_bit_sad', 'be_envious', 'be_proud']
+    end
+
+    it 'allows for combination of AND-ed and OR-ed finders' do
+      tasks = described_class.
+        for_claimant('crayon_box').
+        for_roles(['red', 'yellow', 'green']).
+        where_any(:nickname => 'spittle', :role => 'red')
+      tasks.map(&:nickname).should =~ ['be_really_mad']
     end
   end
 

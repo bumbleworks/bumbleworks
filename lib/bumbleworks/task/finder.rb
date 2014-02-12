@@ -1,6 +1,9 @@
 module Bumbleworks
   class Task
     class Finder
+      class WorkitemQuery < Proc; end
+      class TaskQuery < Proc; end
+
       WhereKeyToMethodMap = {
         :available => :available,
         :nickname => :by_nickname,
@@ -21,24 +24,34 @@ module Bumbleworks
       def initialize(task_class = Bumbleworks::Task)
         @task_class = task_class
         @queries = []
-        @task_filters = []
         @orderers = []
         @wfids = nil
-        add_query { |wi| wi['fields']['params']['task'] }
+        @join = :all
       end
 
-      def where(filters)
-        query = filters.inject(self) { |query, (key, args)|
+      def where_any(query_group = {})
+        set_join_for_query_group(query_group, :any)
+      end
+
+      def where_all(query_group = {})
+        set_join_for_query_group(query_group, :all)
+      end
+
+      def where(filters, group_type = nil)
+        group_type = :all unless group_type == :any
+        new_finder = self.class.new(@task_class)
+        new_finder.send(:"where_#{group_type}")
+        new_finder = filters.inject(new_finder) { |finder, (key, args)|
           if method = WhereKeyToMethodMap[key]
-            query.send(method, args)
+            finder.send(method, args)
           else
-            query.with_fields(key => args)
+            finder.with_fields(key => args)
           end
         }
-        query
+        add_subfinder new_finder
       end
 
-      def available
+      def available(check = true)
         unclaimed.completable
       end
 
@@ -111,13 +124,18 @@ module Bumbleworks
         add_filter { |task| task.completable? == true_or_false }
       end
 
+      def add_subfinder(finder)
+        @queries << finder
+        self
+      end
+
       def add_query(&block)
-        @queries << block
+        @queries << WorkitemQuery.new(&block)
         self
       end
 
       def add_filter(&block)
-        @task_filters << block
+        @queries << TaskQuery.new(&block)
         self
       end
 
@@ -156,10 +174,14 @@ module Bumbleworks
         !any?
       end
 
+      def check_queries(workitem, task)
+        grouped_queries(@join).call(workitem, task)
+      end
+
     private
 
       def add_orderer(fields, field_type = 'fields')
-        @orderers << proc { |wi_x, wi_y|
+        @orderers << Proc.new { |wi_x, wi_y|
           relevant_direction, result = :asc, 0
           fields.each do |field, direction|
             sets = [wi_x['fields'], wi_y['fields']]
@@ -174,14 +196,25 @@ module Bumbleworks
       end
 
       def filtered_task_from_raw_workitem(workitem)
-        if @queries.all? { |q| q.call(workitem) }
-          task = from_workitem(::Ruote::Workitem.new(workitem))
-          task if check_filters(task)
-        end
+        task = from_workitem(::Ruote::Workitem.new(workitem))
+        task if check_queries(workitem, task)
       end
 
-      def check_filters(task)
-        @task_filters.all? { |f| f.call(task) }
+      def grouped_queries(group_type)
+        Proc.new { |wi, task|
+          @queries.send(:"#{group_type}?") { |q|
+            case q
+            when WorkitemQuery
+              q.call(wi)
+            when TaskQuery
+              q.call(task)
+            when self.class
+              q.check_queries(wi, task)
+            else
+              raise "Unrecognized query type"
+            end
+          }
+        }
       end
 
       def from_workitem(workitem)
@@ -189,7 +222,22 @@ module Bumbleworks
       end
 
       def raw_workitems(wfids)
-        Bumbleworks.dashboard.context.storage.get_many('workitems', wfids)
+        Bumbleworks.dashboard.context.storage.get_many('workitems', wfids).select { |wi|
+          wi['fields']['params']['task']
+        }
+      end
+
+      def join=(new_join)
+        @join = new_join if [:all, :any].include?(new_join)
+      end
+
+      def set_join_for_query_group(query_group, type)
+        if query_group.empty?
+          self.join = type
+          self
+        else
+          where(query_group, type)
+        end
       end
     end
   end
