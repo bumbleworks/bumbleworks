@@ -1,8 +1,11 @@
 require 'ruote/exp/flow_expression'
 require 'ruote/exp/fe_await'
+require 'bumbleworks/support/flow_expression'
 
 module Ruote::Exp
   class WaitForEventExpression < AwaitExpression
+    include Bumbleworks::Support::FlowExpression
+
     names :wait_for_event
 
     # This does the same as the base AwaitExpression#apply, except that this
@@ -13,7 +16,7 @@ module Ruote::Exp
     def apply
       update_tree
       h.updated_tree[1]['global'] = true
-      h.updated_tree[1]['left_tag'] = attribute_text.to_s
+      h.updated_tree[1]['left_tag'] = tag_from_attribute
       h.updated_tree[1]['merge'] = 'drop'
       super
     end

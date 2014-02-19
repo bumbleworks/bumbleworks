@@ -76,4 +76,21 @@ describe Ruote::Exp::WaitForEventExpression do
     Bumbleworks.dashboard.wait_for(waiter3.wfid)
     @tracer.should == ['entities! Rhubarb,spitpickle-4boof']
   end
+
+  it 'appends entity info to expected tag when :for_entity is true' do
+    Bumbleworks.define_process 'waiter' do
+      wait_for_event :the_event, :for_entity => true
+      echo 'i found your tag, sucka'
+    end
+
+    Bumbleworks.define_process 'sender' do
+      noop :tag => 'the_event__for_entity__fun_face_yellow5'
+    end
+
+    waiter = Bumbleworks.launch!('waiter', 'entity_type' => 'FunFace', 'entity_id' => 'yellow5')
+    sender = Bumbleworks.launch!('sender')
+
+    Bumbleworks.dashboard.wait_for(waiter.wfid)
+    @tracer.should == ['i found your tag, sucka']
+  end
 end

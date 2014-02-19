@@ -1,12 +1,15 @@
 require 'ruote/exp/flow_expression'
+require 'bumbleworks/support/flow_expression'
 
 module Ruote::Exp
   class BroadcastEventExpression < FlowExpression
+    include Bumbleworks::Support::FlowExpression
+
     names :broadcast_event
 
     def consider_tag
       update_tree
-      h.updated_tree[1]['tag'] = attribute_text.to_s
+      h.updated_tree[1]['tag'] = tag_from_attribute
       super
     end
 
