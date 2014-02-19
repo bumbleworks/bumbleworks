@@ -13,6 +13,7 @@ require "bumbleworks/entity"
 require "bumbleworks/participant"
 require "bumbleworks/workitem"
 require "bumbleworks/tracker"
+require "bumbleworks/user"
 
 # default implementations
 require "bumbleworks/simple_logger"
