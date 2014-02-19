@@ -299,10 +299,10 @@ module Bumbleworks
 
     def framework_root
       case
-        when defined?(Rails) then Rails.root
-        when defined?(Rory) then Rory.root
-        when defined?(Padrino) then Padrino.root
-        when defined?(Sinatra::Application) then Sinatra::Application.root
+        when defined?(::Rails) then ::Rails.root
+        when defined?(::Rory) then ::Rory.root
+        when defined?(::Padrino) then ::Padrino.root
+        when defined?(::Sinatra::Application) then ::Sinatra::Application.root
       end
     end
 
