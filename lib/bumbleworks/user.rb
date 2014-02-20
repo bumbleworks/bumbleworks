@@ -1,8 +1,18 @@
 module Bumbleworks
   module User
+    # This exception is raised if the including class has no #role_identifiers
+    # method defined.  See #role_identifiers below for details.
     class NoRoleIdentifiersMethodDefined < StandardError; end
+    # This exception is raised if the including class has no #claim_token
+    # method defined, and also no fallback methods (#username or #email).  See
+    # #claim_token below for details.
     class NoClaimTokenMethodDefined < StandardError; end
+
+    # Attempting to #claim a task that the user is not authorized for will raise
+    # this exception.
     class UnauthorizedClaimAttempt < StandardError; end
+    # Attempting to #release a task that is claimed by another token will raise
+    # this exception.
     class UnauthorizedReleaseAttempt < StandardError; end
 
     # The return value from this method is used as the "claimant" token on
