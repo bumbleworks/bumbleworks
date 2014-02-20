@@ -39,17 +39,19 @@ module Bumbleworks
     # Attempts to set self as the claimant of the given task.  If not authorized
     # to claim the task, raises exception.  Also bubbles exception from Task
     # when task is already claimed by a different claimant.
-    def claim(task)
+    def claim(task, force = false)
       raise UnauthorizedClaimAttempt unless has_role?(task.role)
+      release!(task) if force
       task.claim(claim_token)
     end
 
-    # Same as #claim, but first releases (by force) the task, to avoid any
-    # possible UnauthorizedClaimAttempt or AlreadyClaimed exceptions.  Should
-    # only be made available to supervisory roles.
+    # Same as #claim, but first releases (by force) the task, to avoid an
+    # AlreadyClaimed exceptions.  Note that this may still raise an
+    # UnauthorizedClaimAttempt exception - this method does not allow a user
+    # to claim a task they are not authorized for.  Should only be made
+    # available to supervisory roles.
     def claim!(task)
-      release!(task)
-      claim(task)
+      claim(task, true)
     end
 
     # If we are the current claimant of the given task, release the task. Does

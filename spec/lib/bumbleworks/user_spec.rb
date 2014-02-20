@@ -65,6 +65,15 @@ describe Bumbleworks::User do
         task.should_receive(:claim).with("the umpire of snorts").ordered
         subject.claim!(task)
       end
+
+      it 'raises exception (and does not release) if unauthorized' do
+        task = double('task', :role => 'fashbone')
+        task.should_receive(:release).never
+        task.should_receive(:claim).never
+        expect {
+          subject.claim!(task)
+        }.to raise_error(Bumbleworks::User::UnauthorizedClaimAttempt)
+      end
     end
   end
 
