@@ -2,8 +2,6 @@ module Bumbleworks
   module User
     class NoRoleIdentifiersMethodDefined < StandardError; end
     class NoClaimTokenMethodDefined < StandardError; end
-    class MissingRoleQueryMethod < StandardError; end
-    class AmbiguousRoleQueryMethod < StandardError; end
     class UnauthorizedClaimAttempt < StandardError; end
     class UnauthorizedReleaseAttempt < StandardError; end
 
