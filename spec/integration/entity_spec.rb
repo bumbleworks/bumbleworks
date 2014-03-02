@@ -10,6 +10,15 @@ describe 'Entity Module' do
     load File.join(app_root, 'full_initializer.rb')
   end
 
+  describe 'including' do
+    it 'registers entity with Bumbleworks' do
+      Bumbleworks.entity_classes = [:geese]
+      FirstNewClass = Class.new { include Bumbleworks::Entity }
+      SecondNewClass = Class.new { include Bumbleworks::Entity }
+      Bumbleworks.entity_classes.should == [:geese, FirstNewClass, SecondNewClass]
+    end
+  end
+
   describe 'process control' do
     it 'launching assigns entity to process and subsequent tasks' do
       rainbow_loom = RainbowLoom.new('12345')

@@ -169,6 +169,13 @@ module Bumbleworks
     #
     define_setting :store_history
 
+    # The set of registered entity classes.  This can be manually set in configuration,
+    # but if you include Bumbleworks::Entity in any class, that class will automatically
+    # be loaded into this array at the time of module inclusion.
+    #
+    # default: []
+    define_setting :entity_classes
+
     def initialize
       @storage_adapters = []
       @storage_options = {}
@@ -224,6 +231,11 @@ module Bumbleworks
     # Default history storage to true
     def store_history
       @store_history.nil? ? true : @store_history
+    end
+
+    # Default entity_classes to empty array
+    def entity_classes
+      @entity_classes ||= []
     end
 
     # Root folder where Bumbleworks looks for ruote assets (participants,

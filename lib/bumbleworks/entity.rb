@@ -1,6 +1,7 @@
 module Bumbleworks
   module Entity
     def self.included(klass)
+      Bumbleworks.entity_classes << klass
       klass.extend ClassMethods
     end
 

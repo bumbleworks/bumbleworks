@@ -218,6 +218,18 @@ describe Bumbleworks::Configuration do
     end
   end
 
+  describe '#entity_classes' do
+    it 'is empty by default' do
+      configuration.entity_classes.should be_empty
+    end
+
+    it 'returns the registered entity classes' do
+      configuration.entity_classes = [:fumpin, :nuffin]
+      configuration.entity_classes << :summin
+      configuration.entity_classes.should == [:fumpin, :nuffin, :summin]
+    end
+  end
+
   describe "#storage" do
     it 'can set storage directly' do
       storage = double("Storage")
