@@ -1,4 +1,5 @@
 require "bumbleworks/workitem_entity_storage"
+require "bumbleworks/process/error_record"
 
 module Bumbleworks
   class Process
@@ -54,31 +55,29 @@ module Bumbleworks
     end
 
     def expressions
-      @expressions ||= begin
-        context = Bumbleworks.dashboard.context
-        raw_expressions = context.storage.get_many('expressions', [wfid])
-        raw_expressions.collect { |e|
-          ::Ruote::Exp::FlowExpression.from_h(context, e)
-        }.sort_by { |e|
-          e.fei.expid
-        }
-      end
+      @expressions ||= ruote_expressions.map { |rexp|
+        Bumbleworks::Expression.new(rexp)
+      }
     end
 
     def errors
       @errors ||= Bumbleworks.dashboard.context.storage.get_many('errors', [wfid]).map { |err|
-        ::Ruote::ProcessError.new(err)
+        Bumbleworks::Process::ErrorRecord.new(
+          ::Ruote::ProcessError.new(err)
+        )
       }
     end
 
     def leaves
-      @leaves ||= expressions.inject([]) { |a, exp|
+      @leaves ||= ruote_expressions.inject([]) { |a, exp|
         a.select { |e| ! exp.ancestor?(e.fei) } + [ exp ]
+      }.map { |leaf|
+        Bumbleworks::Expression.new(leaf)
       }
     end
 
     def workitems
-      @workitems ||= leaves.map(&:applied_workitem).map { |wi| Bumbleworks::Workitem.new(wi) }
+      @workitems ||= leaves.map(&:workitem)
     end
 
     def tasks
@@ -130,6 +129,20 @@ module Bumbleworks
         return ps.send(method, *args)
       end
       super
+    end
+
+  private
+
+    def ruote_expressions
+      @ruote_expressions ||= begin
+        context = Bumbleworks.dashboard.context
+        raw_expressions = context.storage.get_many('expressions', [wfid])
+        raw_expressions.collect { |e|
+          ::Ruote::Exp::FlowExpression.from_h(context, e)
+        }.sort_by { |e|
+          e.fei.expid
+        }
+      end
     end
   end
 end

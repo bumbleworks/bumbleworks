@@ -7,6 +7,14 @@ describe Bumbleworks::Process do
     Bumbleworks::Ruote.register_participants
     Bumbleworks.start_worker!
 
+    Bumbleworks.define_process 'food_is_an_illusion' do
+      noop :tag => 'oh_boy_are_we_hungry'
+      concurrence do
+        admin :task => 'eat_a_hat'
+        hatter :task => 'weep'
+      end
+    end
+
     Bumbleworks.define_process 'going_to_the_dance' do
       concurrence do
         wait_for_event :an_invitation
@@ -67,7 +75,7 @@ describe Bumbleworks::Process do
   end
 
   describe '#errors' do
-    it 'returns all process errors' do
+    it 'returns all process errors as ErrorRecord instances' do
       Bumbleworks.define_process 'error_process' do
         concurrence do
           error 'first error'
@@ -77,25 +85,24 @@ describe Bumbleworks::Process do
       bp = Bumbleworks.launch!('error_process')
       Bumbleworks.dashboard.wait_for('error_intercepted')
       errors = bp.errors
+      errors.map(&:class).uniq.should == [
+        Bumbleworks::Process::ErrorRecord
+      ]
       errors.map(&:message).should =~ [
-        '#<Ruote::ForcedError: first error>',
-        '#<Ruote::ForcedError: second error>'
+        'first error',
+        'second error'
       ]
     end
   end
 
   describe '#workitems' do
-    it 'returns array of applied workitems from each leaf' do
+    it 'returns array of workitems from each leaf' do
       bp = described_class.new('chumpy')
-      l1 = double(:applied_workitem => 'aw1')
-      l2 = double(:applied_workitem => 'aw2')
-      l3 = double(:applied_workitem => 'aw3')
+      l1 = double(:workitem => 'w1')
+      l2 = double(:workitem => 'w2')
+      l3 = double(:workitem => 'w3')
       bp.stub(:leaves => [l1, l2, l3])
-      bp.workitems.should == [
-        Bumbleworks::Workitem.new('aw1'),
-        Bumbleworks::Workitem.new('aw2'),
-        Bumbleworks::Workitem.new('aw3')
-      ]
+      bp.workitems.should == ['w1','w2','w3']
     end
   end
 
@@ -107,6 +114,32 @@ describe Bumbleworks::Process do
       holder
     }
     let(:storage_workitem) { entity_workitem }
+  end
+
+  describe '#expressions' do
+    it 'returns all expressions as array of Expression instances' do
+      bp = Bumbleworks.launch!('food_is_an_illusion')
+      Bumbleworks.dashboard.wait_for(:admin)
+      expect(bp.expressions.map(&:expid)).to eq [
+        '0', '0_1', '0_1_0', '0_1_1'
+      ]
+      expect(bp.expressions.map(&:class).uniq).to eq [
+        Bumbleworks::Expression
+      ]
+    end
+  end
+
+  describe '#leaves' do
+    it 'returns only expressions being worked on' do
+      bp = Bumbleworks.launch!('food_is_an_illusion')
+      Bumbleworks.dashboard.wait_for(:admin)
+      expect(bp.leaves.map(&:expid)).to eq [
+        '0_1_0', '0_1_1'
+      ]
+      expect(bp.leaves.map(&:class).uniq).to eq [
+        Bumbleworks::Expression
+      ]
+    end
   end
 
   describe '#entity_workitem' do
