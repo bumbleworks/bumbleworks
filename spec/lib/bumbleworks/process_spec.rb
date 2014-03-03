@@ -152,6 +152,15 @@ describe Bumbleworks::Process do
     end
   end
 
+  describe '#definition_name' do
+    it 'returns the name of the process definition' do
+      bp = Bumbleworks.launch!('i_wait_for_nobody')
+      wait_until { bp.reload.tasks.count == 1 }
+      bp_reloaded = described_class.new(bp.wfid)
+      expect(bp_reloaded.definition_name).to eq 'i_wait_for_nobody'
+    end
+  end
+
   describe '#expression_at_position' do
     before(:each) do
       @bp = Bumbleworks.launch!('food_is_an_illusion')

@@ -135,6 +135,11 @@ module Bumbleworks
       @process_status ||= Bumbleworks.dashboard.process(id)
     end
 
+    def definition_name
+      root_ruote_expression.attribute('name') ||
+        root_ruote_expression.attribute_text
+    end
+
     def method_missing(method, *args)
       ps = process_status
       if ps.respond_to?(method)
@@ -144,6 +149,10 @@ module Bumbleworks
     end
 
   private
+
+    def root_ruote_expression
+      @root_ruote_expression ||= ruote_expressions.first
+    end
 
     def ruote_expressions
       @ruote_expressions ||= begin
