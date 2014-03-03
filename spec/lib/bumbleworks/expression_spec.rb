@@ -52,6 +52,14 @@ describe Bumbleworks::Expression do
     end
   end
 
+  describe '#kill!' do
+    it 'kills the expression' do
+      Bumbleworks.storage = {}
+      Bumbleworks.dashboard.should_receive(:kill_expression).with(fei)
+      subject.kill!
+    end
+  end
+
   describe '#workitem' do
     it 'returns the workitem as applied to this expression' do
       fexp.stub(:applied_workitem).and_return(:something_raw)
