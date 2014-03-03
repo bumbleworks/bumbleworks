@@ -22,6 +22,12 @@ describe Bumbleworks::Tracker do
     end
   end
 
+  describe '.count' do
+    it 'returns count of current trackers' do
+      expect(described_class.count).to eq 5
+    end
+  end
+
   describe '.new' do
     it 'sets tracker id and fetches original_hash from dashboard' do
       tr = described_class.new('global_tracker')
@@ -113,8 +119,8 @@ describe Bumbleworks::Tracker do
 
     it 'returns expression awaiting reply' do        
       process = Bumbleworks::Process.new('my_wfid')
-      expression1 = double(:fei => double(:expid => '0_0_0'), :tree => :a_global_expression)
-      expression2 = double(:fei => double(:expid => '0_0_1'), :tree => :a_local_expression)
+      expression1 = double(:expid => '0_0_0', :tree => :a_global_expression)
+      expression2 = double(:expid => '0_0_1', :tree => :a_local_expression)
       process.stub(:expressions => [expression1, expression2])
 
       tracker1 = described_class.new('global_tracker')

@@ -33,30 +33,53 @@ describe Bumbleworks::Process do
     end
   end
 
-  context 'aggregate methods' do
+  describe '.all' do
+    it 'returns sorted and filtered array of instances for all processes' do
+      expect(described_class).to receive(:ids).with(:some_options).and_return([:a, :b, :c])
+      expect(described_class.all(:some_options)).to eq [
+        Bumbleworks::Process.new(:a),
+        Bumbleworks::Process.new(:b),
+        Bumbleworks::Process.new(:c)
+      ]
+    end
+  end
+
+  describe '.ids' do
     before(:each) do
-      @bp1 = Bumbleworks.launch!('going_to_the_dance')
-      @bp2 = Bumbleworks.launch!('going_to_the_dance')
-      @bp3 = Bumbleworks.launch!('straightening_the_rocks')
-      wait_until { Bumbleworks.dashboard.process_wfids.count == 3 }
+      bp1 = Bumbleworks.launch!('going_to_the_dance')
+      bp2 = Bumbleworks.launch!('going_to_the_dance')
+      bp3 = Bumbleworks.launch!('going_to_the_dance')
+      bp4 = Bumbleworks.launch!('going_to_the_dance')
+      bp5 = Bumbleworks.launch!('straightening_the_rocks')
+      @sorted_processes = [bp1, bp2, bp3, bp4, bp5].sort
+      wait_until { Bumbleworks.dashboard.process_wfids.count == 5 }
     end
 
-    describe '.all' do
-      it 'returns instances for all process wfids' do
-        described_class.all.should =~ [@bp1, @bp2, @bp3]
-      end
+    it 'returns all process wfids' do
+      described_class.ids.should == @sorted_processes.map(&:wfid)
     end
 
-    describe '.ids' do
-      it 'returns all process wfids' do
-        described_class.ids.should =~ [@bp1.wfid, @bp2.wfid, @bp3.wfid]
-      end
+    it 'allows pagination options' do
+      described_class.ids(:limit => 2).should == @sorted_processes[0, 2].map(&:wfid)
+      described_class.ids(:offset => 2).should == @sorted_processes[2, 5].map(&:wfid)
+      described_class.ids(:limit => 2, :offset => 1).should == @sorted_processes[1, 2].map(&:wfid)
     end
 
-    describe '.count' do
-      it 'returns number of processes' do
-        described_class.count.should == 3
-      end
+    it 'allows reverse order' do
+      described_class.ids(:reverse => true).should == @sorted_processes.reverse.map(&:wfid)
+    end
+
+    it 'allows combined reverse and pagination' do
+      described_class.ids(:reverse => true, :limit => 2).should == @sorted_processes.reverse[0, 2].map(&:wfid)
+      described_class.ids(:reverse => true, :offset => 2).should == @sorted_processes.reverse[2, 5].map(&:wfid)
+      described_class.ids(:reverse => true, :limit => 2, :offset => 1).should == @sorted_processes.reverse[1, 2].map(&:wfid)
+    end
+  end
+
+  describe '.count' do
+    it 'returns number of processes' do
+      allow(described_class).to receive(:ids).and_return([:a, :b, :c, :d])
+      described_class.count.should == 4
     end
   end
 
@@ -126,6 +149,23 @@ describe Bumbleworks::Process do
       expect(bp.expressions.map(&:class).uniq).to eq [
         Bumbleworks::Expression
       ]
+    end
+  end
+
+  describe '#expression_at_position' do
+    before(:each) do
+      @bp = Bumbleworks.launch!('food_is_an_illusion')
+      Bumbleworks.dashboard.wait_for(:admin)
+    end
+
+    it 'returns the expression whose expid matches the given position' do
+      expression = @bp.expression_at_position('0_1_0')
+      expect(expression).to be_a Bumbleworks::Expression
+      expect(expression.expid).to eq '0_1_0'
+    end
+
+    it 'returns nil if no expression at given position' do
+      expect(@bp.expression_at_position('0_2_1')).to be_nil
     end
   end
 
@@ -290,6 +330,17 @@ describe Bumbleworks::Process do
       bp1 = described_class.new('in_da_sky')
       bp2 = described_class.new('in_da_sky')
       bp1.should == bp2
+    end
+  end
+
+  describe '#<=>' do
+    it 'compares processes by wfid' do
+      bp1 = described_class.new(1)
+      bp2 = described_class.new(2)
+      bp3 = described_class.new(1)
+      expect(bp1 <=> bp2).to eq -1
+      expect(bp2 <=> bp3).to eq 1
+      expect(bp3 <=> bp1).to eq 0
     end
   end
 

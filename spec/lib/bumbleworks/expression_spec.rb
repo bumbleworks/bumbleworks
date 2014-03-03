@@ -1,6 +1,6 @@
 describe Bumbleworks::Expression do
   let(:fei) { double({ :expid => '1_2_3', :wfid => 'snooks' }) }
-  let(:fexp) { double('FlowExpression', :fei => fei) }
+  let(:fexp) { double('FlowExpression', :fei => fei, :tree => :a_tree) }
   subject { described_class.new(fexp) }
 
   describe '#expid' do
@@ -12,6 +12,12 @@ describe Bumbleworks::Expression do
   describe '#process' do
     it 'returns process for expression wfid' do
       subject.process.should == Bumbleworks::Process.new('snooks')
+    end
+  end
+
+  describe '#tree' do
+    it 'returns tree from flow expression' do
+      expect(subject.tree).to eq :a_tree
     end
   end
 

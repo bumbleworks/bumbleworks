@@ -8,6 +8,10 @@ module Bumbleworks
           new(tid, attrs)
         end
       end
+
+      def count
+        all.count
+      end
     end
 
     def initialize(id, original_hash = nil)
@@ -43,7 +47,7 @@ module Bumbleworks
 
     def waiting_expression
       return nil unless fei
-      process.expressions.detect { |e| e.fei.expid == fei['expid'] }.tree
+      process.expression_at_position(fei['expid']).tree
     end
 
     def where_clause

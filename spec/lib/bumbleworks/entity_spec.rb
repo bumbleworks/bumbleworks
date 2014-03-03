@@ -253,6 +253,12 @@ describe Bumbleworks::Entity do
     end
   end
 
+  describe '.processes' do
+    it 'returns empty hash if no registered processes' do
+      expect(entity_class.processes).to eq({})
+    end
+  end
+
   describe '.default_process_identifier_attribute' do
     it 'adds _process_identifier to end of given process name' do
       entity_class.default_process_identifier_attribute('zoof').should == :zoof_process_identifier

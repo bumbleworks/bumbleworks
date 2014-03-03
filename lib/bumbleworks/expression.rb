@@ -15,6 +15,11 @@ module Bumbleworks
       @process ||= Bumbleworks::Process.new(@fei.wfid)
     end
 
+    # Returns the process tree at this expression.
+    def tree
+      @flow_expression.tree
+    end
+
     # Returns a Bumbleworks::Process::ErrorRecord instance for the
     # expression's error, if there is one.  If no error was raised
     # during the execution of this expression, returns nil.
@@ -31,6 +36,16 @@ module Bumbleworks
     # next expression.
     def cancel!
       Bumbleworks.dashboard.cancel_expression(@fei)
+    end
+
+    # Kill this expression.  The process will then move on to the
+    # next expression.
+    #
+    # WARNING: Killing an expression will not trigger any 'on_cancel'
+    # callbacks.  It's preferable to #cancel! the expression if you
+    # can.
+    def kill!
+      Bumbleworks.dashboard.kill_expression(@fei)
     end
 
     # Returns the workitem as it was applied to this expression.

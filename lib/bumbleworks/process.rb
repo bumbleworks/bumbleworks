@@ -10,14 +10,18 @@ module Bumbleworks
     attr_reader :id
 
     class << self
-      def all
-        ids.map do |wfid|
+      def all(options = {})
+        ids(options).map do |wfid|
           new(wfid)
         end
       end
 
-      def ids
-        Bumbleworks.dashboard.process_wfids
+      def ids(options = {})
+        wfids = Bumbleworks.dashboard.process_wfids
+        wfids.reverse! if options[:reverse]
+        limit = options[:limit] || wfids.count
+        offset = options[:offset] || 0
+        wfids[offset, limit]
       end
 
       def count
@@ -37,6 +41,10 @@ module Bumbleworks
     end
 
     alias_method :wfid, :id
+
+    def <=>(other)
+      wfid <=> other.wfid
+    end
 
     def ==(other)
       wfid == other.wfid
@@ -58,6 +66,10 @@ module Bumbleworks
       @expressions ||= ruote_expressions.map { |rexp|
         Bumbleworks::Expression.new(rexp)
       }
+    end
+
+    def expression_at_position(position)
+      expressions.detect { |exp| exp.expid == position }
     end
 
     def errors

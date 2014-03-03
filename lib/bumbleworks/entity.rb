@@ -84,11 +84,13 @@ module Bumbleworks
     end
 
     module ClassMethods
-      attr_reader :processes
-
       def process(process_name, options = {})
         options[:attribute] ||= default_process_identifier_attribute(process_name)
-        (@processes ||= {})[process_name.to_sym] = options
+        processes[process_name.to_sym] = options
+      end
+
+      def processes
+        @processes ||= {}
       end
 
       def entity_type
