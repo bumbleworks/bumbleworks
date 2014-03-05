@@ -1,9 +1,4 @@
 describe Bumbleworks::Ruote do
-  before :each do
-    Bumbleworks.reset!
-    Bumbleworks.storage = {}
-  end
-
   describe ".cancel_process!" do
     before :each do
       Bumbleworks.start_worker!

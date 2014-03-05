@@ -2,8 +2,6 @@ describe Bumbleworks::Task do
   let(:workflow_item) {Ruote::Workitem.new('fields' => {'params' => {'task' => 'go_to_work'} })}
 
   before :each do
-    Bumbleworks.reset!
-    Bumbleworks.storage = {}
     Bumbleworks::Ruote.register_participants
     Bumbleworks.start_worker!
   end

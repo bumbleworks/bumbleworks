@@ -9,10 +9,6 @@ describe 'History storage' do
     end
   end
 
-  before :each do
-    Bumbleworks.reset!
-  end
-
   context 'when storage allows storing history' do
     before :each do
       Bumbleworks.stub(:storage_adapter => HashStorageWithHistory)

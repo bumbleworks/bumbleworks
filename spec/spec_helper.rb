@@ -16,4 +16,13 @@ RSpec.configure do |config|
   # the seed, which is printed after each run.
   #     --seed 1234
   config.order = 'random'
+
+  config.before(:each) do
+    # Yup, we're setting the storage twice - the first time is to
+    # ensure that the .reset! isn't trying to access a test double, and
+    # the second is to initialize it to a hash for tests.
+    Bumbleworks.storage = nil
+    Bumbleworks.reset!
+    Bumbleworks.storage = {}
+  end
 end

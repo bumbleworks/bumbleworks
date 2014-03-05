@@ -1,7 +1,5 @@
 describe Bumbleworks::Task::Finder do
   before :each do
-    Bumbleworks.reset!
-    Bumbleworks.storage = {}
     Bumbleworks::Ruote.register_participants
     Bumbleworks.start_worker!
     Bumbleworks.define_process 'dog-lifecycle' do

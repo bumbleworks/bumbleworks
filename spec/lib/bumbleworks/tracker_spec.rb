@@ -3,8 +3,6 @@ require File.expand_path(File.join(fixtures_path, 'trackers'))
 
 describe Bumbleworks::Tracker do
   before(:each) do
-    Bumbleworks.reset!
-    Bumbleworks.storage = {}
     Bumbleworks.dashboard.stub(:get_trackers => fake_trackers)
   end
 

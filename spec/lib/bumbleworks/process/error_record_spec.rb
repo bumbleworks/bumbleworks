@@ -2,8 +2,6 @@ require File.expand_path(File.join(fixtures_path, 'participants', 'naughty_parti
 
 describe Bumbleworks::Process::ErrorRecord do
   before :each do
-    Bumbleworks.reset!
-    Bumbleworks.storage = {}
     Bumbleworks::Ruote.register_participants do
       fall_apart NaughtyParticipant
     end

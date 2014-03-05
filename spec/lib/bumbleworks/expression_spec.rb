@@ -46,7 +46,6 @@ describe Bumbleworks::Expression do
 
   describe '#cancel!' do
     it 'cancels the expression' do
-      Bumbleworks.storage = {}
       Bumbleworks.dashboard.should_receive(:cancel_expression).with(fei)
       subject.cancel!
     end
@@ -54,7 +53,6 @@ describe Bumbleworks::Expression do
 
   describe '#kill!' do
     it 'kills the expression' do
-      Bumbleworks.storage = {}
       Bumbleworks.dashboard.should_receive(:kill_expression).with(fei)
       subject.kill!
     end

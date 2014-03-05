@@ -1,9 +1,4 @@
 describe Bumbleworks::ProcessDefinition do
-  before :each do
-    Bumbleworks.reset!
-    Bumbleworks.storage = {}
-  end
-
   let(:valid_definition) { %q(
     Bumbleworks.define_process 'monkeys' do
       chocolate_covered_skis :are => 'awesome'

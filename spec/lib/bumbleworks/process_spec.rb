@@ -2,8 +2,6 @@ require File.expand_path(File.join(fixtures_path, 'entities', 'rainbow_loom'))
 
 describe Bumbleworks::Process do
   before :each do
-    Bumbleworks.reset!
-    Bumbleworks.storage = {}
     Bumbleworks::Ruote.register_participants
     Bumbleworks.start_worker!
 

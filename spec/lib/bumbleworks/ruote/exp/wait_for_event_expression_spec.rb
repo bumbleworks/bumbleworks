@@ -1,7 +1,5 @@
 describe Ruote::Exp::WaitForEventExpression do
   before :each do
-    Bumbleworks.reset!
-    Bumbleworks.storage = {}
     Bumbleworks.start_worker!
     Bumbleworks.dashboard.add_service('tracer', @tracer = Tracer.new)
   end

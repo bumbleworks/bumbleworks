@@ -1,6 +1,5 @@
 describe Bumbleworks::ParticipantRegistration do
   before(:each) do
-    Bumbleworks.reset!
     Bumbleworks.root = File.join(fixtures_path, 'apps', 'with_default_directories')
   end
 

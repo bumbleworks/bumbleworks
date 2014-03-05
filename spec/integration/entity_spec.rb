@@ -6,7 +6,6 @@ describe 'Entity Module' do
   }
 
   before :each do
-    Bumbleworks.reset!
     load File.join(app_root, 'full_initializer.rb')
   end
 
