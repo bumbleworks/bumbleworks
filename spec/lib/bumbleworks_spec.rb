@@ -35,12 +35,19 @@ describe Bumbleworks do
     end
   end
 
+  describe '.clear_configuration!' do
+    it 'resets configuration' do
+      old_config = described_class.configuration
+      described_class.clear_configuration!
+      described_class.configuration.should_not == old_config
+    end
+  end
+
   describe '.reset!' do
     it 'resets configuration and resets ruote' do
-      old_config = described_class.configuration
-      Bumbleworks::Ruote.should_receive(:reset!)
+      expect(Bumbleworks::Ruote).to receive(:reset!).ordered
+      expect(described_class).to receive(:clear_configuration!).ordered
       described_class.reset!
-      described_class.configuration.should_not == old_config
     end
   end
 
@@ -148,11 +155,13 @@ describe Bumbleworks do
 
     it 'automatically adds Redis adapter if defined' do
       stub_const('Bumbleworks::Redis::Adapter', Bumbleworks::StorageAdapter)
+      Bumbleworks.clear_configuration! # to reload storage adapters
       described_class.configuration.storage_adapters.should include(Bumbleworks::Redis::Adapter)
     end
 
     it 'automatically adds Sequel adapter if defined' do
       stub_const('Bumbleworks::Sequel::Adapter', Bumbleworks::StorageAdapter)
+      Bumbleworks.clear_configuration! # to reload storage adapters
       described_class.configuration.storage_adapters.should include(Bumbleworks::Sequel::Adapter)
     end
   end

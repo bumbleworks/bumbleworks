@@ -146,17 +146,23 @@ module Bumbleworks
       end
 
       def storage
-        @storage ||= Bumbleworks.storage_adapter.new_storage(Bumbleworks.storage, Bumbleworks.storage_options)
+        @storage ||= initialize_storage_adapter
       end
 
       def reset!
-        if @storage
-          @storage.purge!
-          @storage.shutdown
+        if Bumbleworks.storage && storage
+          storage.purge!
+          storage.shutdown
         end
         @dashboard.shutdown if @dashboard && @dashboard.respond_to?(:shutdown)
         @storage = nil
         @dashboard = nil
+      end
+
+    private
+
+      def initialize_storage_adapter
+        Bumbleworks.storage_adapter.new_storage(Bumbleworks.storage, Bumbleworks.storage_options)
       end
     end
   end

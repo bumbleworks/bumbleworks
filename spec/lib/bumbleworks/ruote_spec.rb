@@ -393,11 +393,15 @@ describe Bumbleworks::Ruote do
 
   describe '.reset!' do
     it 'purges and shuts down storage, then resets storage' do
-      old_storage = described_class.storage
+      old_storage = double('Storage')
+      allow(described_class).to receive(:initialize_storage_adapter).and_return(old_storage)
       old_storage.should_receive(:purge!)
       old_storage.should_receive(:shutdown)
       described_class.reset!
-      described_class.storage.should_not == old_storage
+      allow(described_class).to receive(:initialize_storage_adapter).and_return(:new_storage)
+      described_class.storage.should == :new_storage
+      # clean up
+      described_class.instance_variable_set(:@storage, nil)
     end
 
     it 'skips purging and shutting down of storage if no storage' do

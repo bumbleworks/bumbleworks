@@ -88,7 +88,7 @@ module Bumbleworks
     # @yield [configuration] global configuration
     # @see Bumbleworks.configure
     def configure!(&block)
-      @configuration = nil
+      clear_configuration!
       configure(&block)
     end
 
@@ -142,12 +142,17 @@ module Bumbleworks
     end
 
     # @public
-    # Resets Bumbleworks - clears configuration and setup variables, and
-    # also resets the dashboard.
-    #
+    # Resets Bumbleworks - resets dashboard, purges storage, and clears
+    # configuration and setup variables.
     def reset!
-      @configuration = nil
       Bumbleworks::Ruote.reset!
+      clear_configuration!
+    end
+
+    # @public
+    # Clears configuration completely, resetting to defaults.
+    def clear_configuration!
+      @configuration = nil
     end
 
     # @public
