@@ -12,7 +12,7 @@ module Bumbleworks
     class AvailabilityTimeout < StandardError; end
 
     extend Forwardable
-    delegate [:sid, :fei, :fields, :params, :participant_name, :wfid, :wf_name] => :@workitem
+    delegate [:sid, :fei, :fields, :dispatched_at, :params, :participant_name, :wfid, :wf_name] => :@workitem
     attr_reader :nickname, :workitem
     alias_method :id, :sid
 

@@ -1,5 +1,12 @@
 describe Bumbleworks::Task do
-  let(:workflow_item) {Ruote::Workitem.new('fields' => {'params' => {'task' => 'go_to_work'} })}
+  let(:workflow_item) {
+    Ruote::Workitem.new({
+      'fields' => {
+        'params' => {'task' => 'go_to_work'},
+        'dispatched_at' => 'some time ago'
+      }
+    })
+  }
 
   before :each do
     Bumbleworks::Ruote.register_participants
@@ -40,6 +47,13 @@ describe Bumbleworks::Task do
       expect {
         described_class.autoload_all
       }.to raise_error(Bumbleworks::InvalidSetting)
+    end
+  end
+
+  describe '#dispatched_at' do
+    it 'returns dispatched_at timestamp from workitem' do
+      task = described_class.new(workflow_item)
+      expect(task.dispatched_at).to eq 'some time ago'
     end
   end
 
