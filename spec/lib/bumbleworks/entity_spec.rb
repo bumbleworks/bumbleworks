@@ -67,11 +67,11 @@ describe Bumbleworks::Entity do
         :foof => bp1 = Bumbleworks::Process.new('1234'),
         :nook => bp2 = Bumbleworks::Process.new('pickles')
       })
-      bp1.should_receive(:cancel!)
-      bp2.should_receive(:cancel!)
+      expect(bp1).to receive(:cancel!)
+      expect(bp2).to receive(:cancel!)
       entity.stub(:attribute_for_process_name) { |name| :"#{name}_pid" }
-      entity.should_receive(:update).with(:foof_pid => nil)
-      entity.should_receive(:update).with(:nook_pid => nil)
+      expect(entity).to receive(:update).with(:foof_pid => nil)
+      expect(entity).to receive(:update).with(:nook_pid => nil)
       entity.cancel_all_processes!
     end
 
@@ -80,8 +80,8 @@ describe Bumbleworks::Entity do
       entity.stub(:processes_by_name => {
         :foof => bp = Bumbleworks::Process.new('1234')
       })
-      bp.should_receive(:cancel!)
-      entity.should_receive(:update).never
+      expect(bp).to receive(:cancel!)
+      expect(entity).to receive(:update).never
       entity.cancel_all_processes!(:clear_identifiers => false)
     end
   end
@@ -111,14 +111,12 @@ describe Bumbleworks::Entity do
   describe '#persist_process_identifier' do
     it 'calls #update if method exists' do
       entity = entity_class.new
-      entity.should_receive(:update).with(:a_attribute => :a_value)
+      expect(entity).to receive(:update).with(:a_attribute => :a_value)
       entity.persist_process_identifier(:a_attribute, :a_value)
     end
 
     it 'raises exception if #update method does not exist' do
       entity = entity_class.new
-      entity.stub(:respond_to?).with(:update).and_return(false)
-      entity.should_receive(:update).never
       expect {
         entity.persist_process_identifier(:a_attribute, :a_value)
       }.to raise_error("Entity must define #persist_process_identifier method if missing #update method.")
@@ -134,7 +132,7 @@ describe Bumbleworks::Entity do
       entity.stub(:process_fields).with(:noodles).and_return({:f => 1})
       entity.stub(:process_variables).with(:noodles).and_return({:v => 2})
       Bumbleworks.stub(:launch!).with('noodles', {:f => 1}, {:v => 2}).and_return(bp)
-      entity.should_receive(:persist_process_identifier).with(:noodles_pid, '12345')
+      expect(entity).to receive(:persist_process_identifier).with(:noodles_pid, '12345')
       entity.launch_process('noodles').should == bp
     end
 
@@ -143,7 +141,7 @@ describe Bumbleworks::Entity do
       entity_class.process :noodles, :attribute => :noodles_pid
       entity = entity_class.new
       entity.stub(:noodles_pid => 'already set')
-      Bumbleworks.should_receive(:launch!).never
+      expect(Bumbleworks).to receive(:launch!).never
       entity.launch_process('noodles').should == bp
     end
 
@@ -153,7 +151,7 @@ describe Bumbleworks::Entity do
       entity = entity_class.new
       entity.stub(:noodles_pid => 'already set')
       Bumbleworks.stub(:launch! => bp)
-      entity.should_receive(:persist_process_identifier).with(:noodles_pid, '12345')
+      expect(entity).to receive(:persist_process_identifier).with(:noodles_pid, '12345')
       entity.launch_process('noodles', :force => true).should == bp
     end
 
@@ -162,7 +160,7 @@ describe Bumbleworks::Entity do
       entity = entity_class.new
       entity.stub(:noodles_pid)
       entity.stub(:persist_process_identifier)
-      Bumbleworks.should_receive(:launch!).with(
+      expect(Bumbleworks).to receive(:launch!).with(
         'noodles',
         { :entity => entity, :drink => 'apathy smoothie', :berry => 'black' },
         { :so_you_said => :well_so_did_i }
@@ -218,10 +216,10 @@ describe Bumbleworks::Entity do
         :zip => bp1,
         :yip => bp2
       })
-      entity.is_waiting_for?('chewing').should be_true
-      entity.is_waiting_for?('yakking').should be_true
-      entity.is_waiting_for?(:moon).should be_true
-      entity.is_waiting_for?('fruiting').should be_false
+      entity.is_waiting_for?('chewing').should be_truthy
+      entity.is_waiting_for?('yakking').should be_truthy
+      entity.is_waiting_for?(:moon).should be_truthy
+      entity.is_waiting_for?('fruiting').should be_falsy
     end
   end
 

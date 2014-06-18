@@ -46,14 +46,14 @@ describe Bumbleworks::Expression do
 
   describe '#cancel!' do
     it 'cancels the expression' do
-      Bumbleworks.dashboard.should_receive(:cancel_expression).with(fei)
+      expect(Bumbleworks.dashboard).to receive(:cancel_expression).with(fei)
       subject.cancel!
     end
   end
 
   describe '#kill!' do
     it 'kills the expression' do
-      Bumbleworks.dashboard.should_receive(:kill_expression).with(fei)
+      expect(Bumbleworks.dashboard).to receive(:kill_expression).with(fei)
       subject.kill!
     end
   end

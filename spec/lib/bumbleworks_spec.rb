@@ -69,39 +69,46 @@ describe Bumbleworks do
 
   describe '.autoload_tasks' do
     it 'autoloads task modules' do
-      Bumbleworks::Task.should_receive(:autoload_all)
+      expect(Bumbleworks::Task).to receive(:autoload_all)
       described_class.autoload_tasks
     end
   end
 
   describe '.autoload_participants' do
     it 'autoloads participant classes' do
-      Bumbleworks::ParticipantRegistration.should_receive(:autoload_all)
+      expect(Bumbleworks::ParticipantRegistration).to receive(:autoload_all)
       described_class.autoload_participants
     end
   end
 
   describe '.initialize!' do
     it 'autoloads task modules and participant classes' do
-      described_class.should_receive(:autoload_participants)
-      described_class.should_receive(:autoload_tasks)
+      expect(described_class).to receive(:autoload_participants)
+      expect(described_class).to receive(:autoload_tasks)
       described_class.initialize!
     end
   end
 
   describe '.register_participants' do
     it 'autoloads participant classes and registers given participant list' do
-      the_block = lambda {  }
-      described_class.should_receive(:autoload_participants)
-      Bumbleworks::Ruote.should_receive(:register_participants).with(&the_block)
+      the_block = Proc.new {
+        bees_honey 'BeesHoney'
+      }
+      expect(described_class).to receive(:autoload_participants)
       described_class.register_participants &the_block
+      expect(described_class.dashboard.participant_list.map(&:classname)).to eq([
+        'Bumbleworks::ErrorDispatcher',
+        'Bumbleworks::EntityInteractor',
+        'BeesHoney',
+        'Bumbleworks::StorageParticipant'
+      ])
     end
   end
 
   describe '.register_default_participants' do
     it 'registers default participants' do
-      described_class.should_receive(:autoload_participants).never
-      described_class.should_receive(:register_participants)
+      expect(described_class).not_to receive(:autoload_participants)
+      expect(described_class).to receive(:register_participants)
       described_class.register_default_participants
     end
   end
@@ -109,15 +116,14 @@ describe Bumbleworks do
   describe '.load_definitions!' do
     it 'creates all definitions from directory' do
       described_class.stub(:definitions_directory).and_return(:defs_dir)
-      # described_class.storage = {}
-      Bumbleworks::ProcessDefinition.should_receive(:create_all_from_directory!).with(:defs_dir, :fake_options)
+      expect(Bumbleworks::ProcessDefinition).to receive(:create_all_from_directory!).with(:defs_dir, :fake_options)
       described_class.load_definitions!(:fake_options)
     end
 
     it 'does nothing if using default path and directory does not exist' do
       described_class.reset!
       described_class.root = File.join(fixtures_path, 'apps', 'minimal')
-      Bumbleworks::ProcessDefinition.should_receive(:create_all_from_directory!).never
+      expect(Bumbleworks::ProcessDefinition).not_to receive(:create_all_from_directory!)
       described_class.load_definitions!
     end
 
@@ -133,8 +139,8 @@ describe Bumbleworks do
 
   describe '.bootstrap!' do
     it 'loads definitions and participant registration list' do
-      described_class.should_receive(:load_definitions!)
-      Bumbleworks::ParticipantRegistration.should_receive(:register!)
+      expect(described_class).to receive(:load_definitions!)
+      expect(Bumbleworks::ParticipantRegistration).to receive(:register!)
       described_class.bootstrap!
     end
   end
@@ -168,32 +174,32 @@ describe Bumbleworks do
 
   describe 'Bumbleworks::Ruote delegation' do
     it 'includes dashboard' do
-      Bumbleworks::Ruote.should_receive(:dashboard).and_return(:oh_goodness_me)
+      expect(Bumbleworks::Ruote).to receive(:dashboard).and_return(:oh_goodness_me)
       Bumbleworks.dashboard.should == :oh_goodness_me
     end
 
     it 'includes start_worker' do
-      Bumbleworks::Ruote.should_receive(:start_worker!).and_return(:lets_do_it)
+      expect(Bumbleworks::Ruote).to receive(:start_worker!).and_return(:lets_do_it)
       Bumbleworks.start_worker!.should == :lets_do_it
     end
 
     it 'includes cancel_process!' do
-      Bumbleworks::Ruote.should_receive(:cancel_process!).with(:wfid).and_return(:cancelling)
+      expect(Bumbleworks::Ruote).to receive(:cancel_process!).with(:wfid).and_return(:cancelling)
       Bumbleworks.cancel_process!(:wfid).should == :cancelling
     end
 
     it 'includes kill_process!' do
-      Bumbleworks::Ruote.should_receive(:kill_process!).with(:wfid).and_return(:killing)
+      expect(Bumbleworks::Ruote).to receive(:kill_process!).with(:wfid).and_return(:killing)
       Bumbleworks.kill_process!(:wfid).should == :killing
     end
 
     it 'includes cancel_all_processes!' do
-      Bumbleworks::Ruote.should_receive(:cancel_all_processes!).and_return(:cancelling)
+      expect(Bumbleworks::Ruote).to receive(:cancel_all_processes!).and_return(:cancelling)
       Bumbleworks.cancel_all_processes!.should == :cancelling
     end
 
     it 'includes kill_all_processes!' do
-      Bumbleworks::Ruote.should_receive(:kill_all_processes!).and_return(:killing)
+      expect(Bumbleworks::Ruote).to receive(:kill_all_processes!).and_return(:killing)
       Bumbleworks.kill_all_processes!.should == :killing
     end
   end
@@ -213,17 +219,17 @@ describe Bumbleworks do
     end
 
     it 'delegates to Bumbleworks::Ruote.launch' do
-      Bumbleworks::Ruote.should_receive(:launch).with(:amazing_process, :hugs => :love)
+      expect(Bumbleworks::Ruote).to receive(:launch).with(:amazing_process, :hugs => :love)
       Bumbleworks.launch!(:amazing_process, :hugs => :love)
     end
 
     it 'sends all args along' do
-      Bumbleworks::Ruote.should_receive(:launch).with(:amazing_process, { :hugs => :love }, { :whiny => :yup }, :peahen)
+      expect(Bumbleworks::Ruote).to receive(:launch).with(:amazing_process, { :hugs => :love }, { :whiny => :yup }, :peahen)
       Bumbleworks.launch!(:amazing_process, { :hugs => :love }, { :whiny => :yup }, :peahen)
     end
 
     it 'expands entity params when entity object provided' do
-      Bumbleworks::Ruote.should_receive(:launch).with(:amazing_process, { :entity_id => :wiley_e_coyote, :entity_type => 'LovelyEntity' }, :et_cetera)
+      expect(Bumbleworks::Ruote).to receive(:launch).with(:amazing_process, { :entity_id => :wiley_e_coyote, :entity_type => 'LovelyEntity' }, :et_cetera)
       Bumbleworks.launch!(:amazing_process, { :entity => LovelyEntity.new(:wiley_e_coyote) }, :et_cetera)
     end
 
@@ -264,14 +270,14 @@ describe Bumbleworks do
   describe '.store_history?' do
     it 'returns true if store_history is true' do
       described_class.store_history = true
-      described_class.store_history?.should be_true
+      described_class.store_history?.should be_truthy
     end
 
     it 'returns false if store_history is anything but true' do
       described_class.store_history = false
-      described_class.store_history?.should be_false
+      described_class.store_history?.should be_falsy
       described_class.store_history = 'penguins'
-      described_class.store_history?.should be_false
+      described_class.store_history?.should be_falsy
     end
   end
 end

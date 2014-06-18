@@ -6,7 +6,7 @@ describe Bumbleworks::SimpleLogger do
   [:info, :debug, :fatal, :warn, :error].each do |level|
     describe ".#{level}" do
       it "adds given object to the log with '#{level}' level" do
-        described_class.should_receive(:add).
+        expect(described_class).to receive(:add).
           with(level, :something => :happened)
         described_class.send(level.to_sym, :something => :happened)
       end

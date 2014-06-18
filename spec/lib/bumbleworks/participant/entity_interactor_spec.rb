@@ -5,8 +5,8 @@ describe Bumbleworks::EntityInteractor do
 
   describe '#on_workitem' do
     it 'calls method then replies' do
-      subject.should_receive(:call_method).ordered
-      subject.should_receive(:reply).ordered
+      expect(subject).to receive(:call_method).ordered
+      expect(subject).to receive(:reply).ordered
       subject._on_workitem(workitem)
     end
 
@@ -24,7 +24,7 @@ describe Bumbleworks::EntityInteractor do
     end
 
     it 'calls the method even if no save_as to store the result' do
-      subject.entity.should_receive(:cheek_depth)
+      expect(subject.entity).to receive(:cheek_depth)
       subject._on_workitem(workitem)
       workitem.fields['entity_cheek_depth'].should be_nil
     end
@@ -32,40 +32,40 @@ describe Bumbleworks::EntityInteractor do
     it 'passes arguments to method' do
       workitem.fields['params']['arguments'] = [1, 3, ['apple', 'fish']]
       workitem.fields['params']['and_save_as'] = 'entity_cheek_depth'
-      subject.entity.should_receive(:cheek_depth).with(1, 3, ['apple', 'fish']).and_return('what')
+      expect(subject.entity).to receive(:cheek_depth).with(1, 3, ['apple', 'fish']).and_return('what')
       subject._on_workitem(workitem)
       workitem.fields['entity_cheek_depth'].should == 'what'
     end
 
     it 'can accept "with" for arguments' do
       workitem.fields['params']['with'] = { :regular => 'joes' }
-      subject.entity.should_receive(:cheek_depth).with({ :regular => 'joes' })
+      expect(subject.entity).to receive(:cheek_depth).with({ :regular => 'joes' })
       subject._on_workitem(workitem)
     end
 
     it 'can use "for" param for method' do
       workitem.fields['params'] = { 'for' => 'grass_seed', 'and_save_as' => 'how_tasty' }
-      entity.should_receive(:grass_seed).and_return('tasty-o')
+      expect(entity).to receive(:grass_seed).and_return('tasty-o')
       subject._on_workitem(workitem)
       workitem.fields['how_tasty'].should == 'tasty-o'
     end
 
     it 'can use "to" param for method' do
       workitem.fields['params'] = { 'to' => 'chew_things' }
-      entity.should_receive(:chew_things).and_return(nil)
+      expect(entity).to receive(:chew_things).and_return(nil)
       subject._on_workitem(workitem)
       workitem.fields['who_cares'].should be_nil
     end
 
     it 'defaults to "method" when multiple options exist' do
       workitem.fields['params'] = { 'method' => 'really_do_this', 'to' => 'not_this', 'for' => 'definitely_not_this' }
-      entity.should_receive(:really_do_this)
+      expect(entity).to receive(:really_do_this)
       subject._on_workitem(workitem)
     end
 
     it 'defaults to "to" when both "to" and "for"' do
       workitem.fields['params'] = { 'to' => 'please_call_me', 'for' => 'call_me_maybe' }
-      entity.should_receive(:please_call_me)
+      expect(entity).to receive(:please_call_me)
       subject._on_workitem(workitem)
     end
   end
@@ -83,7 +83,7 @@ describe Bumbleworks::EntityInteractor do
 
     it 'raises an exception if no method on entity' do
       subject.stub(:entity).and_return('just an unassuming little string!')
-      expect { 
+      expect {
         subject.call_method('eat_television')
       }.to raise_error(NoMethodError)
     end

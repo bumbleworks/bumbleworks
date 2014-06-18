@@ -300,26 +300,26 @@ describe Bumbleworks::Process do
     it 'returns true if event is in subscribed events' do
       bp = described_class.new('whatever')
       bp.stub(:subscribed_events => ['ghosts', 'mouses'])
-      bp.is_waiting_for?('mouses').should be_true
+      bp.is_waiting_for?('mouses').should be_truthy
     end
 
     it 'converts symbolized queries' do
       bp = described_class.new('whatever')
       bp.stub(:subscribed_events => ['ghosts', 'mouses'])
-      bp.is_waiting_for?(:ghosts).should be_true
+      bp.is_waiting_for?(:ghosts).should be_truthy
     end
 
     it 'returns false if event is not in subscribed events' do
       bp = described_class.new('whatever')
       bp.stub(:subscribed_events => ['ghosts', 'mouses'])
-      bp.is_waiting_for?('organs').should be_false
+      bp.is_waiting_for?('organs').should be_falsy
     end
   end
 
   describe '#kill!' do
     it 'kills process' do
       bp = described_class.new('frogheads')
-      Bumbleworks.should_receive(:kill_process!).with('frogheads')
+      expect(Bumbleworks).to receive(:kill_process!).with('frogheads')
       bp.kill!
     end
   end
@@ -327,7 +327,7 @@ describe Bumbleworks::Process do
   describe '#cancel!' do
     it 'cancels process' do
       bp = described_class.new('frogheads')
-      Bumbleworks.should_receive(:cancel_process!).with('frogheads')
+      expect(Bumbleworks).to receive(:cancel_process!).with('frogheads')
       bp.cancel!
     end
   end

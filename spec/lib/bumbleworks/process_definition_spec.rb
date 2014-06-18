@@ -72,7 +72,7 @@ describe Bumbleworks::ProcessDefinition do
   describe "#save!" do
     it "validates" do
       pdef = described_class.new
-      pdef.should_receive(:validate!)
+      expect(pdef).to receive(:validate!)
       pdef.save!
     end
 

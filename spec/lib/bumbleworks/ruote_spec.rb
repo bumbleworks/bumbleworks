@@ -62,7 +62,7 @@ describe Bumbleworks::Ruote do
     end
 
     it 'uses storage.remove_process if force option is true' do
-      Bumbleworks.dashboard.storage.should_receive(:remove_process).with('woot')
+      expect(Bumbleworks.dashboard.storage).to receive(:remove_process).with('woot')
       Bumbleworks.dashboard.stub(:process).with('woot').and_return(nil)
       described_class.kill_process!('woot', :force => true)
     end
@@ -180,21 +180,21 @@ describe Bumbleworks::Ruote do
 
     it 'uses storage.clear if force option is true' do
       Bumbleworks.dashboard.stub(:process_wfids).and_return(['wfid'], [])
-      Bumbleworks.dashboard.storage.should_receive(:clear)
+      expect(Bumbleworks.dashboard.storage).to receive(:clear)
       described_class.kill_all_processes!(:force => true)
     end
   end
 
   describe '.send_cancellation_message' do
     it 'sends cancel message to given wfids if method is cancel' do
-      Bumbleworks.dashboard.should_receive(:cancel).with('wfid1')
-      Bumbleworks.dashboard.should_receive(:cancel).with('wfid2')
+      expect(Bumbleworks.dashboard).to receive(:cancel).with('wfid1')
+      expect(Bumbleworks.dashboard).to receive(:cancel).with('wfid2')
       described_class.send_cancellation_message(:cancel, ['wfid1', 'wfid2'])
     end
 
     it 'sends kill message to given wfids if method is kill' do
-      Bumbleworks.dashboard.should_receive(:kill).with('wfid1')
-      Bumbleworks.dashboard.should_receive(:kill).with('wfid2')
+      expect(Bumbleworks.dashboard).to receive(:kill).with('wfid1')
+      expect(Bumbleworks.dashboard).to receive(:kill).with('wfid2')
       described_class.send_cancellation_message(:kill, ['wfid1', 'wfid2'])
     end
   end
@@ -224,28 +224,28 @@ describe Bumbleworks::Ruote do
 
     it 'runs in current thread if :join option is true' do
       ::Ruote::Worker.stub(:new).and_return(worker_double = double('worker'))
-      worker_double.should_receive(:run)
+      expect(worker_double).to receive(:run)
       described_class.start_worker!(:join => true)
     end
 
     it 'runs in new thread and returns worker if :join option not true' do
       ::Ruote::Worker.stub(:new).and_return(worker_double = double('worker'))
-      worker_double.should_receive(:run_in_thread)
+      expect(worker_double).to receive(:run_in_thread)
       described_class.start_worker!.should == worker_double
     end
 
     it 'sets dashboard to noisy if :verbose option true' do
-      described_class.dashboard.should_receive(:noisy=).with(true)
+      expect(described_class.dashboard).to receive(:noisy=).with(true)
       described_class.start_worker!(:verbose => true)
     end
 
     it 'registers error handler' do
-      described_class.should_receive(:register_error_dispatcher)
+      expect(described_class).to receive(:register_error_dispatcher)
       described_class.start_worker!
     end
 
     it 'calls set_up_storage_history' do
-      described_class.should_receive(:set_up_storage_history)
+      expect(described_class).to receive(:set_up_storage_history)
       described_class.start_worker!
     end
 
@@ -266,7 +266,7 @@ describe Bumbleworks::Ruote do
       storage_adapter = double('adapter', :allow_history_storage? => true)
       Bumbleworks.storage_adapter = storage_adapter
       described_class.stub(:storage => Ruote::HashStorage.new({}))
-      Bumbleworks.dashboard.should_receive(:add_service).with(
+      expect(Bumbleworks.dashboard).to receive(:add_service).with(
         'history', 'ruote/log/storage_history', 'Ruote::StorageHistory'
       )
       described_class.set_up_storage_history
@@ -276,7 +276,7 @@ describe Bumbleworks::Ruote do
       storage_adapter = double('adapter', :allow_history_storage? => false)
       Bumbleworks.storage_adapter = storage_adapter
       described_class.stub(:storage => Ruote::HashStorage.new({}))
-      Bumbleworks.dashboard.should_receive(:add_service).never
+      expect(Bumbleworks.dashboard).to receive(:add_service).never
       described_class.set_up_storage_history
     end
 
@@ -284,7 +284,7 @@ describe Bumbleworks::Ruote do
       storage_adapter = double('adapter', :allow_history_storage? => true)
       Bumbleworks.storage_adapter = storage_adapter
       described_class.stub(:storage => Ruote::HashStorage.new({}))
-      Bumbleworks.dashboard.should_receive(:add_service).never
+      expect(Bumbleworks.dashboard).to receive(:add_service).never
       Bumbleworks.store_history = false
       described_class.set_up_storage_history
     end
@@ -300,7 +300,7 @@ describe Bumbleworks::Ruote do
 
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &registration_block
-      described_class.dashboard.participant_list.should have(6).items
+      expect(described_class.dashboard.participant_list.size).to eq(6)
       described_class.dashboard.participant_list.map(&:classname).should == [
         'Bumbleworks::ErrorDispatcher',
         'Bumbleworks::EntityInteractor',
@@ -317,7 +317,7 @@ describe Bumbleworks::Ruote do
 
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &registration_block
-      described_class.dashboard.participant_list.should have(4).items
+      expect(described_class.dashboard.participant_list.size).to eq(4)
       described_class.dashboard.participant_list.map(&:classname).should == [
         'Bumbleworks::ErrorDispatcher', 'Bumbleworks::EntityInteractor', 'BeesHoney', 'Ruote::StorageParticipant'
       ]
@@ -326,7 +326,7 @@ describe Bumbleworks::Ruote do
     it 'adds catchall and error_handler participants if block is nil' do
       described_class.dashboard.participant_list.should be_empty
       described_class.register_participants &nil
-      described_class.dashboard.participant_list.should have(3).item
+      expect(described_class.dashboard.participant_list.size).to eq(3)
       described_class.dashboard.participant_list.map(&:classname).should ==
         ['Bumbleworks::ErrorDispatcher', 'Bumbleworks::EntityInteractor', 'Bumbleworks::StorageParticipant']
     end
@@ -379,14 +379,14 @@ describe Bumbleworks::Ruote do
     end
 
     it 'tells dashboard to launch process' do
-      described_class.dashboard.should_receive(:launch).with(@pdef.tree, 'variable' => 'neat')
+      expect(described_class.dashboard).to receive(:launch).with(@pdef.tree, 'variable' => 'neat')
       described_class.launch('foo', 'variable' => 'neat')
     end
 
     it 'sets catchall if needed' do
       described_class.dashboard.participant_list.should be_empty
       described_class.launch('foo')
-      described_class.dashboard.participant_list.should have(1).item
+      expect(described_class.dashboard.participant_list.size).to eq(1)
       described_class.dashboard.participant_list.first.classname.should == 'Bumbleworks::StorageParticipant'
     end
   end
@@ -395,8 +395,8 @@ describe Bumbleworks::Ruote do
     it 'purges and shuts down storage, then resets storage' do
       old_storage = double('Storage')
       allow(described_class).to receive(:initialize_storage_adapter).and_return(old_storage)
-      old_storage.should_receive(:purge!)
-      old_storage.should_receive(:shutdown)
+      expect(old_storage).to receive(:purge!)
+      expect(old_storage).to receive(:shutdown)
       described_class.reset!
       allow(described_class).to receive(:initialize_storage_adapter).and_return(:new_storage)
       described_class.storage.should == :new_storage
@@ -413,7 +413,7 @@ describe Bumbleworks::Ruote do
 
     it 'shuts down dashboard and detaches' do
       old_dashboard = described_class.dashboard
-      old_dashboard.should_receive(:shutdown)
+      expect(old_dashboard).to receive(:shutdown)
       described_class.reset!
       described_class.dashboard.should_not == old_dashboard
     end
@@ -428,7 +428,7 @@ describe Bumbleworks::Ruote do
     it 'skips shutting down dashboard if dashboard can not be shutdown' do
       dashboard = double('dashboard', :respond_to? => false)
       described_class.instance_variable_set(:@dashboard, dashboard)
-      dashboard.should_receive(:shutdown).never
+      expect(dashboard).to receive(:shutdown).never
       described_class.reset!
       described_class.dashboard.should_not == dashboard
     end

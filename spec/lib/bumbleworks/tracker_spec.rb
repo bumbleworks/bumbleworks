@@ -9,7 +9,7 @@ describe Bumbleworks::Tracker do
   describe '.all' do
     it 'returns instances for each tracker in system' do
       trackers = described_class.all
-      trackers.all? { |t| t.class == Bumbleworks::Tracker }.should be_true
+      trackers.all? { |t| t.class == Bumbleworks::Tracker }.should be_truthy
       trackers.map(&:id).should =~ [
         'on_error',
         'global_tracker',
@@ -68,12 +68,12 @@ describe Bumbleworks::Tracker do
 
   describe '#global?' do
     it 'returns true if not listening to events on a specific wfid' do
-      described_class.new('on_error').global?.should be_true
-      described_class.new('global_tracker').global?.should be_true
+      described_class.new('on_error').global?.should be_truthy
+      described_class.new('global_tracker').global?.should be_truthy
     end
 
     it 'returns false if listening to events on a specific wfid' do
-      described_class.new('local_tracker').global?.should be_false
+      described_class.new('local_tracker').global?.should be_falsy
     end
   end
 
@@ -110,12 +110,12 @@ describe Bumbleworks::Tracker do
     end
   end
 
-  describe '#waiting_expression' do      
+  describe '#waiting_expression' do
     it 'returns nil when no expression is waiting' do
       described_class.new('on_error').waiting_expression.should be_nil
     end
 
-    it 'returns expression awaiting reply' do        
+    it 'returns expression awaiting reply' do
       process = Bumbleworks::Process.new('my_wfid')
       expression1 = double(:expid => '0_0_0', :tree => :a_global_expression)
       expression2 = double(:expid => '0_0_1', :tree => :a_local_expression)

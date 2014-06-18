@@ -9,14 +9,14 @@ describe 'Bumbleworks Sample Application' do
 
   describe 'initializer' do
     it 'registers participants' do
-      Bumbleworks.dashboard.participant_list.should have(5).items
-      Bumbleworks.dashboard.participant_list.map(&:classname).should == [
+      expect(Bumbleworks.dashboard.participant_list.size).to eq(5)
+      expect(Bumbleworks.dashboard.participant_list.map(&:classname)).to eq([
         'Bumbleworks::ErrorDispatcher',
         'Bumbleworks::EntityInteractor',
         'HoneyParticipant',
         'MolassesParticipant',
         'Bumbleworks::StorageParticipant'
-      ]
+      ])
     end
 
     it 'loads process definitions' do
@@ -37,15 +37,15 @@ describe 'Bumbleworks Sample Application' do
     it 'waits for first task in catchall participant' do
       Bumbleworks.launch!('make_honey')
       Bumbleworks.dashboard.wait_for(:dave)
-      Bumbleworks::Task.all.should have(1).item
+      expect(Bumbleworks::Task.size).to eq(1)
     end
 
     it 'creates tasks for concurrent workflows' do
       Bumbleworks.launch!('make_molasses')
       Bumbleworks.dashboard.wait_for(:dave)
-      Bumbleworks::Task.all.should have(2).item
-      Bumbleworks::Task.for_role('dave').should have(1).item
-      Bumbleworks::Task.for_role('sam').should have(1).item
+      expect(Bumbleworks::Task.size).to eq(2)
+      expect(Bumbleworks::Task.for_role('dave').size).to eq(1)
+      expect(Bumbleworks::Task.for_role('sam').size).to eq(1)
     end
   end
 

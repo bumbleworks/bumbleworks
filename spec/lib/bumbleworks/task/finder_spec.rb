@@ -84,24 +84,24 @@ describe Bumbleworks::Task::Finder do
 
   describe '#available' do
     it 'adds both unclaimed and completable filters' do
-      subject.should_receive(:where_all).with(:unclaimed => true, :completable => true).and_return(subject)
+      expect(subject).to receive(:where_all).with(:unclaimed => true, :completable => true).and_return(subject)
       subject.available
     end
 
     it 'adds OR-ed claimed and not-completable filters if passed false' do
-      subject.should_receive(:where_any).with(:claimed => true, :completable => false).and_return(subject)
+      expect(subject).to receive(:where_any).with(:claimed => true, :completable => false).and_return(subject)
       subject.available(false)
     end
   end
 
   describe '#unavailable' do
     it 'checks if not available' do
-      subject.should_receive(:available).with(false).and_return(subject)
+      expect(subject).to receive(:available).with(false).and_return(subject)
       subject.unavailable
     end
 
     it 'checks if available when passed false' do
-      subject.should_receive(:available).with(true).and_return(subject)
+      expect(subject).to receive(:available).with(true).and_return(subject)
       subject.unavailable(false)
     end
   end
@@ -109,12 +109,12 @@ describe Bumbleworks::Task::Finder do
   [:all, :any].each do |join_type|
     describe "#where_#{join_type}" do
       it "sets join to #{join_type} if no args" do
-        subject.should_receive(:join=).with(join_type)
+        expect(subject).to receive(:join=).with(join_type)
         subject.send(:"where_#{join_type}")
       end
 
       it "calls where with :#{join_type} type if args" do
-        subject.should_receive(:where).with(:filters, join_type)
+        expect(subject).to receive(:where).with(:filters, join_type)
         subject.send(:"where_#{join_type}", :filters)
       end
     end
@@ -125,21 +125,21 @@ describe Bumbleworks::Task::Finder do
       parent = described_class.new(:dummy_task_class).where_all
       child = described_class.new
       described_class.stub(:new).with(:dummy_task_class).and_return(child)
-      child.should_receive(:where_any)
-      child.should_receive(:available).and_return(child)
-      child.should_receive(:unavailable).and_return(child)
-      child.should_receive(:by_nickname).with(:nicholas).and_return(child)
-      child.should_receive(:for_roles).with([:dinner, :barca]).and_return(child)
-      child.should_receive(:unclaimed).and_return(child)
-      child.should_receive(:claimed).and_return(child)
-      child.should_receive(:for_claimant).with(:dr_clam).and_return(child)
-      child.should_receive(:for_entity).with(:a_luffly_pirate).and_return(child)
-      child.should_receive(:for_processes).with([:jasmine, :mulan]).and_return(child)
-      child.should_receive(:completable).with(true).and_return(child)
-      child.should_receive(:with_fields).with(:horse => :giant_pony).and_return(child)
-      child.should_receive(:with_fields).with(:pie => :silly_cake).and_return(child)
-      parent.should_receive(:add_subfinder).with(child).and_return(parent)
-      parent.where({
+      expect(child).to receive(:where_any)
+      expect(child).to receive(:available).and_return(child)
+      expect(child).to receive(:unavailable).and_return(child)
+      expect(child).to receive(:by_nickname).with(:nicholas).and_return(child)
+      expect(child).to receive(:for_roles).with([:dinner, :barca]).and_return(child)
+      expect(child).to receive(:unclaimed).and_return(child)
+      expect(child).to receive(:claimed).and_return(child)
+      expect(child).to receive(:for_claimant).with(:dr_clam).and_return(child)
+      expect(child).to receive(:for_entity).with(:a_luffly_pirate).and_return(child)
+      expect(child).to receive(:for_processes).with([:jasmine, :mulan]).and_return(child)
+      expect(child).to receive(:completable).with(true).and_return(child)
+      expect(child).to receive(:with_fields).with(:horse => :giant_pony).and_return(child)
+      expect(child).to receive(:with_fields).with(:pie => :silly_cake).and_return(child)
+      expect(parent).to receive(:add_subfinder).with(child).and_return(parent)
+      expect(parent.where({
         :available => true,
         :unavailable => true,
         :nickname => :nicholas,
@@ -152,24 +152,24 @@ describe Bumbleworks::Task::Finder do
         :completable => true,
         :horse => :giant_pony,
         :pie => :silly_cake
-      }, :any).should == parent
+      }, :any)).to eq parent
     end
 
     it 'adds queries to current finder, when join type matches' do
-      subject.should_receive(:available).and_return(subject)
-      subject.should_receive(:unavailable).and_return(subject)
-      subject.should_receive(:by_nickname).with(:nicholas).and_return(subject)
-      subject.should_receive(:for_roles).with([:dinner, :barca]).and_return(subject)
-      subject.should_receive(:unclaimed).and_return(subject)
-      subject.should_receive(:claimed).and_return(subject)
-      subject.should_receive(:for_claimant).with(:dr_clam).and_return(subject)
-      subject.should_receive(:for_entity).with(:a_luffly_pirate).and_return(subject)
-      subject.should_receive(:for_processes).with([:jasmine, :mulan]).and_return(subject)
-      subject.should_receive(:completable).with(true).and_return(subject)
-      subject.should_receive(:with_fields).with(:horse => :giant_pony).and_return(subject)
-      subject.should_receive(:with_fields).with(:pie => :silly_cake).and_return(subject)
-      subject.should_receive(:add_subfinder).never
-      subject.where({
+      expect(subject).to receive(:available).and_return(subject)
+      expect(subject).to receive(:unavailable).and_return(subject)
+      expect(subject).to receive(:by_nickname).with(:nicholas).and_return(subject)
+      expect(subject).to receive(:for_roles).with([:dinner, :barca]).and_return(subject)
+      expect(subject).to receive(:unclaimed).and_return(subject)
+      expect(subject).to receive(:claimed).and_return(subject)
+      expect(subject).to receive(:for_claimant).with(:dr_clam).and_return(subject)
+      expect(subject).to receive(:for_entity).with(:a_luffly_pirate).and_return(subject)
+      expect(subject).to receive(:for_processes).with([:jasmine, :mulan]).and_return(subject)
+      expect(subject).to receive(:completable).with(true).and_return(subject)
+      expect(subject).to receive(:with_fields).with(:horse => :giant_pony).and_return(subject)
+      expect(subject).to receive(:with_fields).with(:pie => :silly_cake).and_return(subject)
+      expect(subject).to receive(:add_subfinder).never
+      expect(subject.where({
         :available => true,
         :unavailable => true,
         :nickname => :nicholas,
@@ -182,7 +182,7 @@ describe Bumbleworks::Task::Finder do
         :completable => true,
         :horse => :giant_pony,
         :pie => :silly_cake
-      }).should == subject
+      })).to eq subject
     end
   end
 end

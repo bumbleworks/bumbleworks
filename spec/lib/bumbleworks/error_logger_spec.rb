@@ -8,7 +8,7 @@ describe Bumbleworks::ErrorLogger do
   end
 
   it 'calls registered logger and logs error information' do
-    Bumbleworks.logger.should_receive(:error).with({
+    expect(Bumbleworks.logger).to receive(:error).with({
       :actor => 'armadillo',
       :action => 'process error',
       :target_type => nil,
@@ -21,7 +21,7 @@ describe Bumbleworks::ErrorLogger do
 
   it 'sets target to entity if found' do
     workitem.stub(:fields => {:entity_id => 1234, :entity_type => 'Lizards'})
-    Bumbleworks.logger.should_receive(:error).with(hash_including({
+    expect(Bumbleworks.logger).to receive(:error).with(hash_including({
       :target_type => 'Lizards',
       :target_id => 1234,
     }))

@@ -31,12 +31,12 @@ describe Bumbleworks::Workitem do
   describe '#has_entity?' do
     it 'returns true if entity is not nil' do
       workitem.stub(:entity).and_return(:a_real_boy_not_a_puppet)
-      workitem.has_entity?.should be_true
+      workitem.has_entity?.should be_truthy
     end
 
     it 'returns false if EntityNotFound' do
       workitem.stub(:entity).and_raise(Bumbleworks::EntityNotFound)
-      workitem.has_entity?.should be_false
+      workitem.has_entity?.should be_falsy
     end
   end
 

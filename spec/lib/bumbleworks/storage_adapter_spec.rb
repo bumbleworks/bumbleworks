@@ -2,17 +2,17 @@ describe Bumbleworks::StorageAdapter do
   describe '.auto_register?' do
     it 'returns true if auto_register is true' do
       described_class.auto_register = true
-      described_class.auto_register?.should be_true
+      described_class.auto_register?.should be_truthy
     end
 
     it 'returns false if auto_register is not true' do
       described_class.auto_register = :ghosts
-      described_class.auto_register?.should be_false
+      described_class.auto_register?.should be_falsy
     end
 
     it 'is true by default' do
       described_class.auto_register = nil
-      described_class.auto_register?.should be_true
+      described_class.auto_register?.should be_truthy
     end
   end
 
@@ -37,7 +37,7 @@ describe Bumbleworks::StorageAdapter do
 
   describe '.allow_history_storage?' do
     it 'defaults to true' do
-      described_class.allow_history_storage?.should be_true
+      described_class.allow_history_storage?.should be_truthy
     end
   end
 
@@ -47,8 +47,8 @@ describe Bumbleworks::StorageAdapter do
     end
 
     it 'returns true if argument class is_a storage class' do
-      described_class.use?('a string').should be_true
-      described_class.use?(:not_a_string).should be_false
+      described_class.use?('a string').should be_truthy
+      described_class.use?(:not_a_string).should be_falsy
     end
   end
 

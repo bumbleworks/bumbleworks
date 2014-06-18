@@ -5,9 +5,9 @@ describe Bumbleworks::ParticipantRegistration do
 
   describe '.autoload_all' do
     it 'autoloads all participants in directory' do
-      Object.should_receive(:autoload).with(:HoneyParticipant,
+      expect(Object).to receive(:autoload).with(:HoneyParticipant,
         File.join(Bumbleworks.root, 'participants', 'honey_participant.rb'))
-      Object.should_receive(:autoload).with(:MolassesParticipant,
+      expect(Object).to receive(:autoload).with(:MolassesParticipant,
         File.join(Bumbleworks.root, 'participants', 'molasses_participant.rb'))
       described_class.autoload_all
     end
@@ -27,13 +27,13 @@ describe Bumbleworks::ParticipantRegistration do
 
   describe '.register!' do
     it 'loads registration file' do
-      Kernel.should_receive(:load).with(File.join(Bumbleworks.root, 'participants.rb'))
+      expect(Kernel).to receive(:load).with(File.join(Bumbleworks.root, 'participants.rb'))
       described_class.register!
     end
 
     it 'registers default participants if using default path and file does not exist' do
       Bumbleworks.root = File.join(fixtures_path, 'apps', 'minimal')
-      Bumbleworks.should_receive(:register_default_participants)
+      expect(Bumbleworks).to receive(:register_default_participants)
       described_class.register!
     end
 

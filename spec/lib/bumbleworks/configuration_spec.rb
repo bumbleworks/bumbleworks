@@ -336,12 +336,12 @@ describe Bumbleworks::Configuration do
 
   describe '#store_history' do
     it 'defaults to true' do
-      subject.store_history.should be_true
+      subject.store_history.should be_truthy
     end
 
     it 'can be overridden' do
       subject.store_history = false
-      subject.store_history.should be_false
+      subject.store_history.should be_falsy
     end
   end
 end

@@ -38,13 +38,13 @@ describe Bumbleworks::User do
 
     it 'claims a task if authorized' do
       task = double('task', :role => 'snoogat')
-      task.should_receive(:claim).with("the umpire of snorts")
+      expect(task).to receive(:claim).with("the umpire of snorts")
       subject.claim(task)
     end
 
     it 'raises exception if unauthorized' do
       task = double('task', :role => 'fashbone')
-      task.should_receive(:claim).never
+      expect(task).to receive(:claim).never
       expect {
         subject.claim(task)
       }.to raise_error(Bumbleworks::User::UnauthorizedClaimAttempt)
@@ -52,7 +52,7 @@ describe Bumbleworks::User do
 
     it 'raises exception if already claimed by another' do
       task = double('task', :role => 'snoogat')
-      task.should_receive(:claim).and_raise(Bumbleworks::Task::AlreadyClaimed)
+      expect(task).to receive(:claim).and_raise(Bumbleworks::Task::AlreadyClaimed)
       expect {
         subject.claim(task)
       }.to raise_error(Bumbleworks::Task::AlreadyClaimed)
@@ -61,15 +61,15 @@ describe Bumbleworks::User do
     describe '!' do
       it 'resets even if claimed by another' do
         task = double('task', :role => 'snoogat', :claimed? => true, :claimant => 'fumbo the monfey')
-        task.should_receive(:release).ordered
-        task.should_receive(:claim).with("the umpire of snorts").ordered
+        expect(task).to receive(:release).ordered
+        expect(task).to receive(:claim).with("the umpire of snorts").ordered
         subject.claim!(task)
       end
 
       it 'raises exception (and does not release) if unauthorized' do
         task = double('task', :role => 'fashbone')
-        task.should_receive(:release).never
-        task.should_receive(:claim).never
+        expect(task).to receive(:release).never
+        expect(task).to receive(:claim).never
         expect {
           subject.claim!(task)
         }.to raise_error(Bumbleworks::User::UnauthorizedClaimAttempt)
@@ -84,19 +84,19 @@ describe Bumbleworks::User do
 
     it 'releases a claimed task if claimant' do
       task = double('task', :claimed? => true, :claimant => "the umpire of snorts")
-      task.should_receive(:release)
+      expect(task).to receive(:release)
       subject.release(task)
     end
 
     it 'does nothing if task not claimed' do
       task = double('task', :claimed? => false)
-      task.should_receive(:release).never
+      expect(task).to receive(:release).never
       subject.release(task)
     end
 
     it 'raises exception if not claimant' do
       task = double('task', :claimed? => true, :claimant => 'a castanet expert')
-      task.should_receive(:release).never
+      expect(task).to receive(:release).never
       expect {
         subject.release(task)
       }.to raise_error(Bumbleworks::User::UnauthorizedReleaseAttempt)
@@ -105,7 +105,7 @@ describe Bumbleworks::User do
     describe '!' do
       it 'releases even if not claimant' do
         task = double('task', :claimed? => true, :claimant => 'a castanet expert')
-        task.should_receive(:release)
+        expect(task).to receive(:release)
         subject.release!(task)
       end
     end
@@ -125,11 +125,11 @@ describe Bumbleworks::User do
     end
 
     it 'returns true if role_identifiers includes given role' do
-      subject.has_role?('role1').should be_true
+      subject.has_role?('role1').should be_truthy
     end
 
     it 'returns false if role_identifiers does not include given role' do
-      subject.has_role?('role3').should be_false
+      subject.has_role?('role3').should be_falsy
     end
   end
 

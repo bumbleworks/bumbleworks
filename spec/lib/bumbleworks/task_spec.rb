@@ -29,9 +29,9 @@ describe Bumbleworks::Task do
   describe '.autoload_all' do
     it 'autoloads all task modules in directory' do
       Bumbleworks.root = File.join(fixtures_path, 'apps', 'with_default_directories')
-      Object.should_receive(:autoload).with(:MakeSomeHoneyTask,
+      expect(Object).to receive(:autoload).with(:MakeSomeHoneyTask,
         File.join(Bumbleworks.root, 'tasks', 'make_some_honey_task.rb'))
-      Object.should_receive(:autoload).with(:TasteThatMolassesTask,
+      expect(Object).to receive(:autoload).with(:TasteThatMolassesTask,
         File.join(Bumbleworks.root, 'tasks', 'taste_that_molasses_task.rb'))
       described_class.autoload_all
     end
@@ -83,7 +83,7 @@ describe Bumbleworks::Task do
     end
 
     it 'extends new object with task module' do
-      described_class.any_instance.should_receive(:extend_module)
+      expect_any_instance_of(described_class).to receive(:extend_module)
       described_class.new(workflow_item)
     end
   end
@@ -92,7 +92,7 @@ describe Bumbleworks::Task do
     it 'reloads the workitem from the storage participant' do
       task = described_class.new(workflow_item)
       task.stub(:sid).and_return(:the_sid)
-      Bumbleworks.dashboard.storage_participant.should_receive(
+      expect(Bumbleworks.dashboard.storage_participant).to receive(
         :[]).with(:the_sid).and_return(:amazing_workitem)
       task.reload
       task.instance_variable_get(:@workitem).should == :amazing_workitem
@@ -105,9 +105,9 @@ describe Bumbleworks::Task do
         observer1, observer2 = double('observer1'), double('observer2')
         Bumbleworks.observers = [observer1, observer2]
         task = described_class.new(workflow_item)
-        task.should_receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
-        observer1.should_receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
-        observer2.should_receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
+        expect(task).to receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
+        expect(observer1).to receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
+        expect(observer2).to receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
         task.send(:"call_#{phase}_hooks", :snoogle, :chachunga, :faloop)
       end
     end
@@ -123,7 +123,7 @@ describe Bumbleworks::Task do
     end
 
     it 'is called when task is dispatched' do
-      described_class.any_instance.should_receive(:on_dispatch)
+      expect_any_instance_of(described_class).to receive(:on_dispatch)
       Bumbleworks.launch!('planting_a_noodle')
       Bumbleworks.dashboard.wait_for(:horse_feeder)
     end
@@ -141,7 +141,7 @@ describe Bumbleworks::Task do
     it 'calls after hooks' do
       task = described_class.new(workflow_item)
       task.stub(:log)
-      task.should_receive(:call_after_hooks).with(:dispatch)
+      expect(task).to receive(:call_after_hooks).with(:dispatch)
       task.on_dispatch
     end
   end
@@ -149,22 +149,22 @@ describe Bumbleworks::Task do
   describe '#extend_module' do
     it 'extends with base module and task module' do
       task = described_class.new(workflow_item)
-      task.should_receive(:task_module).and_return(:task_module_double)
-      task.should_receive(:extend).with(Bumbleworks::Task::Base).ordered
-      task.should_receive(:extend).with(:task_module_double).ordered
+      expect(task).to receive(:task_module).and_return(:task_module_double)
+      expect(task).to receive(:extend).with(Bumbleworks::Task::Base).ordered
+      expect(task).to receive(:extend).with(:task_module_double).ordered
       task.extend_module
     end
 
     it 'extends only with base module if no nickname' do
       task = described_class.new(workflow_item)
       task.stub(:nickname).and_return(nil)
-      task.should_receive(:extend).with(Bumbleworks::Task::Base)
+      expect(task).to receive(:extend).with(Bumbleworks::Task::Base)
       task.extend_module
     end
 
     it 'extends only with base module if task module does not exist' do
       task = described_class.new(workflow_item)
-      task.should_receive(:extend).with(Bumbleworks::Task::Base)
+      expect(task).to receive(:extend).with(Bumbleworks::Task::Base)
       task.extend_module
     end
   end
@@ -437,7 +437,7 @@ describe Bumbleworks::Task do
 
   describe '.for_process' do
     it 'acts as shortcut to .for_processes with one process' do
-      described_class::Finder.any_instance.should_receive(:for_processes).with([:one_guy]).and_return(:aha)
+      allow_any_instance_of(described_class::Finder).to receive(:for_processes).with([:one_guy]).and_return(:aha)
       described_class.for_process(:one_guy).should == :aha
     end
   end
@@ -525,13 +525,11 @@ describe Bumbleworks::Task do
       Bumbleworks.launch!('hand_waggling')
       Bumbleworks.dashboard.wait_for(:a_lady)
       tasks = described_class.completable
-      tasks.should have(2).items
       tasks.map { |t| [t.role, t.nickname] }.should == [
         ['a_fella', 'waggle_hands'],
         ['a_lady', 'wiggle_hands']
       ]
       tasks = described_class.completable(false)
-      tasks.should have(1).item
       tasks.map { |t| [t.role, t.nickname] }.should == [
         ['a_monkey', 'wuggle_hands']
       ]
@@ -593,7 +591,6 @@ describe Bumbleworks::Task do
     it 'returns all tasks (with task param) in queue regardless of role' do
       Bumbleworks.dashboard.wait_for(:dog_legs)
       tasks = described_class.all
-      tasks.should have(4).items
       tasks.map { |t| [t.role, t.nickname] }.should == [
         ['dog_teeth', 'eat'],
         ['dog_mouth', 'bark'],
@@ -667,7 +664,6 @@ describe Bumbleworks::Task do
         t.claim('radish') unless t.nickname == 'pet_dog'
       end
       @tasks = described_class.for_claimant('radish')
-      @tasks.should have(3).items
       @tasks.map(&:nickname).should =~ ['eat', 'bark', 'skip_and_jump']
     end
   end
@@ -707,7 +703,7 @@ describe Bumbleworks::Task do
 
     it 'can be chained' do
       described_class.with_fields(:grumbles => true).with_fields(:bumby => 'fancy').count.should == 1
-      described_class.with_fields(:grumbles => false).with_fields(:bumby => 'not_fancy').should be_empty      
+      described_class.with_fields(:grumbles => false).with_fields(:bumby => 'not_fancy').should be_empty
     end
   end
 
@@ -723,7 +719,7 @@ describe Bumbleworks::Task do
       Bumbleworks.launch!('existential_pb_and_j', :entity => fake_sandwich)
       Bumbleworks.dashboard.wait_for(:sandwich)
       tasks = described_class.for_entity(fake_sandwich)
-      tasks.should have(2).items
+      expect(tasks.size).to eq(2)
     end
   end
 
@@ -739,7 +735,6 @@ describe Bumbleworks::Task do
       Bumbleworks.launch!('animal_disagreements')
       Bumbleworks.dashboard.wait_for(:rabbit)
       tasks = described_class.by_nickname('punch_turtle')
-      tasks.should have(2).items
       tasks.map(&:role).should =~ ['goose', 'rabbit']
     end
   end
@@ -775,9 +770,9 @@ describe Bumbleworks::Task do
       it 'calls before_claim and after_claim callbacks' do
         task = described_class.new(workflow_item)
         task.stub(:log)
-        task.should_receive(:before_claim).with(:doctor_claim).ordered
-        task.should_receive(:set_claimant).ordered
-        task.should_receive(:after_claim).with(:doctor_claim).ordered
+        expect(task).to receive(:before_claim).with(:doctor_claim).ordered
+        expect(task).to receive(:set_claimant).ordered
+        expect(task).to receive(:after_claim).with(:doctor_claim).ordered
         task.claim(:doctor_claim)
       end
 
@@ -802,12 +797,12 @@ describe Bumbleworks::Task do
 
     describe '#claimed?' do
       it 'returns true if claimed' do
-        @task.claimed?.should be_true
+        @task.claimed?.should be_truthy
       end
 
       it 'false otherwise' do
         @task.params['claimant'] = nil
-        @task.claimed?.should be_false
+        @task.claimed?.should be_falsy
       end
     end
 
@@ -824,9 +819,9 @@ describe Bumbleworks::Task do
       end
 
       it 'calls with hooks' do
-        @task.should_receive(:call_before_hooks).with(:release, 'boss').ordered
-        @task.should_receive(:set_claimant).ordered
-        @task.should_receive(:call_after_hooks).with(:release, 'boss').ordered
+        expect(@task).to receive(:call_before_hooks).with(:release, 'boss').ordered
+        expect(@task).to receive(:set_claimant).ordered
+        expect(@task).to receive(:call_after_hooks).with(:release, 'boss').ordered
         @task.release
       end
 
@@ -863,9 +858,9 @@ describe Bumbleworks::Task do
       it 'calls with hooks' do
         task = described_class.new(workflow_item)
         task.stub(:log)
-        task.should_receive(:call_before_hooks).with(:update, :argue_mints).ordered
-        task.should_receive(:update_workitem).ordered
-        task.should_receive(:call_after_hooks).with(:update, :argue_mints).ordered
+        expect(task).to receive(:call_before_hooks).with(:update, :argue_mints).ordered
+        expect(task).to receive(:update_workitem).ordered
+        expect(task).to receive(:call_after_hooks).with(:update, :argue_mints).ordered
         task.update(:argue_mints)
       end
 
@@ -908,11 +903,11 @@ describe Bumbleworks::Task do
         task = described_class.for_role('dog_mouth').first
         task.stub(:completable?).and_return(false)
         task.stub(:not_completable_error_message).and_return('hogwash!')
-        task.should_receive(:before_update).never
-        task.should_receive(:before_complete).never
-        task.should_receive(:proceed_workitem).never
-        task.should_receive(:after_complete).never
-        task.should_receive(:after_update).never
+        expect(task).to receive(:before_update).never
+        expect(task).to receive(:before_complete).never
+        expect(task).to receive(:proceed_workitem).never
+        expect(task).to receive(:after_complete).never
+        expect(task).to receive(:after_update).never
         expect {
           task.complete
         }.to raise_error(Bumbleworks::Task::NotCompletable, "hogwash!")
@@ -922,11 +917,11 @@ describe Bumbleworks::Task do
       it 'calls update and complete callbacks' do
         task = described_class.new(workflow_item)
         task.stub(:log)
-        task.should_receive(:call_before_hooks).with(:update, :argue_mints).ordered
-        task.should_receive(:call_before_hooks).with(:complete, :argue_mints).ordered
-        task.should_receive(:proceed_workitem).ordered
-        task.should_receive(:call_after_hooks).with(:complete, :argue_mints).ordered
-        task.should_receive(:call_after_hooks).with(:update, :argue_mints).ordered
+        expect(task).to receive(:call_before_hooks).with(:update, :argue_mints).ordered
+        expect(task).to receive(:call_before_hooks).with(:complete, :argue_mints).ordered
+        expect(task).to receive(:proceed_workitem).ordered
+        expect(task).to receive(:call_after_hooks).with(:complete, :argue_mints).ordered
+        expect(task).to receive(:call_after_hooks).with(:update, :argue_mints).ordered
         task.complete(:argue_mints)
       end
 
@@ -1024,7 +1019,7 @@ describe Bumbleworks::Task do
 
   describe 'method missing' do
     it 'calls method on new Finder object' do
-      described_class::Finder.any_instance.stub(:shabam!).with(:yay).and_return(:its_a_me)
+      allow_any_instance_of(described_class::Finder).to receive(:shabam!).with(:yay).and_return(:its_a_me)
       described_class.shabam!(:yay).should == :its_a_me
     end
 

@@ -184,6 +184,10 @@ module Bumbleworks
         to_a
       end
 
+      def size
+        all.size
+      end
+
       def empty?
         !any?
       end

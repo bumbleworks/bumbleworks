@@ -6,8 +6,8 @@ describe Bumbleworks::ErrorDispatcher do
 
     it 'calls all error handlers passing in workitem' do
       Bumbleworks.error_handlers = error_handlers
-      error_handlers[0].should_receive(:new).ordered.with(workitem).and_return(instances[0])
-      error_handlers[1].should_receive(:new).ordered.with(workitem).and_return(instances[1])
+      expect(error_handlers[0]).to receive(:new).ordered.with(workitem).and_return(instances[0])
+      expect(error_handlers[1]).to receive(:new).ordered.with(workitem).and_return(instances[1])
       subject.stub(:reply => nil, :workitem => workitem)
       subject.on_workitem
     end
