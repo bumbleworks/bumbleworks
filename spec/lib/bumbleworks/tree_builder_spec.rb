@@ -24,19 +24,20 @@ describe Bumbleworks::TreeBuilder do
         end
       )
       builder = described_class.new(:name => 'luigi', :definition => pdef)
-      builder.build!.should == [
+      expect(builder.build!).to eq([
         "define", {"name" => "luigi"},
         [
           ["order_pants_around", {}, []]
         ]
-      ]
+      ])
     end
 
     it 'uses tree if given' do
       tree = ["define", {"guppies" => nil}, [["swim", {}, []]]]
       builder = described_class.new(:tree => tree)
-      builder.build!.should == 
+      expect(builder.build!).to eq( 
         ["define", {"name" => "guppies"}, [["swim", {}, []]]]
+      )
     end
 
     it 'normalizes and sets name from tree' do
@@ -46,12 +47,12 @@ describe Bumbleworks::TreeBuilder do
         end
       )
       builder = described_class.new(:definition => pdef)
-      builder.build!.should == [
+      expect(builder.build!).to eq([
         "define", {"name" => "country_time_county_dime"},
         [
           ["do_the_fig_newton", {}, []]
         ]
-      ]
+      ])
     end
 
     it 'raises error if name conflicts with name in definition' do
@@ -82,14 +83,15 @@ describe Bumbleworks::TreeBuilder do
         construct :solution => 'to world conflict'
       end
       builder.build!
-      builder.tree.should ==
+      expect(builder.tree).to eq(
         ["define", { "name" => "just_another_poodle_day" },
           [
             ["chew", {"on" => "dad"}, []],
             ["construct", {"solution" => "to world conflict"}, []]
           ]
         ]
-      builder.name.should == 'just_another_poodle_day'
+      )
+      expect(builder.name).to eq('just_another_poodle_day')
     end
   end
 end

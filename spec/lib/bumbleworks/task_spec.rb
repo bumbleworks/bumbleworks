@@ -21,8 +21,9 @@ describe Bumbleworks::Task do
   describe '#not_completable_error_message' do
     it 'defaults to generic message' do
       task = described_class.new(workflow_item)
-      task.not_completable_error_message.should ==
+      expect(task.not_completable_error_message).to eq(
         "This task is not currently completable."
+      )
     end
   end
 
@@ -59,7 +60,7 @@ describe Bumbleworks::Task do
 
   describe '#completable?' do
     it 'defaults to true on base task' do
-      described_class.new(workflow_item).should be_completable
+      expect(described_class.new(workflow_item)).to be_completable
     end
   end
 
@@ -91,11 +92,11 @@ describe Bumbleworks::Task do
   describe '#reload' do
     it 'reloads the workitem from the storage participant' do
       task = described_class.new(workflow_item)
-      task.stub(:sid).and_return(:the_sid)
+      allow(task).to receive(:sid).and_return(:the_sid)
       expect(Bumbleworks.dashboard.storage_participant).to receive(
         :[]).with(:the_sid).and_return(:amazing_workitem)
       task.reload
-      task.instance_variable_get(:@workitem).should == :amazing_workitem
+      expect(task.instance_variable_get(:@workitem)).to eq(:amazing_workitem)
     end
   end
 
@@ -133,14 +134,14 @@ describe Bumbleworks::Task do
       Bumbleworks.dashboard.wait_for(:horse_feeder)
       task = described_class.for_role('horse_feeder').first
       log_entry = Bumbleworks.logger.entries.last[:entry]
-      log_entry[:action].should == :dispatch
-      log_entry[:target_type].should == 'Task'
-      log_entry[:target_id].should == task.id
+      expect(log_entry[:action]).to eq(:dispatch)
+      expect(log_entry[:target_type]).to eq('Task')
+      expect(log_entry[:target_id]).to eq(task.id)
     end
 
     it 'calls after hooks' do
       task = described_class.new(workflow_item)
-      task.stub(:log)
+      allow(task).to receive(:log)
       expect(task).to receive(:call_after_hooks).with(:dispatch)
       task.on_dispatch
     end
@@ -157,7 +158,7 @@ describe Bumbleworks::Task do
 
     it 'extends only with base module if no nickname' do
       task = described_class.new(workflow_item)
-      task.stub(:nickname).and_return(nil)
+      allow(task).to receive(:nickname).and_return(nil)
       expect(task).to receive(:extend).with(Bumbleworks::Task::Base)
       task.extend_module
     end
@@ -172,21 +173,21 @@ describe Bumbleworks::Task do
   describe '#task_module' do
     it 'returns nil if no nickname' do
       task = described_class.new(workflow_item)
-      task.stub(:nickname).and_return(nil)
-      task.task_module.should be_nil
+      allow(task).to receive(:nickname).and_return(nil)
+      expect(task.task_module).to be_nil
     end
 
     it 'returns constantized task nickname with "Task" appended' do
       task = described_class.new(workflow_item)
-      Bumbleworks::Support.stub(:constantize).with("GoToWorkTask").and_return(:the_task_module)
-      task.task_module.should == :the_task_module
+      allow(Bumbleworks::Support).to receive(:constantize).with("GoToWorkTask").and_return(:the_task_module)
+      expect(task.task_module).to eq(:the_task_module)
     end
   end
 
   describe '#id' do
     it 'returns the sid from the workitem' do
-      workflow_item.stub(:sid).and_return(:an_exciting_id)
-      described_class.new(workflow_item).id.should == :an_exciting_id
+      allow(workflow_item).to receive(:sid).and_return(:an_exciting_id)
+      expect(described_class.new(workflow_item).id).to eq(:an_exciting_id)
     end
   end
 
@@ -205,10 +206,12 @@ describe Bumbleworks::Task do
 
       # checking for equality by comparing sid, which is the flow expression id
       # that identifies not only the expression, but its instance
-      described_class.find_by_id(plant_noodle_seed_task.id).sid.should ==
+      expect(described_class.find_by_id(plant_noodle_seed_task.id).sid).to eq(
         plant_noodle_seed_task.sid
-      described_class.find_by_id(give_the_horse_a_bon_bon_task.id).sid.should ==
+      )
+      expect(described_class.find_by_id(give_the_horse_a_bon_bon_task.id).sid).to eq(
         give_the_horse_a_bon_bon_task.sid
+      )
     end
 
     it 'raises an error if id is nil' do
@@ -252,37 +255,37 @@ describe Bumbleworks::Task do
       describe '.order_by_param' do
         it 'orders returned tasks by given param ascending by default' do
           tasks = described_class.order_by_param(:priority)
-          tasks.map(&:nickname).should == [
+          expect(tasks.map(&:nickname)).to eq([
             'appear_authoritative',
             'panic',
             'evince_concern',
             'roll_eyes',
             'sit_quietly'
-          ]
+          ])
         end
 
         it 'can order in reverse' do
           tasks = described_class.order_by_param(:priority, :desc)
-          tasks.map(&:nickname).should == [
+          expect(tasks.map(&:nickname)).to eq([
             'sit_quietly',
             'roll_eyes',
             'evince_concern',
             'panic',
             'appear_authoritative'
-          ]
+          ])
         end
       end
 
       describe '.order_by_params' do
         it 'orders by multiple parameters' do
           tasks = described_class.order_by_params(:importance => :desc, :priority => :asc)
-          tasks.map(&:nickname).should == [
+          expect(tasks.map(&:nickname)).to eq([
             'appear_authoritative',
             'evince_concern',
             'roll_eyes',
             'sit_quietly',
             'panic'
-          ]
+          ])
         end
       end
     end
@@ -304,37 +307,37 @@ describe Bumbleworks::Task do
       describe '.order_by_field' do
         it 'orders returned tasks by given param ascending by default' do
           tasks = described_class.for_role('doctor').order_by_field(:strength)
-          tasks.map { |t| [t.nickname, t.wfid] }.should == [
+          expect(tasks.map { |t| [t.nickname, t.wfid] }).to eq([
             ['evince_concern', @wf1.wfid],
             ['evince_concern', @wf2.wfid],
             ['evince_concern', @wf3.wfid],
             ['evince_concern', @wf4.wfid],
             ['evince_concern', @wf5.wfid]
-          ]
+          ])
         end
 
         it 'can order in reverse' do
           tasks = described_class.for_role('doctor').order_by_field(:strength, :desc)
-          tasks.map { |t| [t.nickname, t.wfid] }.should == [
+          expect(tasks.map { |t| [t.nickname, t.wfid] }).to eq([
             ['evince_concern', @wf5.wfid],
             ['evince_concern', @wf4.wfid],
             ['evince_concern', @wf3.wfid],
             ['evince_concern', @wf2.wfid],
             ['evince_concern', @wf1.wfid]
-          ]
+          ])
         end
       end
 
       describe '.order_by_fields' do
         it 'orders by multiple parameters' do
           tasks = described_class.for_role('doctor').order_by_fields(:group => :asc, :strength => :desc)
-          tasks.map { |t| [t.nickname, t.wfid] }.should == [
+          expect(tasks.map { |t| [t.nickname, t.wfid] }).to eq([
             ['evince_concern', @wf5.wfid],
             ['evince_concern', @wf4.wfid],
             ['evince_concern', @wf2.wfid],
             ['evince_concern', @wf3.wfid],
             ['evince_concern', @wf1.wfid]
-          ]
+          ])
         end
       end
     end
@@ -356,34 +359,34 @@ describe Bumbleworks::Task do
     it 'returns tasks for all given roles' do
       Bumbleworks.dashboard.wait_for(:father)
       tasks = described_class.for_roles(['heckler', 'mother'])
-      tasks.map(&:nickname).should == [
+      expect(tasks.map(&:nickname)).to eq([
         'comment_on_dancing_ability',
         'ignore_pleas_for_attention'
-      ]
+      ])
     end
 
     it 'works with symbolized role names' do
       Bumbleworks.dashboard.wait_for(:father)
       tasks = described_class.for_roles([:heckler, :mother])
-      tasks.map(&:nickname).should == [
+      expect(tasks.map(&:nickname)).to eq([
         'comment_on_dancing_ability',
         'ignore_pleas_for_attention'
-      ]
+      ])
     end
 
     it 'returns empty array if no tasks found for given roles' do
       Bumbleworks.dashboard.wait_for(:father)
-      described_class.for_roles(['elephant']).should be_empty
+      expect(described_class.for_roles(['elephant'])).to be_empty
     end
 
     it 'returns empty array if given empty array' do
       Bumbleworks.dashboard.wait_for(:father)
-      described_class.for_roles([]).should be_empty
+      expect(described_class.for_roles([])).to be_empty
     end
 
     it 'returns empty array if given nil' do
       Bumbleworks.dashboard.wait_for(:father)
-      described_class.for_roles(nil).should be_empty
+      expect(described_class.for_roles(nil)).to be_empty
     end
   end
 
@@ -412,33 +415,33 @@ describe Bumbleworks::Task do
       rooting_tasks = described_class.for_processes([@rooting_process_1])
       tasks_for_both = described_class.for_processes([@spunking_process, @rooting_process_1])
 
-      spunking_tasks.map(&:nickname).should =~ ['spunk', 'complain']
-      rooting_tasks.map(&:nickname).should =~ ['get_the_rooting_on', 'scoff']
-      tasks_for_both.map(&:nickname).should =~ ['spunk', 'complain', 'get_the_rooting_on', 'scoff']
+      expect(spunking_tasks.map(&:nickname)).to match_array(['spunk', 'complain'])
+      expect(rooting_tasks.map(&:nickname)).to match_array(['get_the_rooting_on', 'scoff'])
+      expect(tasks_for_both.map(&:nickname)).to match_array(['spunk', 'complain', 'get_the_rooting_on', 'scoff'])
     end
 
     it 'works with process ids as well' do
       spunking_tasks = described_class.for_processes([@spunking_process.id])
-      spunking_tasks.map(&:nickname).should =~ ['spunk', 'complain']
+      expect(spunking_tasks.map(&:nickname)).to match_array(['spunk', 'complain'])
     end
 
     it 'returns empty array when no tasks for given process id' do
-      described_class.for_processes(['boop']).should be_empty
+      expect(described_class.for_processes(['boop'])).to be_empty
     end
 
     it 'returns empty array if given empty array' do
-      described_class.for_processes([]).should be_empty
+      expect(described_class.for_processes([])).to be_empty
     end
 
     it 'returns empty array if given nil' do
-      described_class.for_processes(nil).should be_empty
+      expect(described_class.for_processes(nil)).to be_empty
     end
   end
 
   describe '.for_process' do
     it 'acts as shortcut to .for_processes with one process' do
       allow_any_instance_of(described_class::Finder).to receive(:for_processes).with([:one_guy]).and_return(:aha)
-      described_class.for_process(:one_guy).should == :aha
+      expect(described_class.for_process(:one_guy)).to eq(:aha)
     end
   end
 
@@ -455,10 +458,10 @@ describe Bumbleworks::Task do
       Bumbleworks.dashboard.wait_for(:hagrid)
 
       tasks = described_class.for_role('chalker')
-      tasks.map(&:nickname).should == [
+      expect(tasks.map(&:nickname)).to eq([
         'make_chalk_drawings',
         'chalk_it_good_baby'
-      ]
+      ])
     end
   end
 
@@ -476,12 +479,12 @@ describe Bumbleworks::Task do
       Bumbleworks.launch!('dog-lifecycle')
       Bumbleworks.dashboard.wait_for(:cat)
       @unclaimed = described_class.unclaimed
-      @unclaimed.map(&:nickname).should =~ ['eat', 'bark', 'pet_dog', 'skip_and_jump']
+      expect(@unclaimed.map(&:nickname)).to match_array(['eat', 'bark', 'pet_dog', 'skip_and_jump'])
       described_class.all.each do |t|
         t.claim('radish') unless ['pet_dog', 'bark'].include?(t.nickname)
       end
       @unclaimed = described_class.unclaimed
-      @unclaimed.map(&:nickname).should =~ ['pet_dog', 'bark']
+      expect(@unclaimed.map(&:nickname)).to match_array(['pet_dog', 'bark'])
     end
   end
 
@@ -498,12 +501,12 @@ describe Bumbleworks::Task do
       end
       Bumbleworks.launch!('dog-lifecycle')
       Bumbleworks.dashboard.wait_for(:cat)
-      described_class.claimed.should be_empty
+      expect(described_class.claimed).to be_empty
       described_class.all.each_with_index do |t, i|
         t.claim("radish_#{i}") unless ['pet_dog', 'bark'].include?(t.nickname)
       end
       @claimed = described_class.claimed
-      @claimed.map(&:nickname).should =~ ['eat', 'skip_and_jump']
+      expect(@claimed.map(&:nickname)).to match_array(['eat', 'skip_and_jump'])
     end
   end
 
@@ -525,14 +528,14 @@ describe Bumbleworks::Task do
       Bumbleworks.launch!('hand_waggling')
       Bumbleworks.dashboard.wait_for(:a_lady)
       tasks = described_class.completable
-      tasks.map { |t| [t.role, t.nickname] }.should == [
+      expect(tasks.map { |t| [t.role, t.nickname] }).to eq([
         ['a_fella', 'waggle_hands'],
         ['a_lady', 'wiggle_hands']
-      ]
+      ])
       tasks = described_class.completable(false)
-      tasks.map { |t| [t.role, t.nickname] }.should == [
+      expect(tasks.map { |t| [t.role, t.nickname] }).to eq([
         ['a_monkey', 'wuggle_hands']
-      ]
+      ])
     end
   end
 
@@ -554,21 +557,21 @@ describe Bumbleworks::Task do
       it 'executes for each found task' do
         list = []
         described_class.each { |t| list << t.nickname }
-        list.should =~ ['grouch_it_up', 'sing_a_tune', 'steal_booze', 'eat_cabbage']
+        expect(list).to match_array(['grouch_it_up', 'sing_a_tune', 'steal_booze', 'eat_cabbage'])
       end
     end
 
     describe '.map' do
       it 'maps result of yielding block with each task' do
         list = described_class.map { |t| t.nickname }
-        list.should =~ ['grouch_it_up', 'sing_a_tune', 'steal_booze', 'eat_cabbage']
+        expect(list).to match_array(['grouch_it_up', 'sing_a_tune', 'steal_booze', 'eat_cabbage'])
       end
     end
 
     context 'with queries' do
       it 'checks filters' do
         list = described_class.for_role('elmo').map { |t| t.nickname }
-        list.should =~ ['sing_a_tune', 'steal_booze']
+        expect(list).to match_array(['sing_a_tune', 'steal_booze'])
       end
     end
   end
@@ -591,19 +594,19 @@ describe Bumbleworks::Task do
     it 'returns all tasks (with task param) in queue regardless of role' do
       Bumbleworks.dashboard.wait_for(:dog_legs)
       tasks = described_class.all
-      tasks.map { |t| [t.role, t.nickname] }.should == [
+      expect(tasks.map { |t| [t.role, t.nickname] }).to eq([
         ['dog_teeth', 'eat'],
         ['dog_mouth', 'bark'],
         ['everyone', 'pet_dog'],
         ['dog_legs', 'skip_and_jump']
-      ]
+      ])
     end
 
     it 'uses subclass for generation of tasks' do
       class MyOwnTask < Bumbleworks::Task; end
       Bumbleworks.dashboard.wait_for(:dog_legs)
       tasks = MyOwnTask.all
-      tasks.should be_all { |t| t.class == MyOwnTask }
+      expect(tasks).to be_all { |t| t.class == MyOwnTask }
       Object.send(:remove_const, :MyOwnTask)
     end
   end
@@ -612,25 +615,25 @@ describe Bumbleworks::Task do
     subject{described_class.new(workflow_item)}
     it 'sets values on workitem fields' do
       subject['hive'] = 'bees at work'
-      workflow_item.fields['hive'].should == 'bees at work'
+      expect(workflow_item.fields['hive']).to eq('bees at work')
     end
 
     it 'retuns value from workitem params' do
       workflow_item.fields['nest'] = 'queen resting'
-      subject['nest'].should == 'queen resting'
+      expect(subject['nest']).to eq('queen resting')
     end
   end
 
   describe '#nickname' do
     it 'returns the "task" param' do
-      described_class.new(workflow_item).nickname.should == 'go_to_work'
+      expect(described_class.new(workflow_item).nickname).to eq('go_to_work')
     end
 
     it 'is immutable; cannot be changed by modifying the param' do
       task = described_class.new(workflow_item)
-      task.nickname.should == 'go_to_work'
+      expect(task.nickname).to eq('go_to_work')
       task.params['task'] = 'what_is_wrong_with_you?'
-      task.nickname.should == 'go_to_work'
+      expect(task.nickname).to eq('go_to_work')
     end
   end
 
@@ -641,7 +644,7 @@ describe Bumbleworks::Task do
       end
       Bumbleworks.launch!('planting_a_noodle')
       Bumbleworks.dashboard.wait_for(:noodle_gardener)
-      described_class.all.first.role.should == 'noodle_gardener'
+      expect(described_class.all.first.role).to eq('noodle_gardener')
     end
   end
 
@@ -659,12 +662,12 @@ describe Bumbleworks::Task do
       end
       Bumbleworks.launch!('dog-lifecycle')
       Bumbleworks.dashboard.wait_for(:cat)
-      described_class.for_claimant('radish').should be_empty
+      expect(described_class.for_claimant('radish')).to be_empty
       described_class.all.each do |t|
         t.claim('radish') unless t.nickname == 'pet_dog'
       end
       @tasks = described_class.for_claimant('radish')
-      @tasks.map(&:nickname).should =~ ['eat', 'bark', 'skip_and_jump']
+      expect(@tasks.map(&:nickname)).to match_array(['eat', 'bark', 'skip_and_jump'])
     end
   end
 
@@ -690,20 +693,20 @@ describe Bumbleworks::Task do
     end
 
     it 'returns all tasks with given field' do
-      described_class.with_fields(:grumbles => true).count.should == 3
-      described_class.with_fields(:bumby => 'fancy').count.should == 1
-      described_class.with_fields(:bumby => 'not_fancy').count.should == 2
-      described_class.with_fields(:what => 'ever').should be_empty
+      expect(described_class.with_fields(:grumbles => true).count).to eq(3)
+      expect(described_class.with_fields(:bumby => 'fancy').count).to eq(1)
+      expect(described_class.with_fields(:bumby => 'not_fancy').count).to eq(2)
+      expect(described_class.with_fields(:what => 'ever')).to be_empty
     end
 
     it 'looks up multiple fields at once' do
-      described_class.with_fields(:grumbles => true, :bumby => 'not_fancy').count.should == 2
-      described_class.with_fields(:grumbles => false, :bumby => 'not_fancy').should be_empty
+      expect(described_class.with_fields(:grumbles => true, :bumby => 'not_fancy').count).to eq(2)
+      expect(described_class.with_fields(:grumbles => false, :bumby => 'not_fancy')).to be_empty
     end
 
     it 'can be chained' do
-      described_class.with_fields(:grumbles => true).with_fields(:bumby => 'fancy').count.should == 1
-      described_class.with_fields(:grumbles => false).with_fields(:bumby => 'not_fancy').should be_empty
+      expect(described_class.with_fields(:grumbles => true).with_fields(:bumby => 'fancy').count).to eq(1)
+      expect(described_class.with_fields(:grumbles => false).with_fields(:bumby => 'not_fancy')).to be_empty
     end
   end
 
@@ -735,7 +738,7 @@ describe Bumbleworks::Task do
       Bumbleworks.launch!('animal_disagreements')
       Bumbleworks.dashboard.wait_for(:rabbit)
       tasks = described_class.by_nickname('punch_turtle')
-      tasks.map(&:role).should =~ ['goose', 'rabbit']
+      expect(tasks.map(&:role)).to match_array(['goose', 'rabbit'])
     end
   end
 
@@ -752,11 +755,11 @@ describe Bumbleworks::Task do
 
     describe '#claim' do
       it 'sets token on "claimant" param' do
-        @task.params['claimant'].should == 'boss'
+        expect(@task.params['claimant']).to eq('boss')
       end
 
       it 'sets claimed_at param' do
-        @task.params['claimed_at'].should_not be_nil
+        expect(@task.params['claimed_at']).not_to be_nil
       end
 
       it 'raises an error if already claimed by someone else' do
@@ -769,7 +772,7 @@ describe Bumbleworks::Task do
 
       it 'calls before_claim and after_claim callbacks' do
         task = described_class.new(workflow_item)
-        task.stub(:log)
+        allow(task).to receive(:log)
         expect(task).to receive(:before_claim).with(:doctor_claim).ordered
         expect(task).to receive(:set_claimant).ordered
         expect(task).to receive(:after_claim).with(:doctor_claim).ordered
@@ -778,44 +781,44 @@ describe Bumbleworks::Task do
 
       it 'logs event' do
         log_entry = Bumbleworks.logger.entries.last[:entry]
-        log_entry[:action].should == :claim
-        log_entry[:actor].should == 'boss'
+        expect(log_entry[:action]).to eq(:claim)
+        expect(log_entry[:actor]).to eq('boss')
       end
     end
 
     describe '#claimant' do
       it 'returns token of who has claim' do
-        @task.claimant.should == 'boss'
+        expect(@task.claimant).to eq('boss')
       end
     end
 
     describe '#claimed_at' do
       it 'returns claimed_at param' do
-        @task.claimed_at.should == @task.params['claimed_at']
+        expect(@task.claimed_at).to eq(@task.params['claimed_at'])
       end
     end
 
     describe '#claimed?' do
       it 'returns true if claimed' do
-        @task.claimed?.should be_truthy
+        expect(@task.claimed?).to be_truthy
       end
 
       it 'false otherwise' do
         @task.params['claimant'] = nil
-        @task.claimed?.should be_falsy
+        expect(@task.claimed?).to be_falsy
       end
     end
 
     describe '#release' do
       it "release claim on workitem" do
-        @task.should be_claimed
+        expect(@task).to be_claimed
         @task.release
-        @task.should_not be_claimed
+        expect(@task).not_to be_claimed
       end
 
       it 'clears claimed_at param' do
         @task.release
-        @task.params['claimed_at'].should be_nil
+        expect(@task.params['claimed_at']).to be_nil
       end
 
       it 'calls with hooks' do
@@ -828,8 +831,8 @@ describe Bumbleworks::Task do
       it 'logs event' do
         @task.release
         log_entry = Bumbleworks.logger.entries.last[:entry]
-        log_entry[:action].should == :release
-        log_entry[:actor].should == 'boss'
+        expect(log_entry[:action]).to eq(:release)
+        expect(log_entry[:actor]).to eq('boss')
       end
     end
   end
@@ -851,13 +854,13 @@ describe Bumbleworks::Task do
         task.fields['meal'] = 'salted_rhubarb'
         task.update
         task = described_class.for_role('dog_mouth').first
-        task.params['state'].should == 'is ready'
-        task.fields['meal'].should == 'salted_rhubarb'
+        expect(task.params['state']).to eq('is ready')
+        expect(task.fields['meal']).to eq('salted_rhubarb')
       end
 
       it 'calls with hooks' do
         task = described_class.new(workflow_item)
-        task.stub(:log)
+        allow(task).to receive(:log)
         expect(task).to receive(:call_before_hooks).with(:update, :argue_mints).ordered
         expect(task).to receive(:update_workitem).ordered
         expect(task).to receive(:call_after_hooks).with(:update, :argue_mints).ordered
@@ -869,7 +872,7 @@ describe Bumbleworks::Task do
         task = described_class.for_role('dog_mouth').first
         task.params['claimant'] = :some_user
         task.update(:extra_data => :fancy)
-        Bumbleworks.logger.entries.last.should == {
+        expect(Bumbleworks.logger.entries.last).to eq({
           :level => :info, :entry => {
             :actor => :some_user,
             :action => :update,
@@ -880,7 +883,7 @@ describe Bumbleworks::Task do
               :current_fields => task.fields
             }
           }
-        }
+        })
       end
     end
 
@@ -891,18 +894,18 @@ describe Bumbleworks::Task do
         task.params['state'] = 'is ready'
         task.fields['meal'] = 'root beer and a kite'
         task.complete
-        described_class.for_role('dog_mouth').should be_empty
+        expect(described_class.for_role('dog_mouth')).to be_empty
         event = Bumbleworks.dashboard.wait_for :dog_brain
         task = described_class.for_role('dog_brain').first
-        task.params['state'].should be_nil
-        task.fields['meal'].should == 'root beer and a kite'
+        expect(task.params['state']).to be_nil
+        expect(task.fields['meal']).to eq('root beer and a kite')
       end
 
       it 'throws exception if task is not completable' do
         event = Bumbleworks.dashboard.wait_for :dog_mouth
         task = described_class.for_role('dog_mouth').first
-        task.stub(:completable?).and_return(false)
-        task.stub(:not_completable_error_message).and_return('hogwash!')
+        allow(task).to receive(:completable?).and_return(false)
+        allow(task).to receive(:not_completable_error_message).and_return('hogwash!')
         expect(task).to receive(:before_update).never
         expect(task).to receive(:before_complete).never
         expect(task).to receive(:proceed_workitem).never
@@ -911,12 +914,12 @@ describe Bumbleworks::Task do
         expect {
           task.complete
         }.to raise_error(Bumbleworks::Task::NotCompletable, "hogwash!")
-        described_class.for_role('dog_mouth').should_not be_empty
+        expect(described_class.for_role('dog_mouth')).not_to be_empty
       end
 
       it 'calls update and complete callbacks' do
         task = described_class.new(workflow_item)
-        task.stub(:log)
+        allow(task).to receive(:log)
         expect(task).to receive(:call_before_hooks).with(:update, :argue_mints).ordered
         expect(task).to receive(:call_before_hooks).with(:complete, :argue_mints).ordered
         expect(task).to receive(:proceed_workitem).ordered
@@ -930,7 +933,7 @@ describe Bumbleworks::Task do
         task = described_class.for_role('dog_mouth').first
         task.params['claimant'] = :some_user
         task.complete(:extra_data => :fancy)
-        Bumbleworks.logger.entries.last.should == {
+        expect(Bumbleworks.logger.entries.last).to eq({
           :level => :info, :entry => {
             :actor => :some_user,
             :action => :complete,
@@ -941,7 +944,7 @@ describe Bumbleworks::Task do
               :current_fields => task.fields
             }
           }
-        }
+        })
       end
     end
   end
@@ -975,37 +978,37 @@ describe Bumbleworks::Task do
       tasks = described_class.
         for_roles(['green', 'pink']).
         by_nickname('be_proud')
-      tasks.map(&:nickname).should =~ ['be_proud', 'be_proud']
+      expect(tasks.map(&:nickname)).to match_array(['be_proud', 'be_proud'])
 
       tasks = described_class.
         for_roles(['green', 'pink', 'blue']).
         completable.
         by_nickname('be_proud')
-      tasks.map(&:nickname).should =~ ['be_proud']
-      tasks.first.role.should == 'pink'
+      expect(tasks.map(&:nickname)).to match_array(['be_proud'])
+      expect(tasks.first.role).to eq('pink')
 
       tasks = described_class.
         for_claimant('crayon_box').
         for_roles(['red', 'yellow', 'green'])
-      tasks.map(&:nickname).should =~ ['be_really_mad', 'be_scared']
+      expect(tasks.map(&:nickname)).to match_array(['be_really_mad', 'be_scared'])
 
       tasks = described_class.
         for_claimant('crayon_box').
         by_nickname('be_a_bit_sad').
         for_role('blue')
-      tasks.map(&:nickname).should == ['be_a_bit_sad']
+      expect(tasks.map(&:nickname)).to eq(['be_a_bit_sad'])
     end
 
     it 'allows for OR-ed chained finders' do
       tasks = described_class.where_any.
         for_role('blue').
         by_nickname('be_proud')
-      tasks.map(&:nickname).should =~ ['be_a_bit_sad', 'be_proud', 'be_proud']
+      expect(tasks.map(&:nickname)).to match_array(['be_a_bit_sad', 'be_proud', 'be_proud'])
 
       tasks = described_class.where_any.
         completable.
         claimed
-      tasks.map(&:nickname).should =~ ['be_really_mad', 'be_scared', 'be_a_bit_sad', 'be_envious', 'be_proud']
+      expect(tasks.map(&:nickname)).to match_array(['be_really_mad', 'be_scared', 'be_a_bit_sad', 'be_envious', 'be_proud'])
     end
 
     it 'allows for combination of AND-ed and OR-ed finders' do
@@ -1013,14 +1016,14 @@ describe Bumbleworks::Task do
         for_claimant('crayon_box').
         for_roles(['red', 'yellow', 'green']).
         where_any(:nickname => 'spittle', :role => 'red')
-      tasks.map(&:nickname).should =~ ['be_really_mad']
+      expect(tasks.map(&:nickname)).to match_array(['be_really_mad'])
     end
   end
 
   describe 'method missing' do
     it 'calls method on new Finder object' do
       allow_any_instance_of(described_class::Finder).to receive(:shabam!).with(:yay).and_return(:its_a_me)
-      described_class.shabam!(:yay).should == :its_a_me
+      expect(described_class.shabam!(:yay)).to eq(:its_a_me)
     end
 
     it 'falls back to method missing if no finder method' do
@@ -1045,8 +1048,8 @@ describe Bumbleworks::Task do
       Bumbleworks.launch!('lazy_bum_and_cool_guy')
       task = described_class.for_role('bum').next_available
       end_time = Time.now
-      task.nickname.should == 'finally_get_a_round_tuit'
-      (end_time - start_time).should >= 2
+      expect(task.nickname).to eq('finally_get_a_round_tuit')
+      expect(end_time - start_time).to be >= 2
     end
 
     it 'times out if task does not appear in time' do
@@ -1069,50 +1072,50 @@ describe Bumbleworks::Task do
   describe '#humanize' do
     it "returns humanized version of task name when no entity" do
       task = described_class.new(workflow_item)
-      task.humanize.should == 'Go to work'
+      expect(task.humanize).to eq('Go to work')
     end
 
     it "returns humanized version of task name with entity" do
       task = described_class.new(workflow_item)
       task[:entity_id] = '45'
       task[:entity_type] = 'RhubarbSandwich'
-      task.humanize.should == 'Go to work: Rhubarb sandwich 45'
+      expect(task.humanize).to eq('Go to work: Rhubarb sandwich 45')
     end
 
     it "returns humanized version of task name without entity if requested" do
       task = described_class.new(workflow_item)
       task[:entity_id] = '45'
       task[:entity_type] = 'RhubarbSandwich'
-      task.humanize(:entity => false).should == 'Go to work'
+      expect(task.humanize(:entity => false)).to eq('Go to work')
     end
   end
 
   describe '#to_s' do
     it "is aliased to #titleize" do
       task = described_class.new(workflow_item)
-      task.stub(:titleize).with(:the_args).and_return(:see_i_told_you_so)
-      task.to_s(:the_args).should == :see_i_told_you_so
+      allow(task).to receive(:titleize).with(:the_args).and_return(:see_i_told_you_so)
+      expect(task.to_s(:the_args)).to eq(:see_i_told_you_so)
     end
   end
 
   describe '#titleize' do
     it "returns titleized version of task name when no entity" do
       task = described_class.new(workflow_item)
-      task.titleize.should == 'Go To Work'
+      expect(task.titleize).to eq('Go To Work')
     end
 
     it "returns titleized version of task name with entity" do
       task = described_class.new(workflow_item)
       task[:entity_id] = '45'
       task[:entity_type] = 'RhubarbSandwich'
-      task.titleize.should == 'Go To Work: Rhubarb Sandwich 45'
+      expect(task.titleize).to eq('Go To Work: Rhubarb Sandwich 45')
     end
 
     it "returns titleized version of task name without entity if requested" do
       task = described_class.new(workflow_item)
       task[:entity_id] = '45'
       task[:entity_type] = 'RhubarbSandwich'
-      task.titleize(:entity => false).should == 'Go To Work'
+      expect(task.titleize(:entity => false)).to eq('Go To Work')
     end
   end
 end

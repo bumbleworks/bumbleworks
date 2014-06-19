@@ -20,16 +20,16 @@ describe 'Bumbleworks Sample Application' do
     end
 
     it 'loads process definitions' do
-      Bumbleworks.dashboard.variables['make_honey'].should == ["define",
-        {"name"=>"make_honey"}, [["dave", {"task"=>"make_some_honey"}, []]]]
-      Bumbleworks.dashboard.variables['garbage_collector'].should == ["define",
-        {"name"=>"garbage_collector"}, [["george", {"ref"=>"garbage collector"}, []]]]
+      expect(Bumbleworks.dashboard.variables['make_honey']).to eq(["define",
+        {"name"=>"make_honey"}, [["dave", {"task"=>"make_some_honey"}, []]]])
+      expect(Bumbleworks.dashboard.variables['garbage_collector']).to eq(["define",
+        {"name"=>"garbage_collector"}, [["george", {"ref"=>"garbage collector"}, []]]])
 
-      Bumbleworks.dashboard.variables['make_molasses'].should == ["define",
+      expect(Bumbleworks.dashboard.variables['make_molasses']).to eq(["define",
         {"name"=>"make_molasses"},
         [["concurrence",
           {},
-          [["dave", {"task"=>"make_some_molasses"}, []], ["sam", {"task"=>"taste_that_molasses"}, []]]]]]
+          [["dave", {"task"=>"make_some_molasses"}, []], ["sam", {"task"=>"taste_that_molasses"}, []]]]]])
     end
   end
 
@@ -55,7 +55,7 @@ describe 'Bumbleworks Sample Application' do
       Bumbleworks.dashboard.wait_for(:dave)
       task = Bumbleworks::Task.for_role('dave').first
       task.update('happening' => 'update')
-      task['what_happened'].should == 'update'
+      expect(task['what_happened']).to eq('update')
     end
   end
 
@@ -64,7 +64,7 @@ describe 'Bumbleworks Sample Application' do
       Bumbleworks.launch!('make_honey')
       Bumbleworks.dashboard.wait_for(:dave)
       task = Bumbleworks::Task.for_role('dave').first
-      task['i_was_dispatched'].should == 'yes_i_was'
+      expect(task['i_was_dispatched']).to eq('yes_i_was')
     end
   end
 end

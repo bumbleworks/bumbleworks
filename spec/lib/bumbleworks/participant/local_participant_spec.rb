@@ -10,7 +10,7 @@ describe Bumbleworks::LocalParticipant do
   }
 
   it 'includes Ruote::LocalParticipant' do
-    described_class.included_modules.should include(Ruote::LocalParticipant)
+    expect(described_class.included_modules).to include(Ruote::LocalParticipant)
   end
 
   it_behaves_like "an entity holder" do

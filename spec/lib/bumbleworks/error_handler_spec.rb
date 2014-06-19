@@ -3,7 +3,7 @@ describe Bumbleworks::ErrorHandler do
   let(:workitem) { double }
   describe '#initialize' do
     it 'sets workitem' do
-      subject.workitem.should == workitem
+      expect(subject.workitem).to eq(workitem)
     end
   end
 

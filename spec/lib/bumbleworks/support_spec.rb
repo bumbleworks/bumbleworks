@@ -1,11 +1,11 @@
 describe Bumbleworks::Support do
   describe '.camelize' do
     it 'turns underscored string into camelcase' do
-      described_class.camelize('foo_bar_One_two_3').should == 'FooBarOneTwo3'
+      expect(described_class.camelize('foo_bar_One_two_3')).to eq('FooBarOneTwo3')
     end
 
     it 'deals with nested classes' do
-      described_class.camelize('foo_bar/bar_foo').should == 'FooBar::BarFoo'
+      expect(described_class.camelize('foo_bar/bar_foo')).to eq('FooBar::BarFoo')
     end
   end
 
@@ -15,20 +15,24 @@ describe Bumbleworks::Support do
     it "for given directory, creates hash of basename => path pairs" do
       assembled_hash = described_class.all_files(test_directory)
 
-      assembled_hash[File.join(fixtures_path, 'definitions', 'test_process.rb').to_s].should ==
+      expect(assembled_hash[File.join(fixtures_path, 'definitions', 'test_process.rb').to_s]).to eq(
         'test_process'
-      assembled_hash[File.join(fixtures_path, 'definitions', 'nested_folder', 'test_nested_process.rb').to_s].should ==
+      )
+      expect(assembled_hash[File.join(fixtures_path, 'definitions', 'nested_folder', 'test_nested_process.rb').to_s]).to eq(
         'test_nested_process'
+      )
     end
 
     it "camelizes names if :camelize option is true " do
       path = File.join(fixtures_path, 'definitions')
       assembled_hash = described_class.all_files(test_directory, :camelize => true)
 
-      assembled_hash[File.join(fixtures_path, 'definitions', 'test_process.rb').to_s].should ==
+      expect(assembled_hash[File.join(fixtures_path, 'definitions', 'test_process.rb').to_s]).to eq(
         'TestProcess'
-      assembled_hash[File.join(fixtures_path, 'definitions', 'nested_folder', 'test_nested_process.rb').to_s].should ==
+      )
+      expect(assembled_hash[File.join(fixtures_path, 'definitions', 'nested_folder', 'test_nested_process.rb').to_s]).to eq(
         'TestNestedProcess'
+      )
     end
   end
 
@@ -46,11 +50,11 @@ describe Bumbleworks::Support do
     end
 
     it 'returns value of constant with given name' do
-      described_class.constantize('Whatever')::Smoothies.should == 'tasty'
+      expect(described_class.constantize('Whatever')::Smoothies).to eq('tasty')
     end
 
     it 'works with nested constants' do
-      described_class.constantize('Whatever::Smoothies').should == 'tasty'
+      expect(described_class.constantize('Whatever::Smoothies')).to eq('tasty')
     end
 
     it 'does not check inheritance tree' do
@@ -62,51 +66,51 @@ describe Bumbleworks::Support do
 
   describe '.tokenize' do
     it 'creates snake_case version of string' do
-      described_class.tokenize('Albus Dumbledore & his_friend').should == 'albus_dumbledore_and_his_friend'
+      expect(described_class.tokenize('Albus Dumbledore & his_friend')).to eq('albus_dumbledore_and_his_friend')
     end
 
     it 'uncamelizes' do
-      described_class.tokenize('thisStrangeJavalikeWord').should == 'this_strange_javalike_word'
+      expect(described_class.tokenize('thisStrangeJavalikeWord')).to eq('this_strange_javalike_word')
     end
 
     it 'returns nil if given nil' do
-      described_class.tokenize(nil).should be_nil
+      expect(described_class.tokenize(nil)).to be_nil
     end
 
     it 'also handles symbols' do
-      described_class.tokenize(:yourFaceIsNice).should == 'your_face_is_nice'
+      expect(described_class.tokenize(:yourFaceIsNice)).to eq('your_face_is_nice')
     end
   end
 
   describe '.humanize' do
     it 'creates humanized version of snaky string' do
-      described_class.humanize('mops_are_so_moppy').should == 'Mops are so moppy'
+      expect(described_class.humanize('mops_are_so_moppy')).to eq('Mops are so moppy')
     end
 
     it 'created humanized version of camely string' do
-      described_class.humanize('thisStrangeJavalikeWord').should == 'This strange javalike word'
+      expect(described_class.humanize('thisStrangeJavalikeWord')).to eq('This strange javalike word')
     end
 
     it 'returns nil if given nil' do
-      described_class.humanize(nil).should be_nil
+      expect(described_class.humanize(nil)).to be_nil
     end
   end
 
   describe '.titleize' do
     it 'creates titleized version of snaky string' do
-      described_class.titleize('mops_are_so_moppy').should == 'Mops Are So Moppy'
+      expect(described_class.titleize('mops_are_so_moppy')).to eq('Mops Are So Moppy')
     end
 
     it 'created titleized version of camely string' do
-      described_class.titleize('thisStrangeJavalikeWord').should == 'This Strange Javalike Word'
+      expect(described_class.titleize('thisStrangeJavalikeWord')).to eq('This Strange Javalike Word')
     end
 
     it 'created titleized version of humany string' do
-      described_class.titleize('You are a wonderful toothbrush').should == 'You Are A Wonderful Toothbrush'
+      expect(described_class.titleize('You are a wonderful toothbrush')).to eq('You Are A Wonderful Toothbrush')
     end
 
     it 'returns nil if given nil' do
-      described_class.titleize(nil).should be_nil
+      expect(described_class.titleize(nil)).to be_nil
     end
   end
 end

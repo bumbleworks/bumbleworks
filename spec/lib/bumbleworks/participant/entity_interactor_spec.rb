@@ -1,7 +1,7 @@
 describe Bumbleworks::EntityInteractor do
   let(:entity) { double('entity', :cheek_depth => 'crazy deep') }
   let(:workitem) { Ruote::Workitem.new('fields' => { 'params' => { 'method' => 'cheek_depth' }}) }
-  subject { part = described_class.new; part.stub(:entity => entity, :reply => nil); part }
+  subject { part = described_class.new; allow(part).to receive_messages(:entity => entity, :reply => nil); part }
 
   describe '#on_workitem' do
     it 'calls method then replies' do
@@ -13,20 +13,20 @@ describe Bumbleworks::EntityInteractor do
     it 'saves the requested attribute to a workitem field' do
       workitem.fields['params']['and_save_as'] = 'entity_cheek_depth'
       subject._on_workitem(workitem)
-      workitem.fields['entity_cheek_depth'].should == 'crazy deep'
+      expect(workitem.fields['entity_cheek_depth']).to eq('crazy deep')
     end
 
     it 'overwrites an existing workitem field value' do
       workitem.fields['entity_cheek_depth'] = '14'
       workitem.fields['params']['and_save_as'] = 'entity_cheek_depth'
       subject._on_workitem(workitem)
-      workitem.fields['entity_cheek_depth'].should == 'crazy deep'
+      expect(workitem.fields['entity_cheek_depth']).to eq('crazy deep')
     end
 
     it 'calls the method even if no save_as to store the result' do
       expect(subject.entity).to receive(:cheek_depth)
       subject._on_workitem(workitem)
-      workitem.fields['entity_cheek_depth'].should be_nil
+      expect(workitem.fields['entity_cheek_depth']).to be_nil
     end
 
     it 'passes arguments to method' do
@@ -34,7 +34,7 @@ describe Bumbleworks::EntityInteractor do
       workitem.fields['params']['and_save_as'] = 'entity_cheek_depth'
       expect(subject.entity).to receive(:cheek_depth).with(1, 3, ['apple', 'fish']).and_return('what')
       subject._on_workitem(workitem)
-      workitem.fields['entity_cheek_depth'].should == 'what'
+      expect(workitem.fields['entity_cheek_depth']).to eq('what')
     end
 
     it 'can accept "with" for arguments' do
@@ -47,14 +47,14 @@ describe Bumbleworks::EntityInteractor do
       workitem.fields['params'] = { 'for' => 'grass_seed', 'and_save_as' => 'how_tasty' }
       expect(entity).to receive(:grass_seed).and_return('tasty-o')
       subject._on_workitem(workitem)
-      workitem.fields['how_tasty'].should == 'tasty-o'
+      expect(workitem.fields['how_tasty']).to eq('tasty-o')
     end
 
     it 'can use "to" param for method' do
       workitem.fields['params'] = { 'to' => 'chew_things' }
       expect(entity).to receive(:chew_things).and_return(nil)
       subject._on_workitem(workitem)
-      workitem.fields['who_cares'].should be_nil
+      expect(workitem.fields['who_cares']).to be_nil
     end
 
     it 'defaults to "method" when multiple options exist' do
@@ -72,17 +72,17 @@ describe Bumbleworks::EntityInteractor do
 
   describe '#call_method' do
     it 'calls the requested method on the entity' do
-      subject.call_method('cheek_depth').should == 'crazy deep'
+      expect(subject.call_method('cheek_depth')).to eq('crazy deep')
     end
 
     it 'saves the result if given a target' do
       subject.workitem = workitem
       subject.call_method('cheek_depth', :save_as => 'entity_cheek_depth')
-      workitem.fields['entity_cheek_depth'].should == 'crazy deep'
+      expect(workitem.fields['entity_cheek_depth']).to eq('crazy deep')
     end
 
     it 'raises an exception if no method on entity' do
-      subject.stub(:entity).and_return('just an unassuming little string!')
+      allow(subject).to receive(:entity).and_return('just an unassuming little string!')
       expect {
         subject.call_method('eat_television')
       }.to raise_error(NoMethodError)

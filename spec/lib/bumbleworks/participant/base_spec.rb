@@ -1,6 +1,6 @@
 describe Bumbleworks::Participant do
   it 'includes Bumbleworks::LocalParticipant' do
-    described_class.included_modules.should include(Bumbleworks::LocalParticipant)
+    expect(described_class.included_modules).to include(Bumbleworks::LocalParticipant)
   end
 
   it 'defines #on_cancel' do

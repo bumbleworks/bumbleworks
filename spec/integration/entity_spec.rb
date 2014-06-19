@@ -14,7 +14,7 @@ describe 'Entity Module' do
       Bumbleworks.entity_classes = [:geese]
       FirstNewClass = Class.new { include Bumbleworks::Entity }
       SecondNewClass = Class.new { include Bumbleworks::Entity }
-      Bumbleworks.entity_classes.should == [:geese, FirstNewClass, SecondNewClass]
+      expect(Bumbleworks.entity_classes).to eq([:geese, FirstNewClass, SecondNewClass])
     end
   end
 
@@ -24,23 +24,23 @@ describe 'Entity Module' do
       process = rainbow_loom.launch_process(:make_honey)
       Bumbleworks.dashboard.wait_for(:dave)
       task = Bumbleworks::Task.for_role('dave').first
-      task.entity.should == rainbow_loom
-      process.entity.should == rainbow_loom
+      expect(task.entity).to eq(rainbow_loom)
+      expect(process.entity).to eq(rainbow_loom)
     end
 
     it 'launching links processes with identifiers' do
       rainbow_loom = RainbowLoom.new('12345')
       process = rainbow_loom.launch_process(:make_honey)
-      rainbow_loom.processes_by_name.should == {
+      expect(rainbow_loom.processes_by_name).to eq({
         :make_honey => process,
         :make_molasses => nil
-      }
+      })
     end
 
     it 'persists process identifier' do
       rainbow_loom = RainbowLoom.new('12345')
       process = rainbow_loom.launch_process(:make_honey)
-      rainbow_loom.make_honey_process_identifier.should == process.wfid
+      expect(rainbow_loom.make_honey_process_identifier).to eq(process.wfid)
     end
   end
 
@@ -53,7 +53,7 @@ describe 'Entity Module' do
       rainbow_loom = RainbowLoom.new('12345')
       process = Bumbleworks.launch!('here_we_go', :entity => rainbow_loom)
       Bumbleworks.dashboard.wait_for(:critic)
-      process.tasks.first['yum'].should == "2 and orange"
+      expect(process.tasks.first['yum']).to eq("2 and orange")
     end
   end
 end

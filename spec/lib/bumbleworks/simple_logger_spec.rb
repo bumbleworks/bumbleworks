@@ -17,10 +17,10 @@ describe Bumbleworks::SimpleLogger do
     it 'adds given object to the log at given level' do
       described_class.add(:info, :super_serious_occurrence)
       described_class.add(:debug, :weird_thing)
-      described_class.entries.should == [
+      expect(described_class.entries).to eq([
         { :level => :info, :entry => :super_serious_occurrence },
         { :level => :debug, :entry => :weird_thing }
-      ]
+      ])
     end
   end
 
@@ -30,22 +30,22 @@ describe Bumbleworks::SimpleLogger do
       described_class.debug 'other thing'
       described_class.info 'third thing'
       described_class.fatal 'final thing'
-      described_class.entries.should == [
+      expect(described_class.entries).to eq([
         { :level => :info, :entry => 'thing' },
         { :level => :debug, :entry => 'other thing' },
         { :level => :info, :entry => 'third thing' },
         { :level => :fatal, :entry => 'final thing' }
-      ]
+      ])
     end
   end
 
   describe '.clear!' do
     it 'deletes all entries' do
-      described_class.entries.should be_empty
+      expect(described_class.entries).to be_empty
       described_class.info 'thing'
-      described_class.entries.should_not be_empty
+      expect(described_class.entries).not_to be_empty
       described_class.clear!
-      described_class.entries.should be_empty
+      expect(described_class.entries).to be_empty
     end
   end
 end

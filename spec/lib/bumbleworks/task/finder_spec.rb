@@ -28,11 +28,11 @@ describe Bumbleworks::Task::Finder do
       finder = subject.add_query { |wi|
         wi['fields']['params']['task'] != 'pet_dog'
       }
-      finder.map(&:nickname).should =~ [
+      expect(finder.map(&:nickname)).to match_array([
         'eat',
         'bark',
         'skip_and_jump'
-      ]
+      ])
     end
   end
 
@@ -43,11 +43,11 @@ describe Bumbleworks::Task::Finder do
       finder = subject.add_filter { |task|
         task.nickname != 'pet_dog'
       }
-      finder.map(&:nickname).should =~ [
+      expect(finder.map(&:nickname)).to match_array([
         'eat',
         'bark',
         'skip_and_jump'
-      ]
+      ])
     end
   end
 
@@ -58,9 +58,9 @@ describe Bumbleworks::Task::Finder do
       finder = subject.add_subfinder(
         Bumbleworks::Task::Finder.new.for_role(:cat)
       )
-      finder.map(&:nickname).should =~ [
+      expect(finder.map(&:nickname)).to match_array([
         'skip_and_jump'
-      ]
+      ])
     end
   end
 
@@ -69,7 +69,7 @@ describe Bumbleworks::Task::Finder do
       Bumbleworks.launch!('dog-lifecycle')
       Bumbleworks.dashboard.wait_for(:cat)
       tasks = subject.all
-      tasks.should be_all { |t| t.class == Bumbleworks::Task }
+      expect(tasks).to be_all { |t| t.class == Bumbleworks::Task }
     end
 
     it 'uses provided class for task generation' do
@@ -77,7 +77,7 @@ describe Bumbleworks::Task::Finder do
       Bumbleworks.launch!('dog-lifecycle')
       Bumbleworks.dashboard.wait_for(:cat)
       tasks = described_class.new(MyOwnTask).all
-      tasks.should be_all { |t| t.class == MyOwnTask }
+      expect(tasks).to be_all { |t| t.class == MyOwnTask }
       Object.send(:remove_const, :MyOwnTask)
     end
   end
@@ -124,7 +124,7 @@ describe Bumbleworks::Task::Finder do
     it 'creates a new finder and adds it to queries, when join type mismatch' do
       parent = described_class.new(:dummy_task_class).where_all
       child = described_class.new
-      described_class.stub(:new).with(:dummy_task_class).and_return(child)
+      allow(described_class).to receive(:new).with(:dummy_task_class).and_return(child)
       expect(child).to receive(:where_any)
       expect(child).to receive(:available).and_return(child)
       expect(child).to receive(:unavailable).and_return(child)

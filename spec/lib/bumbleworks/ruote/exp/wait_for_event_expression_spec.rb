@@ -32,7 +32,7 @@ describe Ruote::Exp::WaitForEventExpression do
     waiter = Bumbleworks.launch!('waiter')
     sender = Bumbleworks.launch!('sender')
     Bumbleworks.dashboard.wait_for(waiter.wfid)
-    @tracer.should == ['get ready', 'oh my gosh almost there', 'hello', 'yay', 'yay2']
+    expect(@tracer).to eq(['get ready', 'oh my gosh almost there', 'hello', 'yay', 'yay2'])
   end
 
   it 'checks where clause' do
@@ -52,7 +52,7 @@ describe Ruote::Exp::WaitForEventExpression do
     sender2 = Bumbleworks.launch!('sender', 'special' => 3)
 
     Bumbleworks.dashboard.wait_for(waiter3.wfid)
-    @tracer.should == ['specials! 3']
+    expect(@tracer).to eq(['specials! 3'])
   end
 
   it 'checks entity match' do
@@ -72,7 +72,7 @@ describe Ruote::Exp::WaitForEventExpression do
     sender2 = Bumbleworks.launch!('sender', 'entity_type' => 'Rhubarb', 'entity_id' => 'spitpickle-4boof')
 
     Bumbleworks.dashboard.wait_for(waiter3.wfid)
-    @tracer.should == ['entities! Rhubarb,spitpickle-4boof']
+    expect(@tracer).to eq(['entities! Rhubarb,spitpickle-4boof'])
   end
 
   it 'appends entity info to expected tag when :for_entity is true' do
@@ -89,6 +89,6 @@ describe Ruote::Exp::WaitForEventExpression do
     sender = Bumbleworks.launch!('sender')
 
     Bumbleworks.dashboard.wait_for(waiter.wfid)
-    @tracer.should == ['i found your tag, sucka']
+    expect(@tracer).to eq(['i found your tag, sucka'])
   end
 end

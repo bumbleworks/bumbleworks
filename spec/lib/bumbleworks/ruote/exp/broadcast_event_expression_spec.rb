@@ -17,7 +17,7 @@ describe Ruote::Exp::BroadcastEventExpression do
     waiter = Bumbleworks.launch!('waiter')
     sender = Bumbleworks.launch!('sender')
     Bumbleworks.dashboard.wait_for(waiter.wfid)
-    @tracer.should == ['amazing']
+    expect(@tracer).to eq(['amazing'])
   end
 
   it 'appends entity info to tag when :for_entity is true' do
@@ -33,6 +33,6 @@ describe Ruote::Exp::BroadcastEventExpression do
     waiter = Bumbleworks.launch!('waiter')
     sender = Bumbleworks.launch!('sender', :entity_type => 'PigWidget', :entity_id => 15)
     Bumbleworks.dashboard.wait_for(waiter.wfid)
-    @tracer.should == ['amazing']
+    expect(@tracer).to eq(['amazing'])
   end
 end

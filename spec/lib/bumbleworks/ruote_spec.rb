@@ -10,9 +10,9 @@ describe Bumbleworks::Ruote do
       end
       process = Bumbleworks.launch!('do_nothing')
       Bumbleworks.dashboard.wait_for(:lazy_guy)
-      Bumbleworks.dashboard.process(process.wfid).should_not be_nil
+      expect(Bumbleworks.dashboard.process(process.wfid)).not_to be_nil
       described_class.cancel_process!(process.wfid)
-      Bumbleworks.dashboard.process(process.wfid).should be_nil
+      expect(Bumbleworks.dashboard.process(process.wfid)).to be_nil
     end
 
     it 'times out if process is not cancelled in time' do
@@ -26,7 +26,7 @@ describe Bumbleworks::Ruote do
       end
       process = Bumbleworks.launch!('time_hog')
       Bumbleworks.dashboard.wait_for(:pigheaded)
-      Bumbleworks.dashboard.process(process.wfid).should_not be_nil
+      expect(Bumbleworks.dashboard.process(process.wfid)).not_to be_nil
       expect {
         described_class.cancel_process!(process.wfid, :timeout => 0.5)
       }.to raise_error(Bumbleworks::Ruote::CancelTimeout)
@@ -49,13 +49,13 @@ describe Bumbleworks::Ruote do
       end
       process = Bumbleworks.launch!('do_nothing')
       Bumbleworks.dashboard.wait_for(:lazy_guy)
-      Bumbleworks.dashboard.process(process.wfid).should_not be_nil
+      expect(Bumbleworks.dashboard.process(process.wfid)).not_to be_nil
       described_class.kill_process!(process.wfid)
-      Bumbleworks.dashboard.process(process.wfid).should be_nil
+      expect(Bumbleworks.dashboard.process(process.wfid)).to be_nil
     end
 
     it 'times out if process is not killed in time' do
-      Bumbleworks.dashboard.stub(:process).with('woot').and_return(:i_exist)
+      allow(Bumbleworks.dashboard).to receive(:process).with('woot').and_return(:i_exist)
       expect {
         described_class.kill_process!('woot', :timeout => 0.5)
       }.to raise_error(Bumbleworks::Ruote::KillTimeout)
@@ -63,7 +63,7 @@ describe Bumbleworks::Ruote do
 
     it 'uses storage.remove_process if force option is true' do
       expect(Bumbleworks.dashboard.storage).to receive(:remove_process).with('woot')
-      Bumbleworks.dashboard.stub(:process).with('woot').and_return(nil)
+      allow(Bumbleworks.dashboard).to receive(:process).with('woot').and_return(nil)
       described_class.kill_process!('woot', :force => true)
     end
   end
@@ -82,9 +82,9 @@ describe Bumbleworks::Ruote do
         Bumbleworks.launch!("do_nothing_#{i}")
         Bumbleworks.dashboard.wait_for("lazy_guy_#{i}".to_sym)
       end
-      Bumbleworks.dashboard.processes.count.should == 5
+      expect(Bumbleworks.dashboard.processes.count).to eq(5)
       described_class.cancel_all_processes!
-      Bumbleworks.dashboard.processes.count.should == 0
+      expect(Bumbleworks.dashboard.processes.count).to eq(0)
     end
 
 
@@ -121,12 +121,12 @@ describe Bumbleworks::Ruote do
         Bumbleworks.dashboard.wait_for("lazy_guy_#{i}".to_sym)
       end
 
-      Bumbleworks.dashboard.process_wfids.count.should == 5
+      expect(Bumbleworks.dashboard.process_wfids.count).to eq(5)
 
       described_class.cancel_all_processes!(:timeout => 30)
 
       # 4. When this is all done, all processes should be cancelled.
-      Bumbleworks.dashboard.process_wfids.count.should == 0
+      expect(Bumbleworks.dashboard.process_wfids.count).to eq(0)
     end
 
     it 'times out if processes are not cancelled in time' do
@@ -140,7 +140,7 @@ describe Bumbleworks::Ruote do
       end
       Bumbleworks.launch!('time_hog')
       Bumbleworks.dashboard.wait_for(:pigheaded)
-      Bumbleworks.dashboard.process_wfids.count.should == 1
+      expect(Bumbleworks.dashboard.process_wfids.count).to eq(1)
       expect {
         described_class.cancel_all_processes!(:timeout => 0.5)
       }.to raise_error(Bumbleworks::Ruote::CancelTimeout)
@@ -166,20 +166,20 @@ describe Bumbleworks::Ruote do
         Bumbleworks.launch!("do_nothing_#{i}")
         Bumbleworks.dashboard.wait_for("lazy_guy_#{i}".to_sym)
       end
-      Bumbleworks.dashboard.processes.count.should == 5
+      expect(Bumbleworks.dashboard.processes.count).to eq(5)
       described_class.kill_all_processes!
-      Bumbleworks.dashboard.processes.count.should == 0
+      expect(Bumbleworks.dashboard.processes.count).to eq(0)
     end
 
     it 'times out if processes are not killed in time' do
-      Bumbleworks.dashboard.stub(:process_wfids).and_return(['immortal_wfid'])
+      allow(Bumbleworks.dashboard).to receive(:process_wfids).and_return(['immortal_wfid'])
       expect {
         described_class.kill_all_processes!(:timeout => 0.5)
       }.to raise_error(Bumbleworks::Ruote::KillTimeout)
     end
 
     it 'uses storage.clear if force option is true' do
-      Bumbleworks.dashboard.stub(:process_wfids).and_return(['wfid'], [])
+      allow(Bumbleworks.dashboard).to receive(:process_wfids).and_return(['wfid'], [])
       expect(Bumbleworks.dashboard.storage).to receive(:clear)
       described_class.kill_all_processes!(:force => true)
     end
@@ -206,32 +206,32 @@ describe Bumbleworks::Ruote do
     end
 
     it 'creates a new dashboard' do
-      described_class.dashboard.should be_an_instance_of(Ruote::Dashboard)
+      expect(described_class.dashboard).to be_an_instance_of(Ruote::Dashboard)
     end
 
     it 'does not start a worker by default' do
-      described_class.dashboard.worker.should be_nil
+      expect(described_class.dashboard.worker).to be_nil
     end
   end
 
   describe '.start_worker!' do
     it 'adds new worker to dashboard and returns worker' do
-      described_class.dashboard.worker.should be_nil
+      expect(described_class.dashboard.worker).to be_nil
       new_worker = described_class.start_worker!
-      new_worker.should be_an_instance_of(Ruote::Worker)
-      described_class.dashboard.worker.should == new_worker
+      expect(new_worker).to be_an_instance_of(Ruote::Worker)
+      expect(described_class.dashboard.worker).to eq(new_worker)
     end
 
     it 'runs in current thread if :join option is true' do
-      ::Ruote::Worker.stub(:new).and_return(worker_double = double('worker'))
+      allow(::Ruote::Worker).to receive(:new).and_return(worker_double = double('worker'))
       expect(worker_double).to receive(:run)
       described_class.start_worker!(:join => true)
     end
 
     it 'runs in new thread and returns worker if :join option not true' do
-      ::Ruote::Worker.stub(:new).and_return(worker_double = double('worker'))
+      allow(::Ruote::Worker).to receive(:new).and_return(worker_double = double('worker'))
       expect(worker_double).to receive(:run_in_thread)
-      described_class.start_worker!.should == worker_double
+      expect(described_class.start_worker!).to eq(worker_double)
     end
 
     it 'sets dashboard to noisy if :verbose option true' do
@@ -252,12 +252,12 @@ describe Bumbleworks::Ruote do
     it 'does not add another error_dispatcher if already registered' do
       described_class.register_participants
       described_class.start_worker!
-      described_class.dashboard.participant_list.map(&:classname).should == [
+      expect(described_class.dashboard.participant_list.map(&:classname)).to eq([
         'Bumbleworks::ErrorDispatcher',
         'Bumbleworks::EntityInteractor',
         'Bumbleworks::StorageParticipant'
-      ]
-      Bumbleworks.dashboard.on_error.flatten[2].should == 'error_dispatcher'
+      ])
+      expect(Bumbleworks.dashboard.on_error.flatten[2]).to eq('error_dispatcher')
     end
   end
 
@@ -265,7 +265,7 @@ describe Bumbleworks::Ruote do
     it 'adds a storage history service to the dashboard if storage adapter allows it' do
       storage_adapter = double('adapter', :allow_history_storage? => true)
       Bumbleworks.storage_adapter = storage_adapter
-      described_class.stub(:storage => Ruote::HashStorage.new({}))
+      allow(described_class).to receive_messages(:storage => Ruote::HashStorage.new({}))
       expect(Bumbleworks.dashboard).to receive(:add_service).with(
         'history', 'ruote/log/storage_history', 'Ruote::StorageHistory'
       )
@@ -275,7 +275,7 @@ describe Bumbleworks::Ruote do
     it 'does not add a storage history service to the dashboard if not allowed' do
       storage_adapter = double('adapter', :allow_history_storage? => false)
       Bumbleworks.storage_adapter = storage_adapter
-      described_class.stub(:storage => Ruote::HashStorage.new({}))
+      allow(described_class).to receive_messages(:storage => Ruote::HashStorage.new({}))
       expect(Bumbleworks.dashboard).to receive(:add_service).never
       described_class.set_up_storage_history
     end
@@ -283,7 +283,7 @@ describe Bumbleworks::Ruote do
     it 'does not add a storage history service to the dashboard if turned off in config' do
       storage_adapter = double('adapter', :allow_history_storage? => true)
       Bumbleworks.storage_adapter = storage_adapter
-      described_class.stub(:storage => Ruote::HashStorage.new({}))
+      allow(described_class).to receive_messages(:storage => Ruote::HashStorage.new({}))
       expect(Bumbleworks.dashboard).to receive(:add_service).never
       Bumbleworks.store_history = false
       described_class.set_up_storage_history
@@ -298,15 +298,15 @@ describe Bumbleworks::Ruote do
         catchall 'NewCatchall'
       }
 
-      described_class.dashboard.participant_list.should be_empty
+      expect(described_class.dashboard.participant_list).to be_empty
       described_class.register_participants &registration_block
       expect(described_class.dashboard.participant_list.size).to eq(6)
-      described_class.dashboard.participant_list.map(&:classname).should == [
+      expect(described_class.dashboard.participant_list.map(&:classname)).to eq([
         'Bumbleworks::ErrorDispatcher',
         'Bumbleworks::EntityInteractor',
         'BeesHoney', 'MapleSyrup', 'NewCatchall',
         'Bumbleworks::StorageParticipant'
-      ]
+      ])
     end
 
     it 'does not add storage participant catchall if already exists' do
@@ -315,32 +315,33 @@ describe Bumbleworks::Ruote do
         catchall
       }
 
-      described_class.dashboard.participant_list.should be_empty
+      expect(described_class.dashboard.participant_list).to be_empty
       described_class.register_participants &registration_block
       expect(described_class.dashboard.participant_list.size).to eq(4)
-      described_class.dashboard.participant_list.map(&:classname).should == [
+      expect(described_class.dashboard.participant_list.map(&:classname)).to eq([
         'Bumbleworks::ErrorDispatcher', 'Bumbleworks::EntityInteractor', 'BeesHoney', 'Ruote::StorageParticipant'
-      ]
+      ])
     end
 
     it 'adds catchall and error_handler participants if block is nil' do
-      described_class.dashboard.participant_list.should be_empty
+      expect(described_class.dashboard.participant_list).to be_empty
       described_class.register_participants &nil
       expect(described_class.dashboard.participant_list.size).to eq(3)
-      described_class.dashboard.participant_list.map(&:classname).should ==
+      expect(described_class.dashboard.participant_list.map(&:classname)).to eq(
         ['Bumbleworks::ErrorDispatcher', 'Bumbleworks::EntityInteractor', 'Bumbleworks::StorageParticipant']
+      )
     end
   end
 
   describe '.register_error_dispatcher', dev:true do
     it 'registers the error handler participant' do
       described_class.register_error_dispatcher
-      Bumbleworks.dashboard.participant_list.map(&:classname).should include('Bumbleworks::ErrorDispatcher')
+      expect(Bumbleworks.dashboard.participant_list.map(&:classname)).to include('Bumbleworks::ErrorDispatcher')
     end
 
     it 'it sets the global Ruote on_error to the error_dispatcher' do
       described_class.register_error_dispatcher
-      Bumbleworks.dashboard.on_error.flatten[2].should == 'error_dispatcher'
+      expect(Bumbleworks.dashboard.on_error.flatten[2]).to eq('error_dispatcher')
     end
 
     it 'does not override existing error_dispatcher' do
@@ -348,8 +349,9 @@ describe Bumbleworks::Ruote do
         error_dispatcher 'Whatever'
       end
       described_class.register_error_dispatcher
-      Bumbleworks.dashboard.participant_list.map(&:classname).should ==
+      expect(Bumbleworks.dashboard.participant_list.map(&:classname)).to eq(
         ['Bumbleworks::EntityInteractor', 'Whatever', 'Bumbleworks::StorageParticipant']
+      )
 
     end
   end
@@ -365,11 +367,11 @@ describe Bumbleworks::Ruote do
       storage = {}
       adapter = double('Adapter')
       options = { :thing => 'yay' }
-      adapter.stub(:new_storage).with(storage, options).and_return(driven_storage)
+      allow(adapter).to receive(:new_storage).with(storage, options).and_return(driven_storage)
       Bumbleworks.storage = storage
       Bumbleworks.storage_adapter = adapter
       Bumbleworks.storage_options = options
-      described_class.storage.should == driven_storage
+      expect(described_class.storage).to eq(driven_storage)
     end
   end
 
@@ -384,10 +386,10 @@ describe Bumbleworks::Ruote do
     end
 
     it 'sets catchall if needed' do
-      described_class.dashboard.participant_list.should be_empty
+      expect(described_class.dashboard.participant_list).to be_empty
       described_class.launch('foo')
       expect(described_class.dashboard.participant_list.size).to eq(1)
-      described_class.dashboard.participant_list.first.classname.should == 'Bumbleworks::StorageParticipant'
+      expect(described_class.dashboard.participant_list.first.classname).to eq('Bumbleworks::StorageParticipant')
     end
   end
 
@@ -399,7 +401,7 @@ describe Bumbleworks::Ruote do
       expect(old_storage).to receive(:shutdown)
       described_class.reset!
       allow(described_class).to receive(:initialize_storage_adapter).and_return(:new_storage)
-      described_class.storage.should == :new_storage
+      expect(described_class.storage).to eq(:new_storage)
       # clean up
       described_class.instance_variable_set(:@storage, nil)
     end
@@ -415,7 +417,7 @@ describe Bumbleworks::Ruote do
       old_dashboard = described_class.dashboard
       expect(old_dashboard).to receive(:shutdown)
       described_class.reset!
-      described_class.dashboard.should_not == old_dashboard
+      expect(described_class.dashboard).not_to eq(old_dashboard)
     end
 
     it 'skips shutting down dashboard if no dashboard' do
@@ -430,7 +432,7 @@ describe Bumbleworks::Ruote do
       described_class.instance_variable_set(:@dashboard, dashboard)
       expect(dashboard).to receive(:shutdown).never
       described_class.reset!
-      described_class.dashboard.should_not == dashboard
+      expect(described_class.dashboard).not_to eq(dashboard)
     end
   end
 end

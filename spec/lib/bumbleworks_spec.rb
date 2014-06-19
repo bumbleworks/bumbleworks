@@ -16,8 +16,8 @@ describe Bumbleworks do
         c.storage = 'nerfy'
       end
 
-      described_class.configuration.root.should == 'pickles'
-      described_class.configuration.storage.should == 'nerfy'
+      expect(described_class.configuration.root).to eq('pickles')
+      expect(described_class.configuration.storage).to eq('nerfy')
     end
 
     it 'requires a block' do
@@ -39,7 +39,7 @@ describe Bumbleworks do
     it 'resets configuration' do
       old_config = described_class.configuration
       described_class.clear_configuration!
-      described_class.configuration.should_not == old_config
+      expect(described_class.configuration).not_to eq(old_config)
     end
   end
 
@@ -55,15 +55,15 @@ describe Bumbleworks do
     it 'can set directly' do
       storage = double("Storage")
       Bumbleworks.storage = storage
-      Bumbleworks.storage.should == storage
-      Bumbleworks.configuration.storage.should == storage
+      expect(Bumbleworks.storage).to eq(storage)
+      expect(Bumbleworks.configuration.storage).to eq(storage)
     end
 
     it 'can set with a block' do
       storage = double("Storage")
       Bumbleworks.configure {|c| c.storage = storage }
-      Bumbleworks.storage.should == storage
-      Bumbleworks.configuration.storage.should == storage
+      expect(Bumbleworks.storage).to eq(storage)
+      expect(Bumbleworks.configuration.storage).to eq(storage)
     end
   end
 
@@ -115,7 +115,7 @@ describe Bumbleworks do
 
   describe '.load_definitions!' do
     it 'creates all definitions from directory' do
-      described_class.stub(:definitions_directory).and_return(:defs_dir)
+      allow(described_class).to receive(:definitions_directory).and_return(:defs_dir)
       expect(Bumbleworks::ProcessDefinition).to receive(:create_all_from_directory!).with(:defs_dir, :fake_options)
       described_class.load_definitions!(:fake_options)
     end
@@ -151,56 +151,56 @@ describe Bumbleworks do
     end
 
     it 'creates an instance of Bumbleworks::Configuration' do
-      described_class.configuration.should be_an_instance_of(Bumbleworks::Configuration)
+      expect(described_class.configuration).to be_an_instance_of(Bumbleworks::Configuration)
     end
 
     it 'returns the same instance when called multiple times' do
       configuration = described_class.configuration
-      described_class.configuration.should == configuration
+      expect(described_class.configuration).to eq(configuration)
     end
 
     it 'automatically adds Redis adapter if defined' do
       stub_const('Bumbleworks::Redis::Adapter', Bumbleworks::StorageAdapter)
       Bumbleworks.clear_configuration! # to reload storage adapters
-      described_class.configuration.storage_adapters.should include(Bumbleworks::Redis::Adapter)
+      expect(described_class.configuration.storage_adapters).to include(Bumbleworks::Redis::Adapter)
     end
 
     it 'automatically adds Sequel adapter if defined' do
       stub_const('Bumbleworks::Sequel::Adapter', Bumbleworks::StorageAdapter)
       Bumbleworks.clear_configuration! # to reload storage adapters
-      described_class.configuration.storage_adapters.should include(Bumbleworks::Sequel::Adapter)
+      expect(described_class.configuration.storage_adapters).to include(Bumbleworks::Sequel::Adapter)
     end
   end
 
   describe 'Bumbleworks::Ruote delegation' do
     it 'includes dashboard' do
       expect(Bumbleworks::Ruote).to receive(:dashboard).and_return(:oh_goodness_me)
-      Bumbleworks.dashboard.should == :oh_goodness_me
+      expect(Bumbleworks.dashboard).to eq(:oh_goodness_me)
     end
 
     it 'includes start_worker' do
       expect(Bumbleworks::Ruote).to receive(:start_worker!).and_return(:lets_do_it)
-      Bumbleworks.start_worker!.should == :lets_do_it
+      expect(Bumbleworks.start_worker!).to eq(:lets_do_it)
     end
 
     it 'includes cancel_process!' do
       expect(Bumbleworks::Ruote).to receive(:cancel_process!).with(:wfid).and_return(:cancelling)
-      Bumbleworks.cancel_process!(:wfid).should == :cancelling
+      expect(Bumbleworks.cancel_process!(:wfid)).to eq(:cancelling)
     end
 
     it 'includes kill_process!' do
       expect(Bumbleworks::Ruote).to receive(:kill_process!).with(:wfid).and_return(:killing)
-      Bumbleworks.kill_process!(:wfid).should == :killing
+      expect(Bumbleworks.kill_process!(:wfid)).to eq(:killing)
     end
 
     it 'includes cancel_all_processes!' do
       expect(Bumbleworks::Ruote).to receive(:cancel_all_processes!).and_return(:cancelling)
-      Bumbleworks.cancel_all_processes!.should == :cancelling
+      expect(Bumbleworks.cancel_all_processes!).to eq(:cancelling)
     end
 
     it 'includes kill_all_processes!' do
       expect(Bumbleworks::Ruote).to receive(:kill_all_processes!).and_return(:killing)
-      Bumbleworks.kill_all_processes!.should == :killing
+      expect(Bumbleworks.kill_all_processes!).to eq(:killing)
     end
   end
 
@@ -234,10 +234,10 @@ describe Bumbleworks do
     end
 
     it 'returns a Bumbleworks::Process instance with the wfid of the launched process' do
-      Bumbleworks::Ruote.stub(:launch).with(:amazing_process).and_return('18181818')
+      allow(Bumbleworks::Ruote).to receive(:launch).with(:amazing_process).and_return('18181818')
       bp = Bumbleworks.launch!(:amazing_process)
-      bp.should be_a(Bumbleworks::Process)
-      bp.id.should == '18181818'
+      expect(bp).to be_a(Bumbleworks::Process)
+      expect(bp.id).to eq('18181818')
     end
 
     it 'throws exception if entity has nil id' do
@@ -255,29 +255,29 @@ describe Bumbleworks do
 
   describe '.logger' do
     it 'delegates to configuration.logger' do
-      described_class.configuration.stub(:logger).and_return(:a_logger)
-      described_class.logger.should == :a_logger
+      allow(described_class.configuration).to receive(:logger).and_return(:a_logger)
+      expect(described_class.logger).to eq(:a_logger)
     end
   end
 
   describe '.store_history' do
     it 'delegates to configuration.logger' do
-      described_class.configuration.stub(:store_history).and_return(:why_not)
-      described_class.store_history.should == :why_not
+      allow(described_class.configuration).to receive(:store_history).and_return(:why_not)
+      expect(described_class.store_history).to eq(:why_not)
     end
   end
 
   describe '.store_history?' do
     it 'returns true if store_history is true' do
       described_class.store_history = true
-      described_class.store_history?.should be_truthy
+      expect(described_class.store_history?).to be_truthy
     end
 
     it 'returns false if store_history is anything but true' do
       described_class.store_history = false
-      described_class.store_history?.should be_falsy
+      expect(described_class.store_history?).to be_falsy
       described_class.store_history = 'penguins'
-      described_class.store_history?.should be_falsy
+      expect(described_class.store_history?).to be_falsy
     end
   end
 end

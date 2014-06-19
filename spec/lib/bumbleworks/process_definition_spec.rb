@@ -7,25 +7,25 @@ describe Bumbleworks::ProcessDefinition do
 
   it "can be constructed with name and definition" do
     pdef = described_class.new(:name => 'zach', :definition => 'orbo')
-    pdef.name.should == 'zach'
-    pdef.definition.should == 'orbo'
+    expect(pdef.name).to eq('zach')
+    expect(pdef.definition).to eq('orbo')
   end
 
   it "can be constructed with name and tree" do
     pdef = described_class.new(:name => 'zach', :tree => ["define", {"your" => "face"}])
-    pdef.name.should == 'zach'
-    pdef.tree.should == ["define", {"your" => "face"}]
+    expect(pdef.name).to eq('zach')
+    expect(pdef.tree).to eq(["define", {"your" => "face"}])
   end
 
   describe '#build_tree!' do
     it "converts Bumbleworks definition to Ruote tree" do
       pdef = described_class.new(:name => 'monkeys', :definition => valid_definition)
-      pdef.build_tree!.should == [
+      expect(pdef.build_tree!).to eq([
         "define", {"name" => "monkeys"},
         [
           ["chocolate_covered_skis", {"are" => "awesome"}, []]
         ]
-      ]
+      ])
     end
 
     it "raises error if name in definition does not match" do
@@ -39,12 +39,12 @@ describe Bumbleworks::ProcessDefinition do
     it "adds name to tree when not specified in definition" do
       unnamed_def = valid_definition.gsub(/ 'monkeys'/, '')
       pdef = described_class.new(:name => 'spit_salad', :definition => unnamed_def)
-      pdef.build_tree!.should == [
+      expect(pdef.build_tree!).to eq([
         "define", {"name" => "spit_salad"},
         [
           ["chocolate_covered_skis", {"are" => "awesome"}, []]
         ]
-      ]
+      ])
     end
   end
 
@@ -85,16 +85,18 @@ describe Bumbleworks::ProcessDefinition do
     it "registers the process definition with the dashboard" do
       pdef = described_class.new(:name => 'monkeys', :definition => valid_definition)
       pdef.save!
-      Bumbleworks.dashboard.variables['monkeys'].should ==
+      expect(Bumbleworks.dashboard.variables['monkeys']).to eq(
         pdef.build_tree!
+      )
     end
 
     it "overwrites existing variable with new definition" do
       Bumbleworks.dashboard.variables['monkeys'] = 'A miraculous ingredient'
       pdef = described_class.new(:name => 'monkeys', :definition => valid_definition)
       pdef.save!
-      Bumbleworks.dashboard.variables['monkeys'].should ==
+      expect(Bumbleworks.dashboard.variables['monkeys']).to eq(
         pdef.build_tree!
+      )
     end
   end
 
@@ -102,24 +104,24 @@ describe Bumbleworks::ProcessDefinition do
     it "returns an instance with a previously registered definition" do
       Bumbleworks.dashboard.variables['foo'] = 'go to the bar'
       pdef = described_class.find_by_name('foo')
-      pdef.tree.should == 'go to the bar'
+      expect(pdef.tree).to eq('go to the bar')
     end
 
     it "raises an error if registered definition can't be found by given name" do
-      lambda { described_class.find_by_name('nerf') }.should raise_error(described_class::NotFound)
+      expect { described_class.find_by_name('nerf') }.to raise_error(described_class::NotFound)
     end
   end
 
   describe "#load_definition_from_file" do
     it "raises an error if given file can't be found" do
       pdef = described_class.new(:name => 'whatever')
-      lambda { pdef.load_definition_from_file('nerf') }.should raise_error(described_class::FileNotFound)
+      expect { pdef.load_definition_from_file('nerf') }.to raise_error(described_class::FileNotFound)
     end
 
     it "sets #definition to the parsed result of the file, if found" do
       pdef = described_class.new(:name => 'test_process')
       pdef.load_definition_from_file definition_path('test_process')
-      pdef.definition.should == File.read(definition_path('test_process'))
+      expect(pdef.definition).to eq(File.read(definition_path('test_process')))
     end
   end
 
@@ -133,7 +135,7 @@ describe Bumbleworks::ProcessDefinition do
     end
 
     it 'raises error if duplicate filenames are encountered' do
-      Bumbleworks::Support.stub(:all_files).and_return({
+      allow(Bumbleworks::Support).to receive(:all_files).and_return({
         'Rhubarb Derailleur' => 'popular_side_dish',
         'Cantonese Phrasebook' => 'popular_side_dish',
         'Beans' => 'unpopular_side_dish'
@@ -147,32 +149,35 @@ describe Bumbleworks::ProcessDefinition do
       Bumbleworks.dashboard.variables['keep_me'] = 'top_secret_cat_pics'
       # stubbing here so we can explicitly set an order which will
       # ensure we're testing rollback
-      Bumbleworks::Support.stub(:all_files).and_return({
+      allow(Bumbleworks::Support).to receive(:all_files).and_return({
         definition_path('test_process') => 'test_process',
         definition_path('a_list_of_jams') => 'a_list_of_jams'
       })
       expect {
         described_class.create_all_from_directory!(definitions_path)
       }.to raise_error
-      Bumbleworks.dashboard.variables['test_process'].should be_nil
-      Bumbleworks.dashboard.variables['keep_me'].should == 'top_secret_cat_pics'
+      expect(Bumbleworks.dashboard.variables['test_process']).to be_nil
+      expect(Bumbleworks.dashboard.variables['keep_me']).to eq('top_secret_cat_pics')
     end
 
     it 'skips invalid files and loads all valid definitions when option specified' do
       described_class.create_all_from_directory!(definitions_path, :skip_invalid => true)
-      Bumbleworks.dashboard.variables['test_process'].should ==
+      expect(Bumbleworks.dashboard.variables['test_process']).to eq(
         ["define", { "name" => "test_process" }, [["nothing", {}, []]]]
-      Bumbleworks.dashboard.variables['test_nested_process'].should ==
+      )
+      expect(Bumbleworks.dashboard.variables['test_nested_process']).to eq(
         ["define", { "name" => "test_nested_process" }, [["nothing_nested", {}, []]]]
-      Bumbleworks.dashboard.variables['a_list_of_jams'].should be_nil
+      )
+      expect(Bumbleworks.dashboard.variables['a_list_of_jams']).to be_nil
     end
   end
 
   describe '.create!' do
     it 'builds and saves a new instance' do
       pdef = described_class.create!(:name => 'monkeys', :definition => valid_definition)
-      Bumbleworks.dashboard.variables['monkeys'].should ==
+      expect(Bumbleworks.dashboard.variables['monkeys']).to eq(
         pdef.build_tree!
+      )
     end
   end
 
@@ -181,8 +186,9 @@ describe Bumbleworks::ProcessDefinition do
       definition = described_class.define 'nammikins' do
         treefles
       end
-      Bumbleworks.dashboard.variables['nammikins'].should ==
+      expect(Bumbleworks.dashboard.variables['nammikins']).to eq(
         ["define", {"name" => "nammikins"}, [["treefles", {}, []]]]
+      )
     end
   end
 end

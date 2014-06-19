@@ -11,20 +11,20 @@ describe 'History storage' do
 
   context 'when storage allows storing history' do
     before :each do
-      Bumbleworks.stub(:storage_adapter => HashStorageWithHistory)
+      allow(Bumbleworks).to receive_messages(:storage_adapter => HashStorageWithHistory)
       load File.join(app_root, 'full_initializer.rb')
     end
 
     it 'uses storage for history' do
-      Bumbleworks.dashboard.history.should be_a(::Ruote::StorageHistory)
+      expect(Bumbleworks.dashboard.history).to be_a(::Ruote::StorageHistory)
     end
 
     it 'keeps history of messages' do
-      Bumbleworks::Ruote.storage.get_many('history').should be_empty
+      expect(Bumbleworks::Ruote.storage.get_many('history')).to be_empty
       process = Bumbleworks.launch!('make_honey')
       Bumbleworks.dashboard.wait_for(:dave)
-      Bumbleworks::Ruote.storage.get_many('history').should_not be_empty
-      Bumbleworks.dashboard.history.wfids.should include(process.wfid)
+      expect(Bumbleworks::Ruote.storage.get_many('history')).not_to be_empty
+      expect(Bumbleworks.dashboard.history.wfids).to include(process.wfid)
     end
   end
 
@@ -34,15 +34,15 @@ describe 'History storage' do
     end
 
     it 'does not use storage for history' do
-      Bumbleworks.dashboard.history.should be_a(::Ruote::DefaultHistory)
+      expect(Bumbleworks.dashboard.history).to be_a(::Ruote::DefaultHistory)
     end
 
     it 'keeps history of messages' do
-      Bumbleworks.dashboard.history.all.should be_empty
+      expect(Bumbleworks.dashboard.history.all).to be_empty
       process = Bumbleworks.launch!('make_honey')
       Bumbleworks.dashboard.wait_for(:dave)
-      Bumbleworks.dashboard.history.all.should_not be_empty
-      Bumbleworks.dashboard.history.wfids.should include(process.wfid)
+      expect(Bumbleworks.dashboard.history.all).not_to be_empty
+      expect(Bumbleworks.dashboard.history.wfids).to include(process.wfid)
     end
   end
 end

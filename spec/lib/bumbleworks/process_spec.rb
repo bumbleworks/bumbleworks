@@ -54,44 +54,44 @@ describe Bumbleworks::Process do
     end
 
     it 'returns all process wfids' do
-      described_class.ids.should == @sorted_processes.map(&:wfid)
+      expect(described_class.ids).to eq(@sorted_processes.map(&:wfid))
     end
 
     it 'allows pagination options' do
-      described_class.ids(:limit => 2).should == @sorted_processes[0, 2].map(&:wfid)
-      described_class.ids(:offset => 2).should == @sorted_processes[2, 5].map(&:wfid)
-      described_class.ids(:limit => 2, :offset => 1).should == @sorted_processes[1, 2].map(&:wfid)
+      expect(described_class.ids(:limit => 2)).to eq(@sorted_processes[0, 2].map(&:wfid))
+      expect(described_class.ids(:offset => 2)).to eq(@sorted_processes[2, 5].map(&:wfid))
+      expect(described_class.ids(:limit => 2, :offset => 1)).to eq(@sorted_processes[1, 2].map(&:wfid))
     end
 
     it 'allows reverse order' do
-      described_class.ids(:reverse => true).should == @sorted_processes.reverse.map(&:wfid)
+      expect(described_class.ids(:reverse => true)).to eq(@sorted_processes.reverse.map(&:wfid))
     end
 
     it 'allows combined reverse and pagination' do
-      described_class.ids(:reverse => true, :limit => 2).should == @sorted_processes.reverse[0, 2].map(&:wfid)
-      described_class.ids(:reverse => true, :offset => 2).should == @sorted_processes.reverse[2, 5].map(&:wfid)
-      described_class.ids(:reverse => true, :limit => 2, :offset => 1).should == @sorted_processes.reverse[1, 2].map(&:wfid)
+      expect(described_class.ids(:reverse => true, :limit => 2)).to eq(@sorted_processes.reverse[0, 2].map(&:wfid))
+      expect(described_class.ids(:reverse => true, :offset => 2)).to eq(@sorted_processes.reverse[2, 5].map(&:wfid))
+      expect(described_class.ids(:reverse => true, :limit => 2, :offset => 1)).to eq(@sorted_processes.reverse[1, 2].map(&:wfid))
     end
   end
 
   describe '.count' do
     it 'returns number of processes' do
       allow(described_class).to receive(:ids).and_return([:a, :b, :c, :d])
-      described_class.count.should == 4
+      expect(described_class.count).to eq(4)
     end
   end
 
   describe '.new' do
     it 'sets workflow id' do
       bp = described_class.new('apples')
-      bp.id.should == 'apples'
+      expect(bp.id).to eq('apples')
     end
   end
 
   describe '#wfid' do
     it 'is aliased to id' do
       bp = described_class.new('smorgatoof')
-      bp.wfid.should == 'smorgatoof'
+      expect(bp.wfid).to eq('smorgatoof')
     end
   end
 
@@ -106,13 +106,13 @@ describe Bumbleworks::Process do
       bp = Bumbleworks.launch!('error_process')
       Bumbleworks.dashboard.wait_for('error_intercepted')
       errors = bp.errors
-      errors.map(&:class).uniq.should == [
+      expect(errors.map(&:class).uniq).to eq([
         Bumbleworks::Process::ErrorRecord
-      ]
-      errors.map(&:message).should =~ [
+      ])
+      expect(errors.map(&:message)).to match_array([
         'first error',
         'second error'
-      ]
+      ])
     end
   end
 
@@ -122,8 +122,8 @@ describe Bumbleworks::Process do
       l1 = double(:workitem => 'w1')
       l2 = double(:workitem => 'w2')
       l3 = double(:workitem => 'w3')
-      bp.stub(:leaves => [l1, l2, l3])
-      bp.workitems.should == ['w1','w2','w3']
+      allow(bp).to receive_messages(:leaves => [l1, l2, l3])
+      expect(bp.workitems).to eq(['w1','w2','w3'])
     end
   end
 
@@ -131,7 +131,7 @@ describe Bumbleworks::Process do
     let(:entity_workitem) { Bumbleworks::Workitem.new(:fake_workitem) }
     let(:holder) {
       holder = described_class.new('nothing')
-      holder.stub(:entity_workitem => entity_workitem)
+      allow(holder).to receive_messages(:entity_workitem => entity_workitem)
       holder
     }
     let(:storage_workitem) { entity_workitem }
@@ -194,13 +194,13 @@ describe Bumbleworks::Process do
       bp = described_class.new('nothing')
       w1 = double(:entity_fields => :some_fields)
       w2 = double(:entity_fields => :some_fields)
-      bp.stub(:workitems => [w1, w2])
-      bp.entity_workitem.should == w1
+      allow(bp).to receive_messages(:workitems => [w1, w2])
+      expect(bp.entity_workitem).to eq(w1)
     end
 
     it 'returns nil if no process' do
       bp = described_class.new('nothing')
-      bp.entity_workitem.should be_nil
+      expect(bp.entity_workitem).to be_nil
     end
 
     it 'returns workitem with entity reference from process launch' do
@@ -208,7 +208,7 @@ describe Bumbleworks::Process do
       bp = Bumbleworks.launch!('going_to_the_dance', :entity => rainbow_loom)
       wait_until { bp.reload.trackers.count > 0 }
       ew = bp.entity_workitem
-      ew.entity.should == rainbow_loom
+      expect(ew.entity).to eq(rainbow_loom)
     end
 
     it 'raises exception if multiple workitems have conflicting entity info' do
@@ -235,7 +235,7 @@ describe Bumbleworks::Process do
   describe '#entity' do
     it 'bubbles EntityConflict from entity_workitem' do
       bp = described_class.new('whatever')
-      bp.stub(:entity_workitem).and_raise(Bumbleworks::Process::EntityConflict)
+      allow(bp).to receive(:entity_workitem).and_raise(Bumbleworks::Process::EntityConflict)
       expect {
         bp.entity
       }.to raise_error(Bumbleworks::Process::EntityConflict)
@@ -245,8 +245,8 @@ describe Bumbleworks::Process do
   describe '#tasks' do
     it 'returns task query filtered for this process' do
       bp = described_class.new('chumpy')
-      Bumbleworks::Task.stub(:for_process).with('chumpy').and_return(:my_task_query)
-      bp.tasks.should == :my_task_query
+      allow(Bumbleworks::Task).to receive(:for_process).with('chumpy').and_return(:my_task_query)
+      expect(bp.tasks).to eq(:my_task_query)
     end
   end
 
@@ -255,12 +255,12 @@ describe Bumbleworks::Process do
       bp1 = Bumbleworks.launch!('going_to_the_dance')
       bp2 = Bumbleworks.launch!('straightening_the_rocks')
       wait_until { bp1.reload.trackers.count == 3 && bp2.reload.trackers.count == 2 }
-      bp1.trackers.map { |t| t.process }.should == [bp1, bp1, bp1]
-      bp2.trackers.map { |t| t.process }.should == [bp2, bp2]
-      bp1.trackers.map { |t| t.action }.should == ['left_tag', 'left_tag', 'dispatch']
-      bp2.trackers.map { |t| t.action }.should == ['left_tag', 'left_tag']
-      bp1.trackers.map { |t| t.conditions['tag'] }.should == [['an_invitation'], ['a_friend'], nil]
-      bp2.trackers.map { |t| t.conditions['tag'] }.should == [['rock_caliper_delivery'], ['speedos']]
+      expect(bp1.trackers.map { |t| t.process }).to eq([bp1, bp1, bp1])
+      expect(bp2.trackers.map { |t| t.process }).to eq([bp2, bp2])
+      expect(bp1.trackers.map { |t| t.action }).to eq(['left_tag', 'left_tag', 'dispatch'])
+      expect(bp2.trackers.map { |t| t.action }).to eq(['left_tag', 'left_tag'])
+      expect(bp1.trackers.map { |t| t.conditions['tag'] }).to eq([['an_invitation'], ['a_friend'], nil])
+      expect(bp2.trackers.map { |t| t.conditions['tag'] }).to eq([['rock_caliper_delivery'], ['speedos']])
     end
   end
 
@@ -269,14 +269,14 @@ describe Bumbleworks::Process do
       bp1 = Bumbleworks.launch!('going_to_the_dance')
       bp2 = Bumbleworks.launch!('straightening_the_rocks')
       wait_until { bp1.reload.trackers.count == 3 && bp2.reload.trackers.count == 2 }
-      bp1.all_subscribed_tags.should == { :global => ['an_invitation'], bp1.wfid => ['a_friend'] }
-      bp2.all_subscribed_tags.should == { :global => ['rock_caliper_delivery', 'speedos'] }
+      expect(bp1.all_subscribed_tags).to eq({ :global => ['an_invitation'], bp1.wfid => ['a_friend'] })
+      expect(bp2.all_subscribed_tags).to eq({ :global => ['rock_caliper_delivery', 'speedos'] })
     end
 
     it 'sets global tags to empty array by default' do
       bp = Bumbleworks.launch!('i_wait_for_nobody')
       wait_until { bp.reload.tasks.count == 1 }
-      bp.all_subscribed_tags.should == { :global => [] }
+      expect(bp.all_subscribed_tags).to eq({ :global => [] })
     end
   end
 
@@ -285,34 +285,34 @@ describe Bumbleworks::Process do
       bp1 = Bumbleworks.launch!('going_to_the_dance')
       bp2 = Bumbleworks.launch!('straightening_the_rocks')
       wait_until { bp1.reload.trackers.count == 3 && bp2.reload.trackers.count == 2 }
-      bp1.subscribed_events.should == ['an_invitation']
-      bp2.subscribed_events.should == ['rock_caliper_delivery', 'speedos']
+      expect(bp1.subscribed_events).to eq(['an_invitation'])
+      expect(bp2.subscribed_events).to eq(['rock_caliper_delivery', 'speedos'])
     end
 
     it 'returns empty array if no global tags' do
       bp = Bumbleworks.launch!('i_wait_for_nobody')
       wait_until { bp.reload.tasks.count == 1 }
-      bp.subscribed_events.should == []
+      expect(bp.subscribed_events).to eq([])
     end
   end
 
   describe '#is_waiting_for?' do
     it 'returns true if event is in subscribed events' do
       bp = described_class.new('whatever')
-      bp.stub(:subscribed_events => ['ghosts', 'mouses'])
-      bp.is_waiting_for?('mouses').should be_truthy
+      allow(bp).to receive_messages(:subscribed_events => ['ghosts', 'mouses'])
+      expect(bp.is_waiting_for?('mouses')).to be_truthy
     end
 
     it 'converts symbolized queries' do
       bp = described_class.new('whatever')
-      bp.stub(:subscribed_events => ['ghosts', 'mouses'])
-      bp.is_waiting_for?(:ghosts).should be_truthy
+      allow(bp).to receive_messages(:subscribed_events => ['ghosts', 'mouses'])
+      expect(bp.is_waiting_for?(:ghosts)).to be_truthy
     end
 
     it 'returns false if event is not in subscribed events' do
       bp = described_class.new('whatever')
-      bp.stub(:subscribed_events => ['ghosts', 'mouses'])
-      bp.is_waiting_for?('organs').should be_falsy
+      allow(bp).to receive_messages(:subscribed_events => ['ghosts', 'mouses'])
+      expect(bp.is_waiting_for?('organs')).to be_falsy
     end
   end
 
@@ -336,7 +336,7 @@ describe Bumbleworks::Process do
     it 'returns true if other object has same wfid' do
       bp1 = described_class.new('in_da_sky')
       bp2 = described_class.new('in_da_sky')
-      bp1.should == bp2
+      expect(bp1).to eq(bp2)
     end
   end
 
@@ -354,23 +354,23 @@ describe Bumbleworks::Process do
   describe '#process_status' do
     it 'returns a process_status instance for the wfid' do
       bp = described_class.new('frogheads')
-      Bumbleworks.dashboard.stub(:process).with('frogheads').and_return(:the_status)
-      bp.process_status.should == :the_status
+      allow(Bumbleworks.dashboard).to receive(:process).with('frogheads').and_return(:the_status)
+      expect(bp.process_status).to eq(:the_status)
     end
   end
 
   describe '#method_missing' do
     it 'calls method on object returned by #process_status' do
       ps = double('process_status')
-      ps.stub(:nuffle).with(:yay).and_return(:its_a_me)
+      allow(ps).to receive(:nuffle).with(:yay).and_return(:its_a_me)
       bp = described_class.new('frogheads')
-      bp.stub(:process_status => ps)
-      bp.nuffle(:yay).should == :its_a_me
+      allow(bp).to receive_messages(:process_status => ps)
+      expect(bp.nuffle(:yay)).to eq(:its_a_me)
     end
 
     it 'falls back to method missing if no process status method' do
       bp = described_class.new('blah')
-      bp.stub(:process_status => double('process status'))
+      allow(bp).to receive_messages(:process_status => double('process status'))
       expect {
         bp.kerplunk!(:oh_no)
       }.to raise_error

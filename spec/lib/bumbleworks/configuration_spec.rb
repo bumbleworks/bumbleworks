@@ -11,7 +11,7 @@ describe Bumbleworks::Configuration do
 
     it 'returns folder set by user' do
       configuration.root = '/what/about/that'
-      configuration.root.should == '/what/about/that'
+      expect(configuration.root).to eq('/what/about/that')
     end
 
     it 'uses Rails.root if Rails is defined' do
@@ -21,7 +21,7 @@ describe Bumbleworks::Configuration do
         end
       end
 
-      configuration.root.should == '/Rails/Root/lib/bumbleworks'
+      expect(configuration.root).to eq('/Rails/Root/lib/bumbleworks')
       Object.send(:remove_const, :Rails)
     end
 
@@ -32,7 +32,7 @@ describe Bumbleworks::Configuration do
         end
       end
 
-      configuration.root.should == '/Padrino/Root/lib/bumbleworks'
+      expect(configuration.root).to eq('/Padrino/Root/lib/bumbleworks')
       Object.send(:remove_const, :Padrino)
     end
 
@@ -45,7 +45,7 @@ describe Bumbleworks::Configuration do
         end
       end
 
-      configuration.root.should == '/Sinatra/Root/lib/bumbleworks'
+      expect(configuration.root).to eq('/Sinatra/Root/lib/bumbleworks')
       Object.send(:remove_const, :Sinatra)
     end
 
@@ -56,7 +56,7 @@ describe Bumbleworks::Configuration do
         end
       end
 
-      configuration.root.should == '/Rory/Root/lib/bumbleworks'
+      expect(configuration.root).to eq('/Rory/Root/lib/bumbleworks')
       Object.send(:remove_const, :Rory)
     end
 
@@ -74,27 +74,27 @@ describe Bumbleworks::Configuration do
 
   describe "#definitions_directory" do
     it 'returns the folder which was set by the client app' do
-      File.stub(:directory?).with('/dog/ate/my/homework').and_return(true)
+      allow(File).to receive(:directory?).with('/dog/ate/my/homework').and_return(true)
       configuration.definitions_directory = '/dog/ate/my/homework'
-      configuration.definitions_directory.should == '/dog/ate/my/homework'
+      expect(configuration.definitions_directory).to eq('/dog/ate/my/homework')
     end
 
     it 'returns the default folder if not set by client app' do
-      File.stub(:directory? => true)
+      allow(File).to receive_messages(:directory? => true)
       configuration.root = '/Root'
-      configuration.definitions_directory.should == '/Root/process_definitions'
+      expect(configuration.definitions_directory).to eq('/Root/process_definitions')
     end
 
     it 'returns the second default folder if first does not exist' do
-      File.stub(:directory?).with('/Root/process_definitions').and_return(false)
-      File.stub(:directory?).with('/Root/processes').and_return(true)
+      allow(File).to receive(:directory?).with('/Root/process_definitions').and_return(false)
+      allow(File).to receive(:directory?).with('/Root/processes').and_return(true)
       configuration.root = '/Root'
-      configuration.definitions_directory.should == '/Root/processes'
+      expect(configuration.definitions_directory).to eq('/Root/processes')
     end
 
     it 'returns nil if default folder not found' do
       configuration.root = '/Root'
-      configuration.definitions_directory.should be_nil
+      expect(configuration.definitions_directory).to be_nil
     end
 
     it 'raises error if specific folder not found' do
@@ -110,20 +110,20 @@ describe Bumbleworks::Configuration do
 
   describe "#participants_directory" do
     it 'returns the folder which was set by the client app' do
-      File.stub(:directory?).with('/dog/ate/my/homework').and_return(true)
+      allow(File).to receive(:directory?).with('/dog/ate/my/homework').and_return(true)
       configuration.participants_directory = '/dog/ate/my/homework'
-      configuration.participants_directory.should == '/dog/ate/my/homework'
+      expect(configuration.participants_directory).to eq('/dog/ate/my/homework')
     end
 
     it 'returns the default folder if not set by client app' do
-      File.stub(:directory?).with('/Root/participants').and_return(true)
+      allow(File).to receive(:directory?).with('/Root/participants').and_return(true)
       configuration.root = '/Root'
-      configuration.participants_directory.should == '/Root/participants'
+      expect(configuration.participants_directory).to eq('/Root/participants')
     end
 
     it 'returns nil if default folder not found' do
       configuration.root = '/Root'
-      configuration.participants_directory.should be_nil
+      expect(configuration.participants_directory).to be_nil
     end
 
     it 'raises error if specific folder not found' do
@@ -139,20 +139,20 @@ describe Bumbleworks::Configuration do
 
   describe "#tasks_directory" do
     it 'returns the folder which was set by the client app' do
-      File.stub(:directory?).with('/dog/ate/my/homework').and_return(true)
+      allow(File).to receive(:directory?).with('/dog/ate/my/homework').and_return(true)
       configuration.tasks_directory = '/dog/ate/my/homework'
-      configuration.tasks_directory.should == '/dog/ate/my/homework'
+      expect(configuration.tasks_directory).to eq('/dog/ate/my/homework')
     end
 
     it 'returns the default folder if not set by client app' do
-      File.stub(:directory?).with('/Root/tasks').and_return(true)
+      allow(File).to receive(:directory?).with('/Root/tasks').and_return(true)
       configuration.root = '/Root'
-      configuration.tasks_directory.should == '/Root/tasks'
+      expect(configuration.tasks_directory).to eq('/Root/tasks')
     end
 
     it 'returns nil if default folder not found' do
       configuration.root = '/Root'
-      configuration.tasks_directory.should be_nil
+      expect(configuration.tasks_directory).to be_nil
     end
 
     it 'raises error if specific folder not found' do
@@ -168,20 +168,20 @@ describe Bumbleworks::Configuration do
 
   describe "#participant_registration_file" do
     it 'returns the path which was set by the client app' do
-      File.stub(:file?).with('/can/i/get/a/rooster.rb').and_return(true)
+      allow(File).to receive(:file?).with('/can/i/get/a/rooster.rb').and_return(true)
       configuration.participant_registration_file = '/can/i/get/a/rooster.rb'
-      configuration.participant_registration_file.should == '/can/i/get/a/rooster.rb'
+      expect(configuration.participant_registration_file).to eq('/can/i/get/a/rooster.rb')
     end
 
     it 'returns the default folder if not set by client app' do
-      File.stub(:file?).with('/Root/participants.rb').and_return(true)
+      allow(File).to receive(:file?).with('/Root/participants.rb').and_return(true)
       configuration.root = '/Root'
-      configuration.participant_registration_file.should == '/Root/participants.rb'
+      expect(configuration.participant_registration_file).to eq('/Root/participants.rb')
     end
 
     it 'returns nil if default path not found' do
       configuration.root = '/Root'
-      configuration.participant_registration_file.should be_nil
+      expect(configuration.participant_registration_file).to be_nil
     end
 
     it 'raises error if specific path not found' do
@@ -198,35 +198,35 @@ describe Bumbleworks::Configuration do
   describe '#logger' do
     it 'returns the registered logger' do
       configuration.logger = :a_logger
-      configuration.logger.should == :a_logger
+      expect(configuration.logger).to eq(:a_logger)
     end
 
     it 'returns the default simple logger if no logger registered' do
-      configuration.logger.should == Bumbleworks::SimpleLogger
+      expect(configuration.logger).to eq(Bumbleworks::SimpleLogger)
     end
   end
 
   describe '#observers' do
     it 'is empty by default' do
-      configuration.observers.should be_empty
+      expect(configuration.observers).to be_empty
     end
 
     it 'returns the registered observers' do
       configuration.observers = [:smash, :pumpkin]
       configuration.observers << :rhubarb
-      configuration.observers.should == [:smash, :pumpkin, :rhubarb]
+      expect(configuration.observers).to eq([:smash, :pumpkin, :rhubarb])
     end
   end
 
   describe '#entity_classes' do
     it 'is empty by default' do
-      configuration.entity_classes.should be_empty
+      expect(configuration.entity_classes).to be_empty
     end
 
     it 'returns the registered entity classes' do
       configuration.entity_classes = [:fumpin, :nuffin]
       configuration.entity_classes << :summin
-      configuration.entity_classes.should == [:fumpin, :nuffin, :summin]
+      expect(configuration.entity_classes).to eq([:fumpin, :nuffin, :summin])
     end
   end
 
@@ -234,18 +234,18 @@ describe Bumbleworks::Configuration do
     it 'can set storage directly' do
       storage = double("Storage")
       configuration.storage = storage
-      configuration.storage.should == storage
+      expect(configuration.storage).to eq(storage)
     end
   end
 
   describe '#storage_options' do
     it 'defaults to empty hash' do
-      subject.storage_options.should == {}
+      expect(subject.storage_options).to eq({})
     end
 
     it 'can be overridden' do
       subject.storage_options = { :smooshie => 'wubbles' }
-      subject.storage_options.should == { :smooshie => 'wubbles' }
+      expect(subject.storage_options).to eq({ :smooshie => 'wubbles' })
     end
   end
 
@@ -254,19 +254,19 @@ describe Bumbleworks::Configuration do
       right_adapter = double('right', :use? => true)
       wrong_adapter_1 = double('wrong1', :use? => false)
       wrong_adapter_2 = double('wrong2', :use? => false)
-      subject.stub(:storage_adapters => [wrong_adapter_1, right_adapter, wrong_adapter_2])
-      subject.storage_adapter.should == right_adapter
+      allow(subject).to receive_messages(:storage_adapters => [wrong_adapter_1, right_adapter, wrong_adapter_2])
+      expect(subject.storage_adapter).to eq(right_adapter)
     end
 
     it 'can be set storage directly' do
       storage = double("Storage Adapter")
       subject.storage_adapter = storage
-      subject.storage_adapter.should == storage
+      expect(subject.storage_adapter).to eq(storage)
     end
 
     it 'raises UndefinedSetting if no matching storage adapter' do
       wrong_adapter = double('wrong1', :use? => false, :display_name => 'Wrong')
-      subject.stub(:storage_adapters => [wrong_adapter])
+      allow(subject).to receive_messages(:storage_adapters => [wrong_adapter])
       expect {
         subject.storage_adapter
       }.to raise_error(Bumbleworks::UndefinedSetting,
@@ -284,12 +284,12 @@ describe Bumbleworks::Configuration do
   describe '#add_storage_adapter' do
     it 'adds storage adapter to registered list' do
       GoodForNothingStorage = double('fake_storage', :respond_to? => true)
-      configuration.storage_adapters.should be_empty
+      expect(configuration.storage_adapters).to be_empty
       configuration.add_storage_adapter(GoodForNothingStorage)
       configuration.add_storage_adapter(Bumbleworks::HashStorage)
-      configuration.storage_adapters.should =~ [
+      expect(configuration.storage_adapters).to match_array([
         GoodForNothingStorage, Bumbleworks::HashStorage
-      ]
+      ])
     end
 
     it 'raises ArgumentError if object is not a storage adapter' do
@@ -307,41 +307,41 @@ describe Bumbleworks::Configuration do
     end
 
     it 'resets #definitions_directory' do
-      File.stub(:directory? => true)
+      allow(File).to receive_messages(:directory? => true)
       configuration.definitions_directory = '/One/Two'
-      configuration.definitions_directory.should == '/One/Two'
+      expect(configuration.definitions_directory).to eq('/One/Two')
       configuration.clear!
 
       configuration.root = '/Root'
-      configuration.definitions_directory.should == '/Root/process_definitions'
+      expect(configuration.definitions_directory).to eq('/Root/process_definitions')
     end
   end
 
   describe '#error_handlers', dev:true do
     let(:super_handler) {double('error_handler')}
     it 'sets default error handler' do
-      configuration.error_handlers.should == [Bumbleworks::ErrorLogger]
+      expect(configuration.error_handlers).to eq([Bumbleworks::ErrorLogger])
     end
 
     it 'replaces default handler' do
       configuration.error_handlers = [super_handler]
-      configuration.error_handlers.should == [super_handler]
+      expect(configuration.error_handlers).to eq([super_handler])
     end
 
     it 'adds to default handler' do
       configuration.error_handlers << super_handler
-      configuration.error_handlers.should =~ [Bumbleworks::ErrorLogger, super_handler]
+      expect(configuration.error_handlers).to match_array([Bumbleworks::ErrorLogger, super_handler])
     end
   end
 
   describe '#store_history' do
     it 'defaults to true' do
-      subject.store_history.should be_truthy
+      expect(subject.store_history).to be_truthy
     end
 
     it 'can be overridden' do
       subject.store_history = false
-      subject.store_history.should be_falsy
+      expect(subject.store_history).to be_falsy
     end
   end
 end

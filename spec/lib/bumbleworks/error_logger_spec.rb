@@ -20,7 +20,7 @@ describe Bumbleworks::ErrorLogger do
   end
 
   it 'sets target to entity if found' do
-    workitem.stub(:fields => {:entity_id => 1234, :entity_type => 'Lizards'})
+    allow(workitem).to receive_messages(:fields => {:entity_id => 1234, :entity_type => 'Lizards'})
     expect(Bumbleworks.logger).to receive(:error).with(hash_including({
       :target_type => 'Lizards',
       :target_id => 1234,
@@ -30,7 +30,7 @@ describe Bumbleworks::ErrorLogger do
   end
 
   it 'does nothing if logger is not registered' do
-    Bumbleworks.stub(:logger)
-    subject.on_error.should == nil
+    allow(Bumbleworks).to receive(:logger)
+    expect(subject.on_error).to eq(nil)
   end
 end

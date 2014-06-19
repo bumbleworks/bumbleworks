@@ -7,31 +7,31 @@ describe Bumbleworks::Configuration do
   describe '#root' do
     it 'returns configured root' do
       load default_initializer
-      Bumbleworks.root.should == default_app_path
+      expect(Bumbleworks.root).to eq(default_app_path)
     end
   end
 
   describe '#definitions_directory' do
     it 'returns specified directory when set in configuration' do
       load specified_initializer
-      Bumbleworks.definitions_directory.should == File.join(specified_app_path, 'specific_directory', 'definitions')
+      expect(Bumbleworks.definitions_directory).to eq(File.join(specified_app_path, 'specific_directory', 'definitions'))
     end
 
     it 'returns default directory when not set in configuration' do
       load default_initializer
-      Bumbleworks.definitions_directory.should == File.join(default_app_path, 'process_definitions')
+      expect(Bumbleworks.definitions_directory).to eq(File.join(default_app_path, 'process_definitions'))
     end
   end
 
   describe '#participants_directory' do
     it 'returns specified directory when set in configuration' do
       load specified_initializer
-      Bumbleworks.participants_directory.should == File.join(specified_app_path, 'specific_directory', 'participants')
+      expect(Bumbleworks.participants_directory).to eq(File.join(specified_app_path, 'specific_directory', 'participants'))
     end
 
     it 'returns default directory when not set in configuration' do
       load default_initializer
-      Bumbleworks.participants_directory.should == File.join(default_app_path, 'participants')
+      expect(Bumbleworks.participants_directory).to eq(File.join(default_app_path, 'participants'))
     end
   end
 end
