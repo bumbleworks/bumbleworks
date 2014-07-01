@@ -209,6 +209,7 @@ module Bumbleworks
 
     def update_workitem
       storage_participant.update(@workitem)
+      reload
     end
 
     def proceed_workitem

@@ -867,6 +867,15 @@ describe Bumbleworks::Task do
         task.update(:argue_mints)
       end
 
+      it 'reloads after updating workitem' do
+        event = Bumbleworks.dashboard.wait_for :dog_mouth
+        task = described_class.for_role('dog_mouth').first
+        allow(task).to receive(:log)
+        expect(described_class.storage_participant).to receive(:update).with(task.workitem).ordered
+        expect(task).to receive(:reload).ordered
+        task.update(:noofles)
+      end
+
       it 'logs event' do
         event = Bumbleworks.dashboard.wait_for :dog_mouth
         task = described_class.for_role('dog_mouth').first
@@ -874,7 +883,7 @@ describe Bumbleworks::Task do
         task.update(:extra_data => :fancy)
         expect(Bumbleworks.logger.entries.last).to eq({
           :level => :info, :entry => {
-            :actor => :some_user,
+            :actor => "some_user", # claimant is a string after #reload
             :action => :update,
             :target_type => 'Task',
             :target_id => task.id,
