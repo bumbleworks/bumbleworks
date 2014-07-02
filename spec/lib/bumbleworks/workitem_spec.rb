@@ -75,6 +75,17 @@ describe Bumbleworks::Workitem do
     end
   end
 
+  describe '#tokenized_entity_type' do
+    it 'returns tokenized entity type' do
+      expect(workitem.tokenized_entity_type).to eq('rainbow_loom')
+    end
+
+    it 'returns nil if no entity type' do
+      allow(workitem).to receive(:entity_type).and_return(nil)
+      expect(workitem.tokenized_entity_type).to be_nil
+    end
+  end
+
   describe "#entity_fields" do
     it 'returns empty hash if no entity' do
       ruote_workitem.fields = {}

@@ -45,6 +45,10 @@ module Bumbleworks
       }
     end
 
+    def tokenized_entity_type
+      Bumbleworks::Support.tokenize(entity_type)
+    end
+
     def entity_name
       fields = entity_fields(:titleize => true)
       "#{fields[:type]} #{fields[:identifier]}"
