@@ -40,6 +40,10 @@ module Bumbleworks
       self
     end
 
+    def running?
+      !process_status.nil?
+    end
+
     alias_method :wfid, :id
 
     def <=>(other)

@@ -351,6 +351,20 @@ describe Bumbleworks::Process do
     end
   end
 
+  describe '#running?' do
+    it 'returns true if process_status returns something' do
+      subject = described_class.new('frogheads')
+      allow(subject).to receive(:process_status).and_return(:the_status)
+      expect(subject.running?).to be_truthy
+    end
+
+    it 'returns false if process_status is nil' do
+      subject = described_class.new('frogheads')
+      allow(subject).to receive(:process_status).and_return(nil)
+      expect(subject.running?).to be_falsy
+    end
+  end
+
   describe '#process_status' do
     it 'returns a process_status instance for the wfid' do
       bp = described_class.new('frogheads')
