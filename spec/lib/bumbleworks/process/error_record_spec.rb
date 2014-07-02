@@ -15,6 +15,19 @@ describe Bumbleworks::Process::ErrorRecord do
     @error = @process.errors.first
   end
 
+  describe '#replay' do
+    it 'replays the process at the error' do
+      expect(Bumbleworks.dashboard).to receive(:replay_at_error).with(@error.process_error)
+      @error.replay
+    end
+  end
+
+  describe '#workitem' do
+    it 'returns the workitem where the error occurred' do
+      expect(@error.workitem).to eq(@error.process_error.workitem)
+    end
+  end
+
   describe '#error_class_name' do
     it 'returns the class name of the recorded error (as a string)' do
       expect(@error.error_class_name).to eq 'NaughtyParticipant::StupidError'

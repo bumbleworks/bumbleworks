@@ -1,9 +1,23 @@
 module Bumbleworks
   class Process
     class ErrorRecord
+      attr_reader :process_error
+
       # The initializer takes a Ruote::ProcessError instance.
       def initialize(process_error)
         @process_error = process_error
+      end
+
+      # Replays the error's process at the point where the error occurred.
+      # Should only be called when the cause of the error has been fixed,
+      # since otherwise this will just cause the error to show up again.
+      def replay
+        Bumbleworks.dashboard.replay_at_error(@process_error)
+      end
+
+      # Returns the workitem at the position where this error occurred.
+      def workitem
+        @process_error.workitem
       end
 
       # Returns the FlowExpressionId of the expression where this error
