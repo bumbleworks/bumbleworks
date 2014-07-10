@@ -3,6 +3,20 @@ describe Bumbleworks::Expression do
   let(:fexp) { double('FlowExpression', :fei => fei, :tree => :a_tree) }
   subject { described_class.new(fexp) }
 
+  describe '#==' do
+    it 'returns true if other object has same flow expression id' do
+      exp1 = described_class.new(fexp)
+      exp2 = described_class.new(double('FlowExpression', :fei => fei))
+      expect(exp1).to eq(exp2)
+    end
+
+    it 'returns false if other object has different flow expression id' do
+      exp1 = described_class.new(fexp)
+      exp2 = described_class.new(double('FlowExpression', :fei => double(:expid => '4')))
+      expect(exp1).not_to eq(exp2)
+    end
+  end
+
   describe '#expid' do
     it 'returns expid from fei' do
       expect(subject.expid).to eq('1_2_3')

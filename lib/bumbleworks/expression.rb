@@ -1,11 +1,15 @@
 module Bumbleworks
   class Expression
-    attr_reader :expid
+    attr_reader :expid, :fei
 
     def initialize(flow_expression)
       @flow_expression = flow_expression
       @fei = @flow_expression.fei
       @expid = @fei.expid
+    end
+
+    def ==(other)
+      @fei = other.fei
     end
 
     # Returns a Bumbleworks::Process instance for the expression's
