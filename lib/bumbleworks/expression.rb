@@ -2,6 +2,13 @@ module Bumbleworks
   class Expression
     attr_reader :expid, :fei
 
+    class << self
+      def from_fei(fei)
+        fexp = ::Ruote::Exp::FlowExpression.fetch(Bumbleworks.dashboard.context, fei)
+        new(fexp)
+      end
+    end
+
     def initialize(flow_expression)
       @flow_expression = flow_expression
       @fei = @flow_expression.fei

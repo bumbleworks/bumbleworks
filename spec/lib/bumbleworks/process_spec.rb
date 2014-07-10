@@ -10,6 +10,7 @@ describe Bumbleworks::Process do
       concurrence do
         admin :task => 'eat_a_hat'
         hatter :task => 'weep'
+        wait '40m'
       end
     end
 
@@ -24,6 +25,10 @@ describe Bumbleworks::Process do
       concurrence do
         wait_for_event :rock_caliper_delivery
         wait_for_event :speedos
+        wait '15m'
+        every '20m' do
+          magician :task => 'fancy_rabbit_maneuvers'
+        end
       end
     end
     Bumbleworks.define_process 'i_wait_for_nobody' do
@@ -142,7 +147,7 @@ describe Bumbleworks::Process do
       bp = Bumbleworks.launch!('food_is_an_illusion')
       Bumbleworks.dashboard.wait_for(:admin)
       expect(bp.expressions.map(&:expid)).to eq [
-        '0', '0_1', '0_1_0', '0_1_1'
+        '0', '0_1', '0_1_0', '0_1_1', '0_1_2'
       ]
       expect(bp.expressions.map(&:class).uniq).to eq [
         Bumbleworks::Expression
@@ -181,7 +186,7 @@ describe Bumbleworks::Process do
       bp = Bumbleworks.launch!('food_is_an_illusion')
       Bumbleworks.dashboard.wait_for(:admin)
       expect(bp.leaves.map(&:expid)).to eq [
-        '0_1_0', '0_1_1'
+        '0_1_0', '0_1_1', '0_1_2'
       ]
       expect(bp.leaves.map(&:class).uniq).to eq [
         Bumbleworks::Expression
@@ -247,6 +252,19 @@ describe Bumbleworks::Process do
       bp = described_class.new('chumpy')
       allow(Bumbleworks::Task).to receive(:for_process).with('chumpy').and_return(:my_task_query)
       expect(bp.tasks).to eq(:my_task_query)
+    end
+  end
+
+  describe '#schedules' do
+    it 'returns array of all schedules for this process' do
+      bp1 = Bumbleworks.launch!('food_is_an_illusion')
+      bp2 = Bumbleworks.launch!('straightening_the_rocks')
+      wait_until { bp1.reload.schedules.count == 1 && bp2.reload.schedules.count == 2 }
+      expect(bp1.schedules.map { |s| s.process }).to eq([bp1])
+      expect(bp2.schedules.map { |s| s.process }).to eq([bp2, bp2])
+      expect(bp1.schedules.map { |s| s.original_plan }).to eq(['40m'])
+      expect(bp2.schedules.map { |s| s.original_plan }).to eq(['15m', '20m'])
+      expect(bp2.schedules.map { |s| s.repeating? }).to eq([false, true])
     end
   end
 

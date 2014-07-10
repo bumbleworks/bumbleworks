@@ -108,6 +108,12 @@ module Bumbleworks
       }
     end
 
+    def schedules
+      @schedules ||= Bumbleworks.dashboard.schedules(id).map { |schedule_hash|
+        Bumbleworks::Schedule.new(schedule_hash)
+      }
+    end
+
     def all_subscribed_tags
       @all_subscribed_tags ||= trackers.inject({ :global => [] }) do |memo, t|
         if t.global?

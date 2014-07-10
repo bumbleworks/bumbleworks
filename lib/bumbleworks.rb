@@ -14,6 +14,7 @@ require "bumbleworks/entity"
 require "bumbleworks/participant"
 require "bumbleworks/workitem"
 require "bumbleworks/tracker"
+require "bumbleworks/schedule"
 require "bumbleworks/user"
 
 # default implementations

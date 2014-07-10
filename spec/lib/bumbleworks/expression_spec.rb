@@ -3,6 +3,14 @@ describe Bumbleworks::Expression do
   let(:fexp) { double('FlowExpression', :fei => fei, :tree => :a_tree) }
   subject { described_class.new(fexp) }
 
+  describe '.from_fei' do
+    it 'returns instance generated from FlowExpressionId' do
+      allow(::Ruote::Exp::FlowExpression).to receive(:fetch).
+        with(Bumbleworks.dashboard.context, fei).and_return(fexp)
+      expect(described_class.from_fei(fei)).to eq(described_class.new(fexp))
+    end
+  end
+
   describe '#==' do
     it 'returns true if other object has same flow expression id' do
       exp1 = described_class.new(fexp)
