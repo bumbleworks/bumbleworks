@@ -1,4 +1,3 @@
-require File.expand_path(File.join(fixtures_path, 'entities', 'rainbow_loom'))
 require File.expand_path(File.join(fixtures_path, 'trackers'))
 
 describe Bumbleworks::Tracker do
