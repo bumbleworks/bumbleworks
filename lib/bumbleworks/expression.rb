@@ -16,7 +16,7 @@ module Bumbleworks
     end
 
     def ==(other)
-      @fei = other.fei
+      @fei == other.fei
     end
 
     # Returns a Bumbleworks::Process instance for the expression's
