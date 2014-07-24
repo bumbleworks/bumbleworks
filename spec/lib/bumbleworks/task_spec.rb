@@ -1127,4 +1127,8 @@ describe Bumbleworks::Task do
       expect(task.titleize(:entity => false)).to eq('Go To Work')
     end
   end
+
+  it 'has a CompletionFailed error class' do
+    expect(described_class::CompletionFailed.new).to be_a(StandardError)
+  end
 end

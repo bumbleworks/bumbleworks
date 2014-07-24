@@ -10,6 +10,7 @@ module Bumbleworks
     class MissingWorkitem < StandardError; end
     class NotCompletable < StandardError; end
     class AvailabilityTimeout < StandardError; end
+    class CompletionFailed < StandardError; end
 
     extend Forwardable
     delegate [:sid, :fei, :fields, :dispatched_at, :params, :participant_name, :wfid, :wf_name] => :@workitem
