@@ -17,6 +17,10 @@ module Bumbleworks
     attr_reader :nickname, :workitem
     alias_method :id, :sid
 
+    def temporary_storage
+      @temporary_storage ||= {}
+    end
+
     class << self
       # @public
       # Autoload all task modules defined in files in the

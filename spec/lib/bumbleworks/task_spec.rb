@@ -1128,6 +1128,19 @@ describe Bumbleworks::Task do
     end
   end
 
+  describe '#temporary_storage' do
+    it 'returns an empty hash by default' do
+      task = described_class.new(workflow_item)
+      expect(task.temporary_storage).to eq({})
+    end
+
+    it 'persists stored values' do
+      task = described_class.new(workflow_item)
+      task.temporary_storage[:foo] = :bar
+      expect(task.temporary_storage[:foo]).to eq(:bar)
+    end
+  end
+
   it 'has a CompletionFailed error class' do
     expect(described_class::CompletionFailed.new).to be_a(StandardError)
   end
