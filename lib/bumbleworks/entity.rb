@@ -46,14 +46,19 @@ module Bumbleworks
       processes_by_name.values.compact
     end
 
+    def cancel_process!(process_name, options = {})
+      process = processes_by_name[process_name.to_sym]
+      return nil unless process
+      process.cancel!
+      unless options[:clear_identifiers] == false
+        identifier_attribute = attribute_for_process_name(process_name.to_sym)
+        persist_process_identifier(identifier_attribute, nil)
+      end
+    end
+
     def cancel_all_processes!(options = {})
-      processes_by_name.each do |name, process|
-        next unless process
-        process.cancel!
-        unless options[:clear_identifiers] == false
-          identifier_attribute = attribute_for_process_name(name)
-          persist_process_identifier(identifier_attribute, nil)
-        end
+      processes_by_name.keys.each do |process_name|
+        cancel_process!(process_name, options)
       end
     end
 

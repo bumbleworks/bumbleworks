@@ -60,19 +60,25 @@ describe Bumbleworks::Entity do
     end
   end
 
-  describe '#cancel_all_processes!' do
-    it 'cancels all processes with registered identifiers' do
+  describe '#cancel_processes!' do
+    it 'cancels process with given name' do
       entity = entity_class.new
       allow(entity).to receive_messages(:processes_by_name => {
-        :foof => bp1 = Bumbleworks::Process.new('1234'),
-        :nook => bp2 = Bumbleworks::Process.new('pickles')
+        :foof => bp = Bumbleworks::Process.new('1234')
       })
-      expect(bp1).to receive(:cancel!)
-      expect(bp2).to receive(:cancel!)
-      allow(entity).to receive(:attribute_for_process_name) { |name| :"#{name}_pid" }
+      expect(bp).to receive(:cancel!)
+      allow(entity).to receive(:attribute_for_process_name).
+        with(:foof).and_return(:foof_pid)
       expect(entity).to receive(:update).with(:foof_pid => nil)
-      expect(entity).to receive(:update).with(:nook_pid => nil)
-      entity.cancel_all_processes!
+      entity.cancel_process!('foof')
+    end
+
+    it 'does nothing if no process for given name' do
+      entity = entity_class.new
+      allow(entity).to receive_messages(:processes_by_name => {})
+      expect {
+        entity.cancel_process!('snord')
+      }.not_to raise_error
     end
 
     it 'does not clear identifiers if clear_identifiers option is false' do
@@ -82,7 +88,22 @@ describe Bumbleworks::Entity do
       })
       expect(bp).to receive(:cancel!)
       expect(entity).to receive(:update).never
-      entity.cancel_all_processes!(:clear_identifiers => false)
+      entity.cancel_process!(:foof, :clear_identifiers => false)
+    end
+  end
+
+  describe '#cancel_all_processes!' do
+    it 'cancels all processes' do
+      entity = entity_class.new
+      allow(entity).to receive_messages(:processes_by_name => {
+        :foof => bp1 = Bumbleworks::Process.new('1234'),
+        :nook => bp2 = Bumbleworks::Process.new('pickles'),
+        :thulf => nil
+      })
+      expect(entity).to receive(:cancel_process!).with(:foof, :the_options)
+      expect(entity).to receive(:cancel_process!).with(:nook, :the_options)
+      expect(entity).to receive(:cancel_process!).with(:thulf, :the_options)
+      entity.cancel_all_processes!(:the_options)
     end
   end
 
