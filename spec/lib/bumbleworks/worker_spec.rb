@@ -17,7 +17,7 @@ describe Bumbleworks::Worker do
     end
   end
 
-  describe '.stop_all' do
+  describe '.shutdown_all' do
     let!(:workers) {
       2.times.map { |i|
         worker = described_class.new(context)
@@ -28,7 +28,7 @@ describe Bumbleworks::Worker do
 
     it 'stops all workers' do
       expect(workers.map(&:state)).to eq(['running', 'running'])
-      described_class.stop_all
+      described_class.shutdown_all
       wait_until { workers.all? { |w| w.state == 'stopped' } }
     end
 
@@ -36,7 +36,7 @@ describe Bumbleworks::Worker do
       # Stub setting of worker state so workers are never stopped
       allow(Bumbleworks.dashboard).to receive(:worker_state=)
       expect {
-        described_class.stop_all(:timeout => 0)
+        described_class.shutdown_all(:timeout => 0)
       }.to raise_error(described_class::WorkersCannotBeStopped)
     end
   end

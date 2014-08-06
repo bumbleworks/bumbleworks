@@ -6,7 +6,7 @@ class Bumbleworks::Worker < Ruote::Worker
   attr_reader :id
 
   class << self
-    def stop_all(options = {})
+    def shutdown_all(options = {})
       options[:timeout] ||= Bumbleworks.timeout
 
       with_worker_state_enabled do
