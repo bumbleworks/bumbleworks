@@ -1,4 +1,5 @@
 require "ruote"
+require_relative "worker.rb"
 
 Dir[File.join(File.dirname(__FILE__), 'ruote', 'exp', '*.rb')].each { |f| require f }
 
@@ -31,7 +32,7 @@ module Bumbleworks
         set_up_storage_history
         register_error_dispatcher
         dashboard.noisy = options[:verbose] == true
-        worker = ::Ruote::Worker.new(dashboard.context)
+        worker = Bumbleworks::Worker.new(dashboard.context)
         if options[:join] == true
           worker.run
         else

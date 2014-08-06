@@ -218,18 +218,18 @@ describe Bumbleworks::Ruote do
     it 'adds new worker to dashboard and returns worker' do
       expect(described_class.dashboard.worker).to be_nil
       new_worker = described_class.start_worker!
-      expect(new_worker).to be_an_instance_of(Ruote::Worker)
+      expect(new_worker).to be_an_instance_of(Bumbleworks::Worker)
       expect(described_class.dashboard.worker).to eq(new_worker)
     end
 
     it 'runs in current thread if :join option is true' do
-      allow(::Ruote::Worker).to receive(:new).and_return(worker_double = double('worker'))
+      allow(Bumbleworks::Worker).to receive(:new).and_return(worker_double = double('worker'))
       expect(worker_double).to receive(:run)
       described_class.start_worker!(:join => true)
     end
 
     it 'runs in new thread and returns worker if :join option not true' do
-      allow(::Ruote::Worker).to receive(:new).and_return(worker_double = double('worker'))
+      allow(Bumbleworks::Worker).to receive(:new).and_return(worker_double = double('worker'))
       expect(worker_double).to receive(:run_in_thread)
       expect(described_class.start_worker!).to eq(worker_double)
     end
