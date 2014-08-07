@@ -39,24 +39,43 @@ class Bumbleworks::Worker < Ruote::Worker
     super
     @id = SecureRandom.uuid
     @info = @info && Info.new(self)
-    @info.save
+    @info.save_with_cleanup
   end
 
-  def run
-    super
-    @info.save
+  def determine_state
+    if @context['worker_state_enabled']
+      super
+      @info.save_with_cleanup
+    end
   end
 
   class Info < Ruote::Worker::Info
-    def save
+    def <<(msg)
       super
+      cleanup_saved_info if Time.now > @last_save + 60
+    end
+
+    def save_with_cleanup
+      save
+      cleanup_saved_info
+    end
+
+    def cleanup_saved_info
       key = [@worker.name, @ip.gsub(/\./, '_'), $$.to_s].join('/')
       doc = @worker.storage.get('variables', 'workers')
-      doc['workers'][@worker.id] = doc['workers'].delete(key).merge({
-        'state' => @worker.state,
-        'name' => @worker.name
-      })
-      @worker.storage.put(doc)
+      existing_worker_info = doc['workers'].delete(key)
+      if existing_worker_info
+        doc['workers'][@worker.id] = existing_worker_info.merge({
+          'state' => @worker.state,
+          'name' => @worker.name
+        })
+        result = @worker.storage.put(doc)
+        # result will be nil if put succeeded; if it's not,
+        # let's try again
+        cleanup_saved_info if result
+      else
+        cleanup_saved_info
+      end
     end
   end
 end
