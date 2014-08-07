@@ -1,24 +1,21 @@
 require 'securerandom'
 
 class Bumbleworks::Worker < Ruote::Worker
-  class WorkersCannotBeStopped < StandardError; end
+  class WorkerStateNotChanged < StandardError; end
 
   attr_reader :id
 
   class << self
     def shutdown_all(options = {})
-      options[:timeout] ||= Bumbleworks.timeout
+      change_worker_state('stopped', options)
+    end
 
-      with_worker_state_enabled do
-        Bumbleworks.dashboard.worker_state = 'stopped'
-        start_time = Time.now
-        until worker_states.values.all? { |state| state == 'stopped' }
-          if (Time.now - start_time) > options[:timeout]
-            raise WorkersCannotBeStopped, "Worker states: #{worker_states.inspect}"
-          end
-          sleep 0.1
-        end
-      end
+    def pause_all(options = {})
+      change_worker_state('paused', options)
+    end
+
+    def unpause_all(options = {})
+      change_worker_state('running', options)
     end
 
     def worker_states
@@ -26,6 +23,20 @@ class Bumbleworks::Worker < Ruote::Worker
         hsh[info[0]] = info[1]['state']
         hsh
       }
+    end
+
+    def change_worker_state(new_state, options = {})
+      options[:timeout] ||= Bumbleworks.timeout
+      with_worker_state_enabled do
+        Bumbleworks.dashboard.worker_state = new_state
+        start_time = Time.now
+        until worker_states.values.all? { |state| state == new_state }
+          if (Time.now - start_time) > options[:timeout]
+            raise WorkerStateNotChanged, "Worker states: #{worker_states.inspect}"
+          end
+          sleep 0.1
+        end
+      end
     end
 
     def with_worker_state_enabled
