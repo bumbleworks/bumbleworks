@@ -16,6 +16,13 @@ describe 'Entity Module' do
       SecondNewClass = Class.new { include Bumbleworks::Entity }
       expect(Bumbleworks.entity_classes).to eq([:geese, FirstNewClass, SecondNewClass])
     end
+
+    it 'does not duplicate registered entities' do
+      Bumbleworks.entity_classes = [:geese]
+      class NewClass; include Bumbleworks::Entity; end
+      class NewClass; include Bumbleworks::Entity; end
+      expect(Bumbleworks.entity_classes).to eq([:geese, NewClass])
+    end
   end
 
   describe 'process control' do

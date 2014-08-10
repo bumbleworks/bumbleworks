@@ -1,7 +1,9 @@
 module Bumbleworks
   module Entity
     def self.included(klass)
-      Bumbleworks.entity_classes << klass
+      unless Bumbleworks.entity_classes.include? klass
+        Bumbleworks.entity_classes << klass
+      end
       klass.extend ClassMethods
     end
 
