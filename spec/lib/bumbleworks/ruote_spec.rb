@@ -391,6 +391,12 @@ describe Bumbleworks::Ruote do
       expect(described_class.dashboard.participant_list.size).to eq(1)
       expect(described_class.dashboard.participant_list.first.classname).to eq('Bumbleworks::StorageParticipant')
     end
+
+    it 'raises ProcessDefinition::NotFound if given process name does not exist' do
+      expect {
+        described_class.launch('gevalstumerfkabambph')
+      }.to raise_error(Bumbleworks::ProcessDefinition::NotFound)
+    end
   end
 
   describe '.reset!' do

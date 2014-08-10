@@ -43,7 +43,8 @@ module Bumbleworks
 
       def launch(name, *args)
         set_catchall_if_needed
-        dashboard.launch(dashboard.variables[name], *args)
+        definition = Bumbleworks::ProcessDefinition.find_by_name(name)
+        dashboard.launch(definition.tree, *args)
       end
 
       def cancel_process!(wfid, options = {})
