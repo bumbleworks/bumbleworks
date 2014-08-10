@@ -17,7 +17,7 @@ describe Bumbleworks::Worker do
     end
   end
 
-  describe '.change_worker_state' do
+  context 'with multiple workers' do
     let!(:workers) {
       2.times.map { |i|
         worker = described_class.new(context)
@@ -26,18 +26,77 @@ describe Bumbleworks::Worker do
       }
     }
 
-    it 'changes state of all workers' do
-      expect(workers.map(&:state)).to eq(['running', 'running'])
-      described_class.change_worker_state('paused')
-      wait_until { workers.all? { |w| w.state == 'paused' } }
+    describe '.worker_states' do
+      it 'returns the states of all active workers' do
+        subject.run_in_thread
+        expect(described_class.worker_states).to eq({
+          subject.id => 'running',
+          workers[0].id => 'running',
+          workers[1].id => 'running'
+        })
+      end
+
+      it 'does not include stopped or nil states' do
+        subject.run_in_thread
+        workers[0].shutdown
+        workers[1].instance_variable_set(:@state, nil)
+        workers[1].instance_variable_get(:@info).save_with_cleanup
+        expect(described_class.worker_states).to eq({
+          subject.id => 'running'
+        })
+      end
     end
 
-    it 'times out if worker states not changed in time' do
-      # Stub setting of worker state so workers are never stopped
-      allow(Bumbleworks.dashboard).to receive(:worker_state=)
-      expect {
-        described_class.change_worker_state('paused', :timeout => 0)
-      }.to raise_error(described_class::WorkerStateNotChanged)
+    describe '.info' do
+      it 'returns Bumbleworks.dashboard.worker_info' do
+        allow(Bumbleworks.dashboard).to receive(:worker_info).and_return(:bontron)
+        expect(described_class.info).to eq(:bontron)
+      end
+    end
+
+    describe '.forget_worker' do
+      it 'deletes worker info for given worker id' do
+        described_class.forget_worker(workers[1].id)
+        expect(described_class.info.keys).not_to include(workers[1].id)
+      end
+    end
+
+    describe '.purge_stale_worker_info' do
+      it 'deletes all worker info where state is stopped or nil' do
+        subject.run_in_thread
+        workers[0].shutdown
+        workers[1].instance_variable_set(:@state, nil)
+        workers[1].instance_variable_get(:@info).save_with_cleanup
+        subject_info = described_class.info[subject.id]
+        described_class.purge_stale_worker_info
+        expect(described_class.info).to eq({
+          subject.id => subject_info
+        })
+      end
+    end
+
+    describe '.change_worker_state' do
+      it 'changes state of all workers' do
+        expect(workers.map(&:state).uniq).to eq(['running'])
+        described_class.change_worker_state('paused')
+        expect(workers.map(&:state).uniq).to eq(['paused'])
+      end
+
+      it 'times out if worker states not changed in time' do
+        # Stub setting of worker state so workers are never stopped
+        allow(Bumbleworks.dashboard).to receive(:worker_state=)
+        expect {
+          described_class.change_worker_state('paused', :timeout => 0)
+        }.to raise_error(described_class::WorkerStateNotChanged)
+      end
+
+      it 'ignores already stopped workers' do
+        described_class.shutdown_all
+        subject.run_in_thread
+        described_class.change_worker_state('paused')
+        expect(subject.state).to eq('paused')
+        expect(workers.map(&:state)).to eq(['stopped', 'stopped'])
+      end
     end
   end
 

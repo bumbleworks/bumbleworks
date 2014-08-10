@@ -6,6 +6,10 @@ class Bumbleworks::Worker < Ruote::Worker
   attr_reader :id
 
   class << self
+    def info
+      Bumbleworks.dashboard.worker_info
+    end
+
     def shutdown_all(options = {})
       change_worker_state('stopped', options)
     end
@@ -20,9 +24,34 @@ class Bumbleworks::Worker < Ruote::Worker
 
     def worker_states
       Bumbleworks.dashboard.worker_info.inject({}) { |hsh, info|
-        hsh[info[0]] = info[1]['state']
+        id, state = info[0], info[1]['state']
+        if state && state != 'stopped'
+          hsh[id] = state
+        end
         hsh
       }
+    end
+
+    def forget_worker(id_to_delete)
+      purge_worker_info do |id, info|
+        id == id_to_delete
+      end
+    end
+
+    def purge_stale_worker_info
+      purge_worker_info do |id, info|
+        info['state'].nil? || info['state'] == 'stopped'
+      end
+    end
+
+    def purge_worker_info(&block)
+      doc = Bumbleworks.dashboard.storage.get('variables', 'workers')
+      doc['workers'] = doc['workers'].reject { |id, info|
+        block.call(id, info)
+      }
+      result = Bumbleworks.dashboard.storage.put(doc)
+      purge_stale_worker_info if result
+      info
     end
 
     def change_worker_state(new_state, options = {})
@@ -37,6 +66,7 @@ class Bumbleworks::Worker < Ruote::Worker
           sleep 0.1
         end
       end
+      return true
     end
 
     def with_worker_state_enabled
@@ -49,14 +79,25 @@ class Bumbleworks::Worker < Ruote::Worker
   def initialize(*args, &block)
     super
     @id = SecureRandom.uuid
-    @info = @info && Info.new(self)
-    @info.save_with_cleanup
+    if @info
+      @info = Info.new(self)
+      save_info
+    end
+  end
+
+  def save_info
+    @info.save_with_cleanup if @info
+  end
+
+  def shutdown
+    super
+    save_info
   end
 
   def determine_state
     if @context['worker_state_enabled']
       super
-      @info.save_with_cleanup
+      save_info
     end
   end
 
