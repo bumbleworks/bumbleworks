@@ -119,8 +119,9 @@ describe Bumbleworks::Worker do
   end
 
   describe '.shutdown_all' do
-    it 'changes all worker states to stopped' do
-      expect(described_class).to receive(:change_worker_state).with('stopped', {})
+    it 'changes worker states to stopped, then resets to running' do
+      expect(described_class).to receive(:change_worker_state).with('stopped', {}).ordered
+      expect(described_class).to receive(:change_worker_state).with('running', {}).ordered
       described_class.shutdown_all
     end
   end

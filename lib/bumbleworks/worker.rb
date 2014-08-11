@@ -12,6 +12,7 @@ class Bumbleworks::Worker < Ruote::Worker
 
     def shutdown_all(options = {})
       change_worker_state('stopped', options)
+      change_worker_state('running', options)
     end
 
     def pause_all(options = {})
