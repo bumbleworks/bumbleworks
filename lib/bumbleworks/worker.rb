@@ -103,8 +103,9 @@ class Bumbleworks::Worker < Ruote::Worker
 
   class Info < Ruote::Worker::Info
     def <<(msg)
+      last_save = @last_save
       super
-      cleanup_saved_info if Time.now > @last_save + 60
+      cleanup_saved_info if Time.now > last_save + 60
     end
 
     def save_with_cleanup
