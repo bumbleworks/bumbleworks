@@ -38,7 +38,7 @@ describe Bumbleworks::Worker do
         subject.run_in_thread
         workers[0].shutdown
         workers[1].instance_variable_set(:@state, nil)
-        workers[1].instance_variable_get(:@info).save_with_cleanup
+        workers[1].instance_variable_get(:@info).save
         expect(described_class.worker_states).to eq({
           subject.id => 'running'
         })
@@ -64,7 +64,7 @@ describe Bumbleworks::Worker do
         subject.run_in_thread
         workers[0].shutdown
         workers[1].instance_variable_set(:@state, nil)
-        workers[1].instance_variable_get(:@info).save_with_cleanup
+        workers[1].instance_variable_get(:@info).save
         subject_info = described_class.info[subject.id]
         described_class.purge_stale_worker_info
         expect(described_class.info).to eq({

@@ -83,7 +83,7 @@ class Bumbleworks::Worker < Ruote::Worker
   end
 
   def save_info
-    @info.save_with_cleanup if @info
+    @info.save if @info
   end
 
   def shutdown
@@ -99,33 +99,51 @@ class Bumbleworks::Worker < Ruote::Worker
   end
 
   class Info < Ruote::Worker::Info
-    def <<(msg)
-      last_save = @last_save
-      super
-      cleanup_saved_info if Time.now > last_save + 60
-    end
+    def save
+      doc = @worker.storage.get('variables', 'workers') || {}
 
-    def save_with_cleanup
-      save
-      cleanup_saved_info
-    end
+      doc['type'] = 'variables'
+      doc['_id'] = 'workers'
 
-    def cleanup_saved_info
-      key = [@worker.name, @ip.gsub(/\./, '_'), $$.to_s].join('/')
-      doc = @worker.storage.get('variables', 'workers')
-      existing_worker_info = doc['workers'].delete(key)
-      if existing_worker_info
-        doc['workers'][@worker.id] = existing_worker_info.merge({
-          'state' => @worker.state,
-          'name' => @worker.name
-        })
-        result = @worker.storage.put(doc)
-        # result will be nil if put succeeded; if it's not,
-        # let's try again
-        cleanup_saved_info if result
-      else
-        cleanup_saved_info
-      end
+      now = Time.now
+
+      @msgs = @msgs.drop_while { |msg|
+        Time.parse(msg['processed_at']) < now - 3600
+      }
+      mm = @msgs.drop_while { |msg|
+        Time.parse(msg['processed_at']) < now - 60
+      }
+
+      hour_count = @msgs.size < 1 ? 1 : @msgs.size
+      minute_count = mm.size < 1 ? 1 : mm.size
+
+      (doc['workers'] ||= {})[@worker.id] = {
+
+        'class' => @worker.class.to_s,
+        'name' => @worker.name,
+        'ip' => @ip,
+        'hostname' => @hostname,
+        'pid' => $$,
+        'system' => @system,
+        'put_at' => Ruote.now_to_utc_s,
+        'uptime' => Time.now - @since,
+        'state' => @worker.state,
+
+        'processed_last_minute' =>
+          mm.size,
+        'wait_time_last_minute' =>
+          mm.inject(0.0) { |s, m| s + m['wait_time'] } / minute_count.to_f,
+        'processed_last_hour' =>
+          @msgs.size,
+        'wait_time_last_hour' =>
+          @msgs.inject(0.0) { |s, m| s + m['wait_time'] } / hour_count.to_f
+      }
+
+      r = @worker.storage.put(doc)
+
+      @last_save = Time.now
+
+      save if r != nil
     end
   end
 end
