@@ -48,7 +48,6 @@ module Bumbleworks
       end
 
       def cancel_process!(wfid, options = {})
-        options[:timeout] ||= Bumbleworks.timeout
         unless options[:method] == :kill
           options[:method] = :cancel
         end
@@ -59,14 +58,12 @@ module Bumbleworks
           storage.remove_process(wfid)
         end
 
-        start_time = Time.now
-        while dashboard.process(wfid)
-          if (Time.now - start_time) > options[:timeout]
-            error_type = options[:method] == :cancel ? CancelTimeout : KillTimeout
-            raise error_type, "Process #{options[:method]} for wfid '#{wfid}' taking too long.  Errors: #{dashboard.errors(wfid)}"
-          end
-          sleep 0.1
+        Bumbleworks::Support.wait_until(options) do
+          dashboard.process(wfid).nil?
         end
+      rescue Bumbleworks::Support::WaitTimeout
+        error_type = options[:method] == :cancel ? CancelTimeout : KillTimeout
+        raise error_type, "Process #{options[:method]} for wfid '#{wfid}' taking too long.  Errors: #{dashboard.errors(wfid)}"
       end
 
       def kill_process!(wfid, options = {})
@@ -74,15 +71,13 @@ module Bumbleworks
       end
 
       def cancel_all_processes!(options = {})
-        options[:timeout] ||= Bumbleworks.timeout
         unless options[:method] == :kill
           options[:method] = :cancel
         end
 
         notified_process_wfids = []
 
-        start_time = Time.now
-        while dashboard.process_wfids.count > 0
+        Bumbleworks::Support.wait_until(options) do
           new_process_wfids = dashboard.process_wfids - notified_process_wfids
           if options[:method] == :cancel || !options[:force]
             send_cancellation_message(options[:method], new_process_wfids)
@@ -90,13 +85,11 @@ module Bumbleworks
             storage.clear
           end
           notified_process_wfids += new_process_wfids
-
-          if (Time.now - start_time) > options[:timeout]
-            error_type = options[:method] == :cancel ? CancelTimeout : KillTimeout
-            raise error_type, "Process #{options[:method]} taking too long - #{dashboard.process_wfids.count} processes remain.  Errors: #{dashboard.errors}"
-          end
-          sleep 0.1
+          dashboard.process_wfids.count == 0
         end
+      rescue Bumbleworks::Support::WaitTimeout
+        error_type = options[:method] == :cancel ? CancelTimeout : KillTimeout
+        raise error_type, "Process #{options[:method]} taking too long - #{dashboard.process_wfids.count} processes remain.  Errors: #{dashboard.errors}"
       end
 
       def send_cancellation_message(method, process_wfids)

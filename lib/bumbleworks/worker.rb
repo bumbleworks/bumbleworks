@@ -55,18 +55,15 @@ class Bumbleworks::Worker < Ruote::Worker
     end
 
     def change_worker_state(new_state, options = {})
-      options[:timeout] ||= Bumbleworks.timeout
       with_worker_state_enabled do
         Bumbleworks.dashboard.worker_state = new_state
-        start_time = Time.now
-        until worker_states.values.all? { |state| state == new_state }
-          if (Time.now - start_time) > options[:timeout]
-            raise WorkerStateNotChanged, "Worker states: #{worker_states.inspect}"
-          end
-          sleep 0.1
+        Bumbleworks::Support.wait_until(options) do
+          worker_states.values.all? { |state| state == new_state }
         end
       end
       return true
+    rescue Bumbleworks::Support::WaitTimeout
+      raise WorkerStateNotChanged, "Worker states: #{worker_states.inspect}"
     end
 
     def with_worker_state_enabled

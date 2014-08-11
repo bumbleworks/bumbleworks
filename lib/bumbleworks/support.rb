@@ -3,6 +3,7 @@ module Bumbleworks
   # could also be accomplished by monkey-patching String class.
   module Support
     module_function
+    class WaitTimeout < StandardError; end
 
     def camelize(string)
       string = string.sub(/^[a-z\d]*/) { $&.capitalize }
@@ -49,6 +50,17 @@ module Bumbleworks
     def titleize(string)
       return nil if string.nil?
       humanize(string).gsub(/\b('?[a-z])/) { $1.capitalize }
+    end
+
+    def wait_until(options = {}, &block)
+      options[:timeout] ||= Bumbleworks.timeout
+      start_time = Time.now
+      until block.call
+        if (Time.now - start_time) > options[:timeout]
+          raise WaitTimeout
+        end
+        sleep 0.1
+      end
     end
   end
 end
