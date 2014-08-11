@@ -59,6 +59,26 @@ describe Bumbleworks::Worker do
       end
     end
 
+    describe '.refresh_worker_info' do
+      it 'times out if info is not updated in time' do
+        allow(described_class).to receive(:info).and_return({
+          :dummy_id => { 'put_at' => (Time.now - 60).to_s }
+        })
+        expect {
+          described_class.refresh_worker_info(:timeout => 0.1)
+        }.to raise_error(Bumbleworks::Support::WaitTimeout)
+      end
+
+      it 'refreshes worker info' do
+        subject.run_in_thread
+        doc = subject.storage.get('variables', 'workers')
+        doc['workers'][subject.id]['put_at'] = (Time.now - 30).to_s
+        subject.storage.put(doc)
+        described_class.refresh_worker_info
+        expect(Time.parse(subject.info['put_at'])).to be_within(1).of(Time.now)
+      end
+    end
+
     describe '.purge_stale_worker_info' do
       it 'deletes all worker info where state is stopped or nil' do
         subject.run_in_thread
@@ -123,6 +143,12 @@ describe Bumbleworks::Worker do
     it 'returns generated uuid' do
       allow(SecureRandom).to receive(:uuid).and_return('smokeeeeys')
       expect(subject.id).to eq('smokeeeeys')
+    end
+  end
+
+  describe '#info' do
+    it 'returns worker info for worker id' do
+      expect(subject.info).to eq(described_class.info[subject.id])
     end
   end
 end

@@ -66,6 +66,16 @@ class Bumbleworks::Worker < Ruote::Worker
       raise WorkerStateNotChanged, "Worker states: #{worker_states.inspect}"
     end
 
+    def refresh_worker_info(options = {})
+      with_worker_state_enabled do
+        Bumbleworks::Support.wait_until(options) do
+          info.all? { |id, worker_info|
+            Time.parse(worker_info['put_at']) > Time.now - 1
+          }
+        end
+      end
+    end
+
     def with_worker_state_enabled
       Bumbleworks.dashboard.context['worker_state_enabled'] = true
       yield
@@ -96,6 +106,10 @@ class Bumbleworks::Worker < Ruote::Worker
       super
       save_info
     end
+  end
+
+  def info
+    self.class.info[id]
   end
 
   class Info < Ruote::Worker::Info
