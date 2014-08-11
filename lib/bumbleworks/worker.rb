@@ -70,7 +70,8 @@ class Bumbleworks::Worker < Ruote::Worker
       with_worker_state_enabled do
         Bumbleworks::Support.wait_until(options) do
           info.all? { |id, worker_info|
-            Time.parse(worker_info['put_at']) > Time.now - 1
+            worker_info['state'] == 'stopped' ||
+              Time.parse(worker_info['put_at']) > Time.now - 1
           }
         end
       end
