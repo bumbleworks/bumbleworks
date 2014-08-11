@@ -1,5 +1,3 @@
-require 'pry'
-
 describe Bumbleworks::Worker do
   let(:context) { Bumbleworks.dashboard.context }
   subject { described_class.new(context) }
