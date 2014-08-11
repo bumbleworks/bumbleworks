@@ -16,6 +16,7 @@ require "bumbleworks/workitem"
 require "bumbleworks/tracker"
 require "bumbleworks/schedule"
 require "bumbleworks/user"
+require "bumbleworks/worker_manager"
 
 # default implementations
 require "bumbleworks/simple_logger"
