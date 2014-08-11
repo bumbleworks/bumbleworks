@@ -1,3 +1,3 @@
 module Bumbleworks
-  VERSION = "0.0.82"
+  VERSION = "0.0.83"
 end
