@@ -7,11 +7,14 @@ class Bumbleworks::Worker < Ruote::Worker
 
   class << self
     def info
-      Bumbleworks.dashboard.worker_info
+      Bumbleworks.dashboard.worker_info || {}
     end
 
     def shutdown_all(options = {})
+      # First, send all running workers a message to stop
       change_worker_state('stopped', options)
+      # Now ensure that future started workers will be started
+      # in "running" mode instead of automatically stopped
       change_worker_state('running', options)
     end
 
@@ -24,7 +27,7 @@ class Bumbleworks::Worker < Ruote::Worker
     end
 
     def worker_states
-      Bumbleworks.dashboard.worker_info.inject({}) { |hsh, info|
+      info.inject({}) { |hsh, info|
         id, state = info[0], info[1]['state']
         if state && state != 'stopped'
           hsh[id] = state
@@ -47,6 +50,7 @@ class Bumbleworks::Worker < Ruote::Worker
 
     def purge_worker_info(&block)
       doc = Bumbleworks.dashboard.storage.get('variables', 'workers')
+      return unless doc
       doc['workers'] = doc['workers'].reject { |id, info|
         block.call(id, info)
       }

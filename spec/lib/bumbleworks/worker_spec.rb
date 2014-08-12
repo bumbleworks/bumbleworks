@@ -50,6 +50,11 @@ describe Bumbleworks::Worker do
         allow(Bumbleworks.dashboard).to receive(:worker_info).and_return(:bontron)
         expect(described_class.info).to eq(:bontron)
       end
+
+      it 'returns empty hash if worker_info is nil' do
+        allow(Bumbleworks.dashboard).to receive(:worker_info).and_return(nil)
+        expect(described_class.info).to eq({})
+      end
     end
 
     describe '.forget_worker' do
@@ -77,6 +82,13 @@ describe Bumbleworks::Worker do
         described_class.refresh_worker_info
         expect(Time.parse(subject.info['put_at'])).to be_within(1).of(Time.now)
       end
+
+      it 'returns without issue if info empty' do
+        allow(described_class).to receive(:info).and_return({})
+        expect {
+          described_class.refresh_worker_info
+        }.not_to raise_error
+      end
     end
 
     describe '.purge_stale_worker_info' do
@@ -90,6 +102,12 @@ describe Bumbleworks::Worker do
         expect(described_class.info).to eq({
           subject.id => subject_info
         })
+      end
+
+      it 'returns without issue if no workers' do
+        doc = Bumbleworks.dashboard.storage.get('variables', 'workers')
+        Bumbleworks.dashboard.storage.delete(doc)
+        described_class.purge_stale_worker_info
       end
     end
 
@@ -114,6 +132,13 @@ describe Bumbleworks::Worker do
         described_class.change_worker_state('paused')
         expect(subject.state).to eq('paused')
         expect(workers.map(&:state)).to eq(['stopped', 'stopped'])
+      end
+
+      it 'does nothing if no worker info' do
+        allow(described_class).to receive(:info).and_return({})
+        expect {
+          described_class.change_worker_state('paused')
+        }.not_to raise_error
       end
     end
   end
