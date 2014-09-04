@@ -7,6 +7,7 @@ module Bumbleworks
     end
 
     def ==(other)
+      return false unless other.is_a?(self.class)
       raw_workitem == other.raw_workitem
     end
 

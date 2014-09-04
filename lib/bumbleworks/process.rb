@@ -47,14 +47,14 @@ module Bumbleworks
     alias_method :wfid, :id
 
     def <=>(other)
-      unless other.respond_to?(:wfid)
+      unless other.is_a?(self.class)
         raise ArgumentError, "comparison of Bumbleworks::Process with #{other.class} failed"
       end
       wfid <=> other.wfid
     end
 
     def ==(other)
-      return false unless other.respond_to?(:wfid)
+      return false unless other.is_a?(self.class)
       wfid == other.wfid
     end
 

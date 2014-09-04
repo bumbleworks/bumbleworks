@@ -23,6 +23,12 @@ describe Bumbleworks::Expression do
       exp2 = described_class.new(double('FlowExpression', :fei => double(:expid => '4')))
       expect(exp1).not_to eq(exp2)
     end
+
+    it 'returns false if other object has is not an expression' do
+      exp1 = described_class.new(fexp)
+      exp2 = double('not an expression')
+      expect(exp1).not_to eq(exp2)
+    end
   end
 
   describe '#expid' do

@@ -10,6 +10,12 @@ describe Bumbleworks::Workitem do
       bw2 = described_class.new('in_da_sky')
       expect(bw1).to eq(bw2)
     end
+
+    it 'returns false if other object is not a workitem' do
+      bw1 = described_class.new('in_da_sky')
+      bw2 = double('not a workitem')
+      expect(bw1).not_to eq(bw2)
+    end
   end
 
   describe '#has_entity_fields?' do

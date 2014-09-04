@@ -16,6 +16,7 @@ module Bumbleworks
     end
 
     def ==(other)
+      return false unless other.is_a?(self.class)
       @fei == other.fei
     end
 

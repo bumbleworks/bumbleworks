@@ -45,6 +45,12 @@ describe Bumbleworks::Schedule do
       schedule2 = described_class.new({ '_id' => 'snooglebunk', 'yeah' => 'whatevs' })
       expect(schedule1).not_to eq(schedule2)
     end
+
+    it 'returns false if other object is not a schedule' do
+      schedule1 = described_class.new({ '_id' => 'snaggletooth', 'who' => 'cares' })
+      schedule2 = double('not a schedule')
+      expect(schedule1).not_to eq(schedule2)
+    end
   end
 
   describe '#wfid' do
