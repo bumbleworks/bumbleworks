@@ -356,6 +356,13 @@ describe Bumbleworks::Process do
       bp2 = described_class.new('in_da_sky')
       expect(bp1).to eq(bp2)
     end
+
+    it 'returns false if other object does not respond to wfid' do
+      bp1 = described_class.new('in_da_sky')
+      bp2 = double('not a process')
+      allow(bp2).to receive(:respond_to?).with(:wfid).and_return(false)
+      expect(bp1).not_to eq(bp2)
+    end
   end
 
   describe '#<=>' do
@@ -366,6 +373,13 @@ describe Bumbleworks::Process do
       expect(bp1 <=> bp2).to eq -1
       expect(bp2 <=> bp3).to eq 1
       expect(bp3 <=> bp1).to eq 0
+    end
+
+    it 'raises ArgumentError if other object does not respond to wfid' do
+      bp1 = described_class.new('in_da_sky')
+      bp2 = double('not a process')
+      allow(bp2).to receive(:respond_to?).with(:wfid).and_return(false)
+      expect { bp1 <=> bp2 }.to raise_error(ArgumentError, "comparison of Bumbleworks::Process with RSpec::Mocks::Double failed")
     end
   end
 
