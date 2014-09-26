@@ -280,4 +280,29 @@ describe Bumbleworks do
       expect(described_class.store_history?).to be_falsy
     end
   end
+
+  describe '.errors' do
+    it 'returns all errors as ErrorRecord instances' do
+      Bumbleworks.start_worker!
+      Bumbleworks.define_process 'error_process' do
+        concurrence do
+          error 'first error'
+          error 'second error'
+        end
+      end
+      bp1 = Bumbleworks.launch!('error_process')
+      bp2 = Bumbleworks.launch!('error_process')
+      Bumbleworks.dashboard.wait_for('error_intercepted')
+      errors = described_class.errors
+      expect(errors.map(&:class).uniq).to eq([
+        Bumbleworks::Process::ErrorRecord
+      ])
+      expect(errors.map(&:message)).to match_array([
+        'first error',
+        'second error',
+        'first error',
+        'second error'
+      ])
+    end
+  end
 end

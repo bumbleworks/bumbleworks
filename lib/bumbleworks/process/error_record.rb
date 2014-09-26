@@ -3,6 +3,9 @@ module Bumbleworks
     class ErrorRecord
       attr_reader :process_error
 
+      extend Forwardable
+      delegate [:fei, :workitem, :wfid] => :process_error
+
       # The initializer takes a Ruote::ProcessError instance.
       def initialize(process_error)
         @process_error = process_error
@@ -15,15 +18,14 @@ module Bumbleworks
         Bumbleworks.dashboard.replay_at_error(@process_error)
       end
 
-      # Returns the workitem at the position where this error occurred.
-      def workitem
-        @process_error.workitem
+      # Returns the expression where this error occurred.
+      def expression
+        Bumbleworks::Expression.from_fei(fei)
       end
 
-      # Returns the FlowExpressionId of the expression where this error
-      # occurred.
-      def fei
-        @process_error.fei
+      # Returns the process in which this error occurred.
+      def process
+        Bumbleworks::Process.new(wfid)
       end
 
       # Returns the class name of the error that was actually raised

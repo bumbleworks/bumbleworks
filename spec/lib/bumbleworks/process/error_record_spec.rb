@@ -49,6 +49,21 @@ describe Bumbleworks::Process::ErrorRecord do
     end
   end
 
+  describe '#process' do
+    it 'returns the process in which the error occurred' do
+      expect(@error.process).to eq @process
+    end
+  end
+
+  describe '#expression' do
+    it 'returns the expression from when the error occurred' do
+      expression = @error.expression
+      expect(expression).to be_a(Bumbleworks::Expression)
+      expect(expression.process).to eq @process
+      expect(expression.expid).to eq '0_0'
+    end
+  end
+
   describe '#message' do
     it 'returns the original error message' do
       expect(@error.message).to eq 'Oh crumb.'

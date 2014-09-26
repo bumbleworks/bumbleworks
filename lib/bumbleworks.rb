@@ -186,6 +186,18 @@ module Bumbleworks
       Bumbleworks::Process.new(pid)
     end
 
+    # @public
+    # Instantiates a new Bumbleworks::Process::ErrorRecord for each error
+    # in the Ruote storage.
+    #
+    def errors
+      Bumbleworks.dashboard.context.storage.get_many('errors').map { |err|
+        Bumbleworks::Process::ErrorRecord.new(
+          ::Ruote::ProcessError.new(err)
+        )
+      }
+    end
+
   private
 
     def extract_entity_from_fields!(fields)
