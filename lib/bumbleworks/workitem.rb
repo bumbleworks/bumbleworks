@@ -1,14 +1,17 @@
 module Bumbleworks
   class Workitem
+    include Support::WrapperComparison
+
     attr_reader :raw_workitem
+
+    extend Forwardable
 
     def initialize(raw_workitem)
       @raw_workitem = raw_workitem
     end
 
-    def ==(other)
-      return false unless other.is_a?(self.class)
-      raw_workitem == other.raw_workitem
+    def identifier_for_comparison
+      raw_workitem
     end
 
     def entity(options = {})

@@ -11,24 +11,9 @@ describe Bumbleworks::Expression do
     end
   end
 
-  describe '#==' do
-    it 'returns true if other object has same flow expression id' do
-      exp1 = described_class.new(fexp)
-      exp2 = described_class.new(double('FlowExpression', :fei => fei))
-      expect(exp1).to eq(exp2)
-    end
-
-    it 'returns false if other object has different flow expression id' do
-      exp1 = described_class.new(fexp)
-      exp2 = described_class.new(double('FlowExpression', :fei => double(:expid => '4')))
-      expect(exp1).not_to eq(exp2)
-    end
-
-    it 'returns false if other object has is not an expression' do
-      exp1 = described_class.new(fexp)
-      exp2 = double('not an expression')
-      expect(exp1).not_to eq(exp2)
-    end
+  it_behaves_like "comparable" do
+    subject { described_class.new(fexp) }
+    let(:other) { described_class.new(fexp) }
   end
 
   describe '#expid' do

@@ -36,6 +36,11 @@ describe Bumbleworks::Process do
     end
   end
 
+  it_behaves_like "comparable" do
+    subject { described_class.new('watchful_egret') }
+    let(:other) { described_class.new('lets_dance_yo') }
+  end
+
   describe '.all' do
     it 'returns sorted and filtered array of instances for all processes' do
       expect(described_class).to receive(:ids).with(:some_options).and_return([:a, :b, :c])

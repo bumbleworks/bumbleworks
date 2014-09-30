@@ -1,6 +1,7 @@
 module Bumbleworks
   class Schedule
     attr_reader :id, :original_hash
+    include Support::WrapperComparison
 
     class << self
       def all
@@ -17,11 +18,6 @@ module Bumbleworks
     def initialize(schedule_hash)
       @original_hash = schedule_hash
       @id = @original_hash['_id']
-    end
-
-    def ==(other)
-      return false unless other.is_a?(self.class)
-      @id == other.id
     end
 
     def wfid

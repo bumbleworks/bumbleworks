@@ -6,6 +6,7 @@ module Bumbleworks
     class EntityConflict < StandardError; end
 
     include WorkitemEntityStorage
+    include Support::WrapperComparison
 
     attr_reader :id
 
@@ -51,11 +52,6 @@ module Bumbleworks
         raise ArgumentError, "comparison of Bumbleworks::Process with #{other.class} failed"
       end
       wfid <=> other.wfid
-    end
-
-    def ==(other)
-      return false unless other.is_a?(self.class)
-      wfid == other.wfid
     end
 
     def entity_workitem

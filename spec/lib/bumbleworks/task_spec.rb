@@ -18,6 +18,14 @@ describe Bumbleworks::Task do
     let(:storage_workitem) { Bumbleworks::Workitem.new(workflow_item) }
   end
 
+  it_behaves_like "comparable" do
+    subject { described_class.new(workflow_item) }
+    let(:other) { described_class.new(workflow_item) }
+    before(:each) do
+      allow(workflow_item).to receive(:sid).and_return('blah-123-blah')
+    end
+  end
+
   describe '#not_completable_error_message' do
     it 'defaults to generic message' do
       task = described_class.new(workflow_item)

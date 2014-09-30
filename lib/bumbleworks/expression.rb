@@ -1,6 +1,9 @@
 module Bumbleworks
   class Expression
+    include Support::WrapperComparison
+
     attr_reader :expid, :fei
+    alias_method :id, :expid
 
     class << self
       def from_fei(fei)
@@ -13,11 +16,6 @@ module Bumbleworks
       @flow_expression = flow_expression
       @fei = @flow_expression.fei
       @expid = @fei.expid
-    end
-
-    def ==(other)
-      return false unless other.is_a?(self.class)
-      @fei == other.fei
     end
 
     # Returns a Bumbleworks::Process instance for the expression's

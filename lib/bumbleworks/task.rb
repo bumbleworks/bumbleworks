@@ -5,6 +5,7 @@ require "bumbleworks/task/finder"
 module Bumbleworks
   class Task
     include WorkitemEntityStorage
+    include Support::WrapperComparison
 
     class AlreadyClaimed < StandardError; end
     class MissingWorkitem < StandardError; end

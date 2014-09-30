@@ -5,6 +5,11 @@ describe Bumbleworks::Tracker do
     allow(Bumbleworks.dashboard).to receive_messages(:get_trackers => fake_trackers)
   end
 
+  it_behaves_like "comparable" do
+    subject { described_class.new('a_tracker') }
+    let(:other) { described_class.new('another_tracker') }
+  end
+
   describe '.all' do
     it 'returns instances for each tracker in system' do
       trackers = described_class.all

@@ -1,6 +1,7 @@
 module Bumbleworks
   class Tracker
     attr_reader :id, :original_hash
+    include Support::WrapperComparison
 
     class << self
       def all

@@ -8,6 +8,11 @@ describe Bumbleworks::Schedule do
     allow(Bumbleworks.dashboard).to receive_messages(:schedules => fake_schedules)
   end
 
+  it_behaves_like "comparable" do
+    subject { described_class.new({ '_id' => 'fooz'}) }
+    let(:other) { described_class.new({ '_id' => 'barn'}) }
+  end
+
   describe '.all' do
     it 'returns instances for each schedule in system' do
       schedules = described_class.all
@@ -30,26 +35,6 @@ describe Bumbleworks::Schedule do
     it 'sets schedule id and fetches original_hash from dashboard' do
       expect(subject.id).to eq(fake_schedule['_id'])
       expect(subject.original_hash).to eq(fake_schedule)
-    end
-  end
-
-  describe '#==' do
-    it 'returns true if other object has same original hash _id' do
-      schedule1 = described_class.new({ '_id' => 'snaggletooth', 'who' => 'cares' })
-      schedule2 = described_class.new({ '_id' => 'snaggletooth', 'yeah' => 'whatevs' })
-      expect(schedule1).to eq(schedule2)
-    end
-
-    it 'returns false if other object has different original hash _id' do
-      schedule1 = described_class.new({ '_id' => 'snaggletooth', 'who' => 'cares' })
-      schedule2 = described_class.new({ '_id' => 'snooglebunk', 'yeah' => 'whatevs' })
-      expect(schedule1).not_to eq(schedule2)
-    end
-
-    it 'returns false if other object is not a schedule' do
-      schedule1 = described_class.new({ '_id' => 'snaggletooth', 'who' => 'cares' })
-      schedule2 = double('not a schedule')
-      expect(schedule1).not_to eq(schedule2)
     end
   end
 
