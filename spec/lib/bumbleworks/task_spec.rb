@@ -787,6 +787,15 @@ describe Bumbleworks::Task do
         task.claim(:doctor_claim)
       end
 
+      it 'skips callbacks if requested' do
+        task = described_class.new(workflow_item)
+        allow(task).to receive(:log)
+        expect(task).to receive(:before_claim).never
+        expect(task).to receive(:set_claimant)
+        expect(task).to receive(:after_claim).never
+        task.claim(:doctor_claim, :skip_callbacks => true)
+      end
+
       it 'logs event' do
         log_entry = Bumbleworks.logger.entries.last[:entry]
         expect(log_entry[:action]).to eq(:claim)
@@ -836,6 +845,13 @@ describe Bumbleworks::Task do
         @task.release
       end
 
+      it 'skips callbacks if requested' do
+        expect(@task).to receive(:call_before_hooks).never
+        expect(@task).to receive(:set_claimant)
+        expect(@task).to receive(:call_after_hooks).never
+        @task.release(:skip_callbacks => true)
+      end
+
       it 'logs event' do
         @task.release
         log_entry = Bumbleworks.logger.entries.last[:entry]
@@ -873,6 +889,15 @@ describe Bumbleworks::Task do
         expect(task).to receive(:update_workitem).ordered
         expect(task).to receive(:call_after_hooks).with(:update, :argue_mints).ordered
         task.update(:argue_mints)
+      end
+
+      it 'skips callbacks if requested' do
+        task = described_class.new(workflow_item)
+        allow(task).to receive(:log)
+        expect(task).to receive(:call_before_hooks).never
+        expect(task).to receive(:update_workitem)
+        expect(task).to receive(:call_after_hooks).never
+        task.update({:actual => :params}, {:skip_callbacks => true})
       end
 
       it 'reloads after updating workitem' do
@@ -943,6 +968,15 @@ describe Bumbleworks::Task do
         expect(task).to receive(:call_after_hooks).with(:complete, :argue_mints).ordered
         expect(task).to receive(:call_after_hooks).with(:update, :argue_mints).ordered
         task.complete(:argue_mints)
+      end
+
+      it 'skips callbacks if requested' do
+        task = described_class.new(workflow_item)
+        allow(task).to receive(:log)
+        expect(task).to receive(:call_before_hooks).never
+        expect(task).to receive(:proceed_workitem)
+        expect(task).to receive(:call_after_hooks).never
+        task.complete({:actual => :params}, {:skip_callbacks => true})
       end
 
       it 'logs event' do

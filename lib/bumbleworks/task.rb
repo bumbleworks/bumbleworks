@@ -108,25 +108,25 @@ module Bumbleworks
       call_hooks(:after, action, *args)
     end
 
-    def with_hooks(action, *args, &block)
-      call_before_hooks(action, *args)
+    def with_hooks(action, metadata, options = {})
+      call_before_hooks(action, metadata) unless options[:skip_callbacks]
       yield
-      call_after_hooks(action, *args)
+      call_after_hooks(action, metadata) unless options[:skip_callbacks]
     end
 
     # update workitem with changes to fields & params
-    def update(metadata = {})
-      with_hooks(:update, metadata) do
+    def update(metadata = {}, options = {})
+      with_hooks(:update, metadata, options) do
         update_workitem
         log(:update, metadata)
       end
     end
 
     # proceed workitem (saving changes to fields)
-    def complete(metadata = {})
+    def complete(metadata = {}, options = {})
       raise NotCompletable.new(not_completable_error_message) unless completable?
-      with_hooks(:update, metadata) do
-        with_hooks(:complete, metadata) do
+      with_hooks(:update, metadata, options) do
+        with_hooks(:complete, metadata, options) do
           proceed_workitem
           log(:complete, metadata)
         end
@@ -144,8 +144,8 @@ module Bumbleworks
     end
 
     # Claim task and assign token to claimant
-    def claim(token)
-      with_hooks(:claim, token) do
+    def claim(token, options = {})
+      with_hooks(:claim, token, options) do
         set_claimant(token)
         log(:claim)
       end
@@ -157,9 +157,9 @@ module Bumbleworks
     end
 
     # release claim on task.
-    def release
+    def release(options = {})
       current_claimant = claimant
-      with_hooks(:release, current_claimant) do
+      with_hooks(:release, current_claimant, options) do
         log(:release)
         set_claimant(nil)
       end
