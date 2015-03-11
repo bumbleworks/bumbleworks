@@ -1,9 +1,10 @@
 require 'securerandom'
+require_relative "worker/info"
 
 class Bumbleworks::Worker < Ruote::Worker
   class WorkerStateNotChanged < StandardError; end
 
-  attr_reader :id
+  attr_reader :id, :pid, :ip, :hostname, :system, :launched_at
 
   class << self
     def info
@@ -34,29 +35,6 @@ class Bumbleworks::Worker < Ruote::Worker
         end
         hsh
       }
-    end
-
-    def forget_worker(id_to_delete)
-      purge_worker_info do |id, info|
-        id == id_to_delete
-      end
-    end
-
-    def purge_stale_worker_info
-      purge_worker_info do |id, info|
-        info['state'].nil? || info['state'] == 'stopped'
-      end
-    end
-
-    def purge_worker_info(&block)
-      doc = Bumbleworks.dashboard.storage.get('variables', 'workers')
-      return unless doc
-      doc['workers'] = doc['workers'].reject { |id, info|
-        block.call(id, info)
-      }
-      result = Bumbleworks.dashboard.storage.put(doc)
-      purge_stale_worker_info if result
-      info
     end
 
     def change_worker_state(new_state, options = {})
@@ -91,7 +69,14 @@ class Bumbleworks::Worker < Ruote::Worker
 
   def initialize(*args, &block)
     super
+    @pid = Process.pid
     @id = SecureRandom.uuid
+    @launched_at = Time.now
+
+    @ip = Ruote.local_ip
+    @hostname = Socket.gethostname
+    @system = `uname -a`.strip rescue nil
+
     if @info
       @info = Info.new(self)
       save_info
@@ -116,54 +101,5 @@ class Bumbleworks::Worker < Ruote::Worker
 
   def info
     self.class.info[id]
-  end
-
-  class Info < Ruote::Worker::Info
-    def save
-      doc = @worker.storage.get('variables', 'workers') || {}
-
-      doc['type'] = 'variables'
-      doc['_id'] = 'workers'
-
-      now = Time.now
-
-      @msgs = @msgs.drop_while { |msg|
-        Time.parse(msg['processed_at']) < now - 3600
-      }
-      mm = @msgs.drop_while { |msg|
-        Time.parse(msg['processed_at']) < now - 60
-      }
-
-      hour_count = @msgs.size < 1 ? 1 : @msgs.size
-      minute_count = mm.size < 1 ? 1 : mm.size
-
-      (doc['workers'] ||= {})[@worker.id] = {
-
-        'class' => @worker.class.to_s,
-        'name' => @worker.name,
-        'ip' => @ip,
-        'hostname' => @hostname,
-        'pid' => $$,
-        'system' => @system,
-        'put_at' => Ruote.now_to_utc_s,
-        'uptime' => Time.now - @since,
-        'state' => @worker.state,
-
-        'processed_last_minute' =>
-          mm.size,
-        'wait_time_last_minute' =>
-          mm.inject(0.0) { |s, m| s + m['wait_time'] } / minute_count.to_f,
-        'processed_last_hour' =>
-          @msgs.size,
-        'wait_time_last_hour' =>
-          @msgs.inject(0.0) { |s, m| s + m['wait_time'] } / hour_count.to_f
-      }
-
-      r = @worker.storage.put(doc)
-
-      @last_save = Time.now
-
-      save if r != nil
-    end
   end
 end

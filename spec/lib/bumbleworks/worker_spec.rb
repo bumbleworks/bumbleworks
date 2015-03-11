@@ -45,25 +45,6 @@ describe Bumbleworks::Worker do
       end
     end
 
-    describe '.info' do
-      it 'returns Bumbleworks.dashboard.worker_info' do
-        allow(Bumbleworks.dashboard).to receive(:worker_info).and_return(:bontron)
-        expect(described_class.info).to eq(:bontron)
-      end
-
-      it 'returns empty hash if worker_info is nil' do
-        allow(Bumbleworks.dashboard).to receive(:worker_info).and_return(nil)
-        expect(described_class.info).to eq({})
-      end
-    end
-
-    describe '.forget_worker' do
-      it 'deletes worker info for given worker id' do
-        described_class.forget_worker(workers[1].id)
-        expect(described_class.info.keys).not_to include(workers[1].id)
-      end
-    end
-
     describe '.refresh_worker_info' do
       it 'times out if info is not updated in time' do
         allow(described_class).to receive(:info).and_return({
@@ -88,26 +69,6 @@ describe Bumbleworks::Worker do
         expect {
           described_class.refresh_worker_info
         }.not_to raise_error
-      end
-    end
-
-    describe '.purge_stale_worker_info' do
-      it 'deletes all worker info where state is stopped or nil' do
-        subject.run_in_thread
-        workers[0].shutdown
-        workers[1].instance_variable_set(:@state, nil)
-        workers[1].instance_variable_get(:@info).save
-        subject_info = described_class.info[subject.id]
-        described_class.purge_stale_worker_info
-        expect(described_class.info).to eq({
-          subject.id => subject_info
-        })
-      end
-
-      it 'returns without issue if no workers' do
-        doc = Bumbleworks.dashboard.storage.get('variables', 'workers')
-        Bumbleworks.dashboard.storage.delete(doc)
-        described_class.purge_stale_worker_info
       end
     end
 

@@ -257,7 +257,7 @@ describe Bumbleworks::Task do
     context 'by params' do
       before(:each) do
         Bumbleworks.launch!('emergency_hamster_bullet')
-        Bumbleworks.dashboard.wait_for(:officer)
+        Bumbleworks.dashboard.wait_for(:rhubarb)
       end
 
       describe '.order_by_param' do
