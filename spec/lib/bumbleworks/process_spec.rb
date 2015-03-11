@@ -342,16 +342,16 @@ describe Bumbleworks::Process do
   describe '#kill!' do
     it 'kills process' do
       bp = described_class.new('frogheads')
-      expect(Bumbleworks).to receive(:kill_process!).with('frogheads')
-      bp.kill!
+      expect(Bumbleworks).to receive(:kill_process!).with('frogheads', :an => :option)
+      bp.kill!(:an => :option)
     end
   end
 
   describe '#cancel!' do
     it 'cancels process' do
       bp = described_class.new('frogheads')
-      expect(Bumbleworks).to receive(:cancel_process!).with('frogheads')
-      bp.cancel!
+      expect(Bumbleworks).to receive(:cancel_process!).with('frogheads', :an => :option)
+      bp.cancel!(:an => :option)
     end
   end
 

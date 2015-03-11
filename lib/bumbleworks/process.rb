@@ -133,12 +133,12 @@ module Bumbleworks
       subscribed_events.include? event.to_s
     end
 
-    def kill!
-      Bumbleworks.kill_process!(wfid)
+    def kill!(options = {})
+      Bumbleworks.kill_process!(wfid, options)
     end
 
-    def cancel!
-      Bumbleworks.cancel_process!(wfid)
+    def cancel!(options = {})
+      Bumbleworks.cancel_process!(wfid, options)
     end
 
     def process_status
