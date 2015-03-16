@@ -14,6 +14,7 @@ class Bumbleworks::Worker < Ruote::Worker
     def shutdown_all(options = {})
       # First, send all running workers a message to stop
       change_worker_state('stopped', options)
+    ensure
       # Now ensure that future started workers will be started
       # in "running" mode instead of automatically stopped
       change_worker_state('running', options)

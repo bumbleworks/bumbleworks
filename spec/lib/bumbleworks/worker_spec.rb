@@ -110,6 +110,13 @@ describe Bumbleworks::Worker do
       expect(described_class).to receive(:change_worker_state).with('running', {}).ordered
       described_class.shutdown_all
     end
+
+    it 'resets to running even if error occurred when attempting stop' do
+      expect(described_class).to receive(:change_worker_state).with('stopped', {}).ordered.
+        and_raise('an interruption')
+      expect(described_class).to receive(:change_worker_state).with('running', {}).ordered
+      expect { described_class.shutdown_all }.to raise_error('an interruption')
+    end
   end
 
   describe '.pause_all' do
