@@ -84,6 +84,10 @@ class Bumbleworks::Worker < Ruote::Worker
     end
   end
 
+  def class_name
+    self.class.to_s
+  end
+
   def save_info
     @info.save if @info
   end

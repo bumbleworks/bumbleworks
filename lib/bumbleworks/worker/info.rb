@@ -3,6 +3,10 @@ require_relative "proxy"
 class Bumbleworks::Worker < Ruote::Worker
   class Info < Ruote::Worker::Info
     attr_reader :worker
+    extend Forwardable
+
+    def_delegators :worker,
+      :id, :pid, :name, :state, :ip, :hostname, :system, :launched_at
 
     class << self
       def raw_hash
@@ -70,6 +74,22 @@ class Bumbleworks::Worker < Ruote::Worker
       self.class.raw_hash[worker.id]
     end
 
+    def worker_class_name
+      worker.class_name
+    end
+
+    def uptime
+      if in_stopped_state? && worker.respond_to?(:uptime)
+        worker.uptime
+      else
+        Time.now - worker.launched_at
+      end
+    end
+
+    def in_stopped_state?
+      ["stopped"].include?(worker.state)
+    end
+
     def updated_at
       Time.parse(raw_hash['put_at'])
     end
@@ -120,23 +140,45 @@ class Bumbleworks::Worker < Ruote::Worker
       doc
     end
 
+    def processed_last_minute
+      raw_hash["processed_last_minute"]
+    end
+
+    def wait_time_last_minute
+      raw_hash["wait_time_last_minute"]
+    end
+
+    def processed_last_hour
+      raw_hash["processed_last_hour"]
+    end
+
+    def wait_time_last_hour
+      raw_hash["wait_time_last_hour"]
+    end
+
+    def constant_worker_info_hash
+      {
+        "id" => @worker.id,
+        "class" => @worker.class_name,
+        "name" => @worker.name,
+        "ip" => @worker.ip,
+        "hostname" => @worker.hostname,
+        "pid" => @worker.pid,
+        "system" => @worker.system,
+        "launched_at" => @worker.launched_at,
+        "state" => @worker.state
+      }
+    end
+
     def save
       doc = worker_info_document
 
       worker_info_hash = doc['workers'][@worker.id] || {}
 
+      worker_info_hash.merge!(constant_worker_info_hash)
       worker_info_hash.merge!({
-        'worker_id' => @worker.id,
-        'class' => @worker.class.to_s,
-        'name' => @worker.name,
-        'ip' => @worker.ip,
-        'hostname' => @worker.hostname,
-        'pid' => @worker.pid,
-        'system' => @worker.system,
         'put_at' => Ruote.now_to_utc_s,
-        'uptime' => Time.now - @worker.launched_at,
-        'launched_at' => @worker.launched_at,
-        'state' => @worker.state
+        'uptime' => uptime,
       })
 
       if defined?(@msgs)

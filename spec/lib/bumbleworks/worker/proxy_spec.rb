@@ -25,4 +25,16 @@ describe Bumbleworks::Worker::Proxy do
       expect(subject.launched_at).to eq(expected_time)
     end
   end
+
+  describe "#class_name" do
+    it "returns class passed in from hash" do
+      expect(subject.class_name).to eq("f_class")
+    end
+  end
+
+  describe "#storage" do
+    it "returns nil to allow default" do
+      expect(subject.storage).to be_nil
+    end
+  end
 end

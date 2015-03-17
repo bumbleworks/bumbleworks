@@ -145,4 +145,10 @@ describe Bumbleworks::Worker do
       expect(subject.info).to eq(described_class.info[subject.id])
     end
   end
+
+  describe "#class_name" do
+    it "returns string version of class" do
+      expect(subject.class_name).to eq(subject.class.to_s)
+    end
+  end
 end

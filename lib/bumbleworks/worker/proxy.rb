@@ -1,7 +1,7 @@
 class Bumbleworks::Worker < Ruote::Worker
   class Proxy
     ProxiedAttributes = [
-      :id, :pid, :ip, :hostname, :system, :launched_at, :state, :name, :class
+      :id, :pid, :ip, :hostname, :system, :launched_at, :state, :name, :class, :uptime
     ]
 
     attr_reader *(ProxiedAttributes - [:launched_at])
@@ -12,6 +12,16 @@ class Bumbleworks::Worker < Ruote::Worker
       ProxiedAttributes.each do |key|
         instance_variable_set(:"@#{key}", attributes[key.to_s])
       end
+    end
+
+    # Allow storage to revert to the default for this Bumbleworks
+    # instance.
+    def storage
+      nil
+    end
+
+    def class_name
+      @class.to_s
     end
 
     def launched_at

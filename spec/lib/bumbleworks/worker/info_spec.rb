@@ -2,18 +2,50 @@ describe Bumbleworks::Worker::Info do
   let(:context) { Bumbleworks.dashboard.context }
   let(:proxy) {
     Bumbleworks::Worker::Proxy.new(
-      'class' => :f_class,
-      'pid' => :f_pid,
-      'name' => :f_name,
-      'id' => :f_id,
-      'state' => :f_state,
-      'ip' => :f_ip,
-      'hostname' => :f_hostname,
-      'system' => :f_system,
-      'launched_at' => :f_launched_at
+      "class" => "f_class",
+      "pid" => "f_pid",
+      "name" => "f_name",
+      "id" => "f_id",
+      "state" => "f_state",
+      "ip" => "f_ip",
+      "hostname" => "f_hostname",
+      "system" => "f_system",
+      "uptime" => "f_uptime",
+      "launched_at" => "2010-10-10 10:10:10"
     )
   }
   subject { described_class.new(proxy) }
+
+
+  describe "delegation to hash" do
+    let(:raw_hash) {
+      {
+        "processed_last_minute" => 20,
+        "wait_time_last_minute" => 300.5,
+        "processed_last_hour" => 540,
+        "wait_time_last_hour" => 15.6
+      }
+    }
+    before(:each) do
+      allow(subject).to receive(:raw_hash).and_return(raw_hash)
+    end
+
+    it { is_expected.to fetch(:processed_last_minute).from(raw_hash) }
+    it { is_expected.to fetch(:wait_time_last_minute).from(raw_hash) }
+    it { is_expected.to fetch(:processed_last_hour).from(raw_hash) }
+    it { is_expected.to fetch(:wait_time_last_hour).from(raw_hash) }
+  end
+
+  describe "delegation to worker/proxy" do
+    it { is_expected.to delegate(:id).to(proxy) }
+    it { is_expected.to delegate(:pid).to(proxy) }
+    it { is_expected.to delegate(:name).to(proxy) }
+    it { is_expected.to delegate(:state).to(proxy) }
+    it { is_expected.to delegate(:ip).to(proxy) }
+    it { is_expected.to delegate(:hostname).to(proxy) }
+    it { is_expected.to delegate(:system).to(proxy) }
+    it { is_expected.to delegate(:launched_at).to(proxy) }
+  end
 
   describe '.raw_hash' do
     it 'returns Bumbleworks.dashboard.worker_info' do
@@ -30,15 +62,16 @@ describe Bumbleworks::Worker::Info do
   describe '.from_hash' do
     it 'returns an info object using a proxy worker with given attributes' do
       hash = {
-        'class' => :f_class,
-        'pid' => :f_pid,
-        'name' => :f_name,
-        'id' => :f_id,
-        'state' => :f_state,
-        'ip' => :f_ip,
-        'hostname' => :f_hostname,
-        'system' => :f_system,
-        'launched_at' => :f_launched_at
+        "class" => "f_class",
+        "pid" => "f_pid",
+        "name" => "f_name",
+        "id" => "f_id",
+        "state" => "f_state",
+        "ip" => "f_ip",
+        "hostname" => "f_hostname",
+        "system" => "f_system",
+        "uptime" => "f_uptime",
+        "launched_at" => "2010-10-10 10:10:10"
       }
       allow(described_class).to receive(:new).
         with(proxy).
@@ -128,6 +161,26 @@ describe Bumbleworks::Worker::Info do
     end
   end
 
+  describe "#worker_class_name" do
+    it "returns class_name from worker/proxy" do
+      allow(proxy).to receive(:class_name).and_return('barkle rutfut')
+      expect(subject.worker_class_name).to eq('barkle rutfut')
+    end
+  end
+
+  describe "#uptime" do
+    it "returns difference between now and updated_at" do
+      frozen_time = Time.now
+      allow(Time).to receive(:now).and_return(frozen_time)
+      expect(subject.uptime).to eq(frozen_time - subject.launched_at)
+    end
+
+    it "returns previous persisted uptime if stopped" do
+      allow(proxy).to receive(:state).and_return("stopped")
+      expect(subject.uptime).to eq(proxy.uptime)
+    end
+  end
+
   describe "#updated_at" do
     it "returns parsed put_at from raw hash for worker" do
       allow(subject).to receive(:raw_hash).and_return({
@@ -175,8 +228,8 @@ describe Bumbleworks::Worker::Info do
   describe "#raw_hash" do
     it "returns value from worker_info hash at key of worker id" do
       allow(described_class).to receive(:raw_hash).and_return({
-        :f_id => :foo_hash,
-        :b_id => :bar_hash
+        "f_id" => :foo_hash,
+        "b_id" => :bar_hash
       })
       expect(subject.raw_hash).to eq(:foo_hash)
     end
@@ -200,6 +253,40 @@ describe Bumbleworks::Worker::Info do
       expect(subject).not_to be_stalling
       allow(subject).to receive(:responding?).and_return(false)
       expect(subject).to be_stalling
+    end
+  end
+
+  describe "#save" do
+    before(:each) { Bumbleworks.start_worker! }
+    subject { Bumbleworks::Worker::Info.first }
+
+    it "persists all data unchanged to the engine storage" do
+      expected_hash = subject.constant_worker_info_hash
+      subject.save
+      expect(described_class[subject.id.to_s].constant_worker_info_hash).to eq(expected_hash)
+    end
+
+    it "updates uptime and updated_at even without changed data" do
+      uptime, updated_at = subject.uptime, subject.updated_at
+      subject.save
+      expect(described_class[subject.id.to_s].uptime).not_to eq(uptime)
+      expect(described_class[subject.id.to_s].updated_at).not_to eq(updated_at)
+    end
+
+    it "persists changed data" do
+      expected_hash = subject.constant_worker_info_hash
+      subject.worker.instance_variable_set(:@pid, "12345")
+      subject.save
+      expect(described_class[subject.id.to_s].id).to eq(expected_hash["id"])
+      expect(described_class[subject.id.to_s].pid).to eq("12345")
+    end
+
+    it "does not update uptime if worker is stopped" do
+      allow_any_instance_of(Bumbleworks::Worker::Proxy).to receive(:state).
+        and_return("stopped")
+      uptime = subject.uptime
+      subject.save
+      expect(described_class[subject.id.to_s].uptime).to eq(uptime)
     end
   end
 end
