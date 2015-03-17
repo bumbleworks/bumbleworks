@@ -92,7 +92,7 @@ class Bumbleworks::Worker < Ruote::Worker
     end
 
     def in_stopped_state?
-      ["stopped"].include?(worker.state)
+      worker.state.nil? || ["stopped", "stalled"].include?(worker.state)
     end
 
     def updated_at

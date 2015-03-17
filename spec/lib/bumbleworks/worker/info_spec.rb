@@ -247,6 +247,28 @@ describe Bumbleworks::Worker::Info do
     end
   end
 
+  describe "#in_stopped_state?" do
+    it "returns true if state is stopped" do
+      allow(proxy).to receive(:state).and_return("stopped")
+      expect(subject).to be_in_stopped_state
+    end
+
+    it "returns true if state is stalled" do
+      allow(proxy).to receive(:state).and_return("stalled")
+      expect(subject).to be_in_stopped_state
+    end
+
+    it "returns true if state is nil" do
+      allow(proxy).to receive(:state).and_return(nil)
+      expect(subject).to be_in_stopped_state
+    end
+
+    it "returns false if state is running" do
+      allow(proxy).to receive(:state).and_return("running")
+      expect(subject).not_to be_in_stopped_state
+    end
+  end
+
   describe "#stalling?" do
     it "returns inverse of #responding?" do
       allow(subject).to receive(:responding?).and_return(true)

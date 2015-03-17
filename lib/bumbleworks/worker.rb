@@ -8,7 +8,7 @@ class Bumbleworks::Worker < Ruote::Worker
 
   class << self
     def info
-      Bumbleworks.dashboard.worker_info || {}
+      Bumbleworks::Worker::Info || {}
     end
 
     def shutdown_all(options = {})
@@ -28,10 +28,10 @@ class Bumbleworks::Worker < Ruote::Worker
       change_worker_state('running', options)
     end
 
-    def worker_states
+    def active_worker_states
       info.inject({}) { |hsh, info|
-        id, state = info[0], info[1]['state']
-        if state && state != 'stopped'
+        id, state = info.id, info.state
+        unless info.state.nil? || info.in_stopped_state?
           hsh[id] = state
         end
         hsh
@@ -42,20 +42,20 @@ class Bumbleworks::Worker < Ruote::Worker
       with_worker_state_enabled do
         Bumbleworks.dashboard.worker_state = new_state
         Bumbleworks::Support.wait_until(options) do
-          worker_states.values.all? { |state| state == new_state }
+          active_worker_states.values.all? { |state| state == new_state }
         end
       end
       return true
     rescue Bumbleworks::Support::WaitTimeout
-      raise WorkerStateNotChanged, "Worker states: #{worker_states.inspect}"
+      raise WorkerStateNotChanged, "Worker states: #{active_worker_states.inspect}"
     end
 
     def refresh_worker_info(options = {})
       with_worker_state_enabled do
         Bumbleworks::Support.wait_until(options) do
-          info.all? { |id, worker_info|
-            worker_info['state'] == 'stopped' ||
-              Time.parse(worker_info['put_at']) > Time.now - 1
+          info.all? { |worker_info|
+            worker_info.in_stopped_state? ||
+              worker_info.updated_at > Time.now - 1
           }
         end
       end
