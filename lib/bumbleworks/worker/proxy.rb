@@ -15,7 +15,11 @@ class Bumbleworks::Worker < Ruote::Worker
     end
 
     def launched_at
-      Time.parse(@launched_at)
+      if @launched_at.is_a?(String)
+        Time.parse(@launched_at)
+      else
+        @launched_at
+      end
     end
 
     def ==(other)
