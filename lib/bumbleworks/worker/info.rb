@@ -16,7 +16,7 @@ class Bumbleworks::Worker < Ruote::Worker
 
       def each
         raw_hash.each { |k, v|
-          yield from_hash(v.merge('id' => k))
+          yield from_hash(v)
         }
       end
 
@@ -39,7 +39,7 @@ class Bumbleworks::Worker < Ruote::Worker
       end
 
       def [](worker_id)
-        from_hash(raw_hash[worker_id].merge('id' => worker_id))
+        from_hash(raw_hash[worker_id])
       end
 
       def from_hash(hash)

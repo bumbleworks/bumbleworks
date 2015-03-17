@@ -93,7 +93,7 @@ describe Bumbleworks::Worker::Info do
     describe '.[]' do
       it 'calls from_hash with raw data for given worker id' do
         allow(described_class).to receive(:from_hash).
-          with({ 'foo' => 1, 'id' => 'f_id' }).and_return(:foo_info)
+          with({ 'foo' => 1 }).and_return(:foo_info)
         expect(described_class['f_id']).to eq(:foo_info)
       end
     end
@@ -101,9 +101,9 @@ describe Bumbleworks::Worker::Info do
     describe '.all' do
       it 'converts raw hash into info instances' do
         allow(described_class).to receive(:from_hash).
-          with({ 'foo' => 1, 'id' => 'f_id'}).and_return(:foo_info)
+          with({ 'foo' => 1 }).and_return(:foo_info)
         allow(described_class).to receive(:from_hash).
-          with({ 'bar' => 1, 'id' => 'b_id'}).and_return(:bar_info)
+          with({ 'bar' => 1 }).and_return(:bar_info)
         expect(described_class.all).to match_array([:foo_info, :bar_info])
       end
     end
