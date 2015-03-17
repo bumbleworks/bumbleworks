@@ -4,6 +4,7 @@ class Bumbleworks::Worker < Ruote::Worker
   class Info < Ruote::Worker::Info
     attr_reader :worker
     extend Forwardable
+    extend Enumerable
 
     def_delegators :worker,
       :id, :pid, :name, :state, :ip, :hostname, :system, :launched_at
@@ -13,10 +14,14 @@ class Bumbleworks::Worker < Ruote::Worker
         Bumbleworks.dashboard.worker_info || {}
       end
 
-      def all
-        raw_hash.map { |k, v|
-          from_hash(v.merge('id' => k))
+      def each
+        raw_hash.each { |k, v|
+          yield from_hash(v.merge('id' => k))
         }
+      end
+
+      def all
+        to_a
       end
 
       def where(options)
@@ -30,7 +35,7 @@ class Bumbleworks::Worker < Ruote::Worker
 
       def filter
         return [] unless block_given?
-        all.select { |info| yield info.worker }
+        select { |info| yield info.worker }
       end
 
       def [](worker_id)
