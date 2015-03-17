@@ -278,6 +278,64 @@ describe Bumbleworks::Worker::Info do
     end
   end
 
+  context "worker control commands" do
+    subject { Bumbleworks::Worker::Info.first }
+    let(:other_worker) { Bumbleworks::Worker::Info.all[1] }
+    before(:each) do
+      2.times { Bumbleworks.start_worker! }
+    end
+
+    describe "#shutdown" do
+      it "shuts down just this worker" do
+        subject.shutdown
+        expect(subject.state).to eq("stopped")
+        expect(other_worker.state).to eq("running")
+      end
+    end
+
+    describe "#pause" do
+      it "pauses just this worker" do
+        subject.pause
+        expect(subject.state).to eq("paused")
+        expect(other_worker.state).to eq("running")
+      end
+    end
+
+    describe "#unpause" do
+      it "unpauses just this worker" do
+        [subject, other_worker].map(&:pause)
+        subject.unpause
+        expect(subject.state).to eq("running")
+        expect(other_worker.state).to eq("paused")
+      end
+    end
+
+    describe "#run" do
+      it "is an alias for unpause" do
+        expect(subject.method(:run)).to eq(subject.method(:unpause))
+      end
+    end
+  end
+
+  describe "#reload" do
+    it "generates a new proxy from the current raw hash" do
+      Bumbleworks.start_worker!
+      subject = Bumbleworks::Worker::Info.first
+      expect(Bumbleworks::Worker::Proxy).to receive(:new).
+        with(subject.raw_hash).and_return(:a_worker)
+      subject.reload
+      expect(subject.worker).to eq(:a_worker)
+    end
+  end
+
+  describe "#record_new_state" do
+    it "saves new state" do
+      expect(subject.worker).to receive(:state=).with("an awesome state").ordered
+      expect(subject).to receive(:save).ordered
+      subject.record_new_state("an awesome state")
+    end
+  end
+
   describe "#save" do
     before(:each) { Bumbleworks.start_worker! }
     subject { Bumbleworks::Worker::Info.first }

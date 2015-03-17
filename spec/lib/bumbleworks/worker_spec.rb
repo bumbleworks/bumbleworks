@@ -49,13 +49,13 @@ describe Bumbleworks::Worker do
     end
 
     describe '.refresh_worker_info' do
-      it 'times out if info is not updated in time' do
-        allow(described_class).to receive(:info).and_return([
-          double(:in_stopped_state? => false, :updated_at => Time.now - 60)
-        ])
-        expect {
-          described_class.refresh_worker_info(:timeout => 0.1)
-        }.to raise_error(Bumbleworks::Support::WaitTimeout)
+      it 'times out and marks worker stalled if stalling' do
+        info1 = double(:in_stopped_state? => false, :stalling? => true)
+        info2 = double(:in_stopped_state? => false, :stalling? => false)
+        allow(described_class).to receive(:info).and_return([info1, info2])
+        expect(info1).to receive(:record_new_state).with("stalled")
+        expect(info2).to receive(:record_new_state).never
+        described_class.refresh_worker_info(:timeout => 0.1)
       end
 
       it 'refreshes worker info' do

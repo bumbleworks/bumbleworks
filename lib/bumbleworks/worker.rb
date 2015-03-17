@@ -52,11 +52,10 @@ class Bumbleworks::Worker < Ruote::Worker
 
     def refresh_worker_info(options = {})
       with_worker_state_enabled do
-        Bumbleworks::Support.wait_until(options) do
-          info.all? { |worker_info|
-            worker_info.in_stopped_state? ||
-              worker_info.updated_at > Time.now - 1
-          }
+        info.each do |worker_info|
+          if !worker_info.in_stopped_state? && worker_info.stalling?
+            worker_info.record_new_state("stalled")
+          end
         end
       end
     end
@@ -65,6 +64,22 @@ class Bumbleworks::Worker < Ruote::Worker
       Bumbleworks.dashboard.context['worker_state_enabled'] = true
       yield
       Bumbleworks.dashboard.context['worker_state_enabled'] = false
+    end
+
+    def control_document
+      doc = Bumbleworks.dashboard.storage.get('variables', 'worker_control') || {}
+      doc['type'] = 'variables'
+      doc['_id'] = 'worker_control'
+      doc['workers'] ||= {}
+      doc
+    end
+
+    def info_document
+      doc = Bumbleworks.dashboard.storage.get('variables', 'workers') || {}
+      doc['type'] = 'variables'
+      doc['_id'] = 'workers'
+      doc['workers'] ||= {}
+      doc
     end
   end
 
@@ -97,10 +112,23 @@ class Bumbleworks::Worker < Ruote::Worker
     save_info
   end
 
+  def worker_control_variable
+    self.class.control_document["workers"][id]
+  end
+
+  def desired_state
+    control_hash = worker_control_variable ||
+      @storage.get("variables", "worker") ||
+      { "state" => "running" }
+    control_hash["state"]
+  end
+
   def determine_state
-    if @context['worker_state_enabled']
-      super
-      save_info
+    @state_mutex.synchronize do
+      if @state != "stopped" && @context["worker_state_enabled"]
+        @state = desired_state
+        save_info
+      end
     end
   end
 

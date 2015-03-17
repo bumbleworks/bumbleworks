@@ -6,6 +6,7 @@ class Bumbleworks::Worker < Ruote::Worker
 
     attr_reader *(ProxiedAttributes - [:launched_at])
     attr_reader :raw_hash
+    attr_writer :state
 
     def initialize(attributes)
       @raw_hash = attributes

@@ -37,4 +37,11 @@ describe Bumbleworks::Worker::Proxy do
       expect(subject.storage).to be_nil
     end
   end
+
+  describe "#state=" do
+    it "changes the proxy's recorded state" do
+      subject.state = "flummoxing"
+      expect(subject.state).to eq("flummoxing")
+    end
+  end
 end

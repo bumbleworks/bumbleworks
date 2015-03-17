@@ -70,6 +70,13 @@ class Bumbleworks::Worker < Ruote::Worker
       end
     end
 
+    def initialize(worker)
+      @worker = worker
+      @last_save = Time.now - 2 * 60
+
+      @msgs = [] unless worker.is_a?(Bumbleworks::Worker::Proxy)
+    end
+
     def ==(other)
       other.is_a?(Bumbleworks::Worker::Info) &&
         other.worker == worker
@@ -77,6 +84,15 @@ class Bumbleworks::Worker < Ruote::Worker
 
     def raw_hash
       self.class.raw_hash[worker.id]
+    end
+
+    def reload
+      @worker = Bumbleworks::Worker::Proxy.new(raw_hash)
+    end
+
+    def record_new_state(state)
+      worker.state = state
+      save
     end
 
     def worker_class_name
@@ -129,20 +145,35 @@ class Bumbleworks::Worker < Ruote::Worker
       @worker.storage || Bumbleworks.dashboard.storage
     end
 
-    def initialize(worker)
-      @worker = worker
-      @last_save = Time.now - 2 * 60
-
-      @msgs = [] unless worker.is_a?(Bumbleworks::Worker::Proxy)
+    def shutdown(options = {})
+      send_command("stopped", options)
     end
 
-    def worker_info_document
-      doc = storage.get('variables', 'workers') || {}
+    def pause(options = {})
+      send_command("paused", options)
+    end
 
-      doc['type'] = 'variables'
-      doc['_id'] = 'workers'
-      doc['workers'] ||= {}
-      doc
+    def unpause(options = {})
+      send_command("running", options)
+    end
+
+    alias_method :run, :unpause
+
+    def send_command(command, options = {})
+      save_control_message(command)
+      Bumbleworks::Worker.with_worker_state_enabled do
+        Bumbleworks::Support.wait_until(options) do
+          raw_hash["state"] == command
+        end
+      end
+      reload
+    end
+
+    def save_control_message(message)
+      doc = Bumbleworks::Worker.control_document
+      doc["workers"][id] ||= {}
+      doc["workers"][id]["state"] = message
+      storage.put(doc)
     end
 
     def processed_last_minute
@@ -176,7 +207,7 @@ class Bumbleworks::Worker < Ruote::Worker
     end
 
     def save
-      doc = worker_info_document
+      doc = Bumbleworks::Worker.info_document
 
       worker_info_hash = doc['workers'][@worker.id] || {}
 
