@@ -51,8 +51,11 @@ module Bumbleworks
     def cancel_process!(process_name, options = {})
       process = processes_by_name[process_name.to_sym]
       return nil unless process
-      process.cancel!
-      unless options[:clear_identifiers] == false
+
+      options = options.dup
+      clear_identifiers = options.delete(:clear_identifiers)
+      process.cancel!(options)
+      unless clear_identifiers == false
         identifier_attribute = attribute_for_process_name(process_name.to_sym)
         persist_process_identifier(identifier_attribute, nil)
       end

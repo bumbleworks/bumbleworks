@@ -60,17 +60,17 @@ describe Bumbleworks::Entity do
     end
   end
 
-  describe '#cancel_processes!' do
+  describe '#cancel_process!' do
     it 'cancels process with given name' do
       entity = entity_class.new
       allow(entity).to receive_messages(:processes_by_name => {
         :foof => bp = Bumbleworks::Process.new('1234')
       })
-      expect(bp).to receive(:cancel!)
+      expect(bp).to receive(:cancel!).with(:foo => :bar)
       allow(entity).to receive(:attribute_for_process_name).
         with(:foof).and_return(:foof_pid)
       expect(entity).to receive(:update).with(:foof_pid => nil)
-      entity.cancel_process!('foof')
+      entity.cancel_process!('foof', :foo => :bar)
     end
 
     it 'does nothing if no process for given name' do
@@ -86,9 +86,10 @@ describe Bumbleworks::Entity do
       allow(entity).to receive_messages(:processes_by_name => {
         :foof => bp = Bumbleworks::Process.new('1234')
       })
-      expect(bp).to receive(:cancel!)
+      options = { :clear_identifiers => false, :foo => :bar }
+      expect(bp).to receive(:cancel!).with(:foo => :bar)
       expect(entity).to receive(:update).never
-      entity.cancel_process!(:foof, :clear_identifiers => false)
+      entity.cancel_process!(:foof, options)
     end
   end
 
