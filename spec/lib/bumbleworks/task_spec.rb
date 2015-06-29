@@ -1,4 +1,6 @@
 describe Bumbleworks::Task do
+  subject { described_class.new(workflow_item) }
+
   let(:workflow_item) {
     Ruote::Workitem.new({
       'fields' => {
@@ -61,14 +63,13 @@ describe Bumbleworks::Task do
 
   describe '#dispatched_at' do
     it 'returns dispatched_at timestamp from workitem' do
-      task = described_class.new(workflow_item)
-      expect(task.dispatched_at).to eq 'some time ago'
+      expect(subject.dispatched_at).to eq 'some time ago'
     end
   end
 
   describe '#completable?' do
     it 'defaults to true on base task' do
-      expect(described_class.new(workflow_item)).to be_completable
+      expect(subject).to be_completable
     end
   end
 
@@ -99,12 +100,11 @@ describe Bumbleworks::Task do
 
   describe '#reload' do
     it 'reloads the workitem from the storage participant' do
-      task = described_class.new(workflow_item)
-      allow(task).to receive(:sid).and_return(:the_sid)
+      allow(subject).to receive(:sid).and_return(:the_sid)
       expect(Bumbleworks.dashboard.storage_participant).to receive(
         :[]).with(:the_sid).and_return(:amazing_workitem)
-      task.reload
-      expect(task.instance_variable_get(:@workitem)).to eq(:amazing_workitem)
+      subject.reload
+      expect(subject.instance_variable_get(:@workitem)).to eq(:amazing_workitem)
     end
   end
 
@@ -113,89 +113,64 @@ describe Bumbleworks::Task do
       it "calls #{phase} hooks on task and all observers" do
         observer1, observer2 = double('observer1'), double('observer2')
         Bumbleworks.observers = [observer1, observer2]
-        task = described_class.new(workflow_item)
-        expect(task).to receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
+        expect(subject).to receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
         expect(observer1).to receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
         expect(observer2).to receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
-        task.send(:"call_#{phase}_hooks", :snoogle, :chachunga, :faloop)
+        subject.send(:"call_#{phase}_hooks", :snoogle, :chachunga, :faloop)
       end
     end
   end
 
   describe '#on_dispatch' do
-    before :each do
-      Bumbleworks.define_process 'planting_a_noodle' do
-        concurrence do
-          horse_feeder :task => 'give_the_horse_a_bon_bon'
-        end
-      end
-    end
-
-    it 'is called when task is dispatched' do
-      expect_any_instance_of(described_class).to receive(:on_dispatch)
-      Bumbleworks.launch!('planting_a_noodle')
-      Bumbleworks.dashboard.wait_for(:horse_feeder)
-    end
-
     it 'logs dispatch' do
-      Bumbleworks.launch!('planting_a_noodle')
-      Bumbleworks.dashboard.wait_for(:horse_feeder)
-      task = described_class.for_role('horse_feeder').first
-      log_entry = Bumbleworks.logger.entries.last[:entry]
-      expect(log_entry[:action]).to eq(:dispatch)
-      expect(log_entry[:target_type]).to eq('Task')
-      expect(log_entry[:target_id]).to eq(task.id)
+      expect(subject).to receive(:log).with(:dispatch)
+      subject.on_dispatch
     end
 
     it 'calls after hooks' do
-      task = described_class.new(workflow_item)
-      allow(task).to receive(:log)
-      expect(task).to receive(:call_after_hooks).with(:dispatch)
-      task.on_dispatch
+      allow(subject).to receive(:log)
+      expect(subject).to receive(:call_after_hooks).with(:dispatch)
+      subject.on_dispatch
     end
   end
 
   describe '#extend_module' do
     it 'extends with base module and task module' do
-      task = described_class.new(workflow_item)
-      expect(task).to receive(:task_module).and_return(:task_module_double)
-      expect(task).to receive(:extend).with(Bumbleworks::Task::Base).ordered
-      expect(task).to receive(:extend).with(:task_module_double).ordered
-      task.extend_module
+      expect(subject).to receive(:task_module).and_return(:task_module_double)
+      expect(subject).to receive(:extend).with(Bumbleworks::Task::Base).ordered
+      expect(subject).to receive(:extend).with(:task_module_double).ordered
+      subject.extend_module
     end
 
     it 'extends only with base module if no nickname' do
-      task = described_class.new(workflow_item)
-      allow(task).to receive(:nickname).and_return(nil)
-      expect(task).to receive(:extend).with(Bumbleworks::Task::Base)
-      task.extend_module
+      allow(subject).to receive(:nickname).and_return(nil)
+      expect(subject).to receive(:extend).with(Bumbleworks::Task::Base)
+      subject.extend_module
     end
 
     it 'extends only with base module if task module does not exist' do
-      task = described_class.new(workflow_item)
-      expect(task).to receive(:extend).with(Bumbleworks::Task::Base)
-      task.extend_module
+      expect(subject).to receive(:extend).with(Bumbleworks::Task::Base)
+      subject.extend_module
     end
   end
 
   describe '#task_module' do
     it 'returns nil if no nickname' do
-      task = described_class.new(workflow_item)
-      allow(task).to receive(:nickname).and_return(nil)
-      expect(task.task_module).to be_nil
+      allow(subject).to receive(:nickname).and_return(nil)
+      expect(subject.task_module).to be_nil
     end
 
     it 'returns constantized task nickname with "Task" appended' do
-      task = described_class.new(workflow_item)
+      subject
       allow(Bumbleworks::Support).to receive(:constantize).with("GoToWorkTask").and_return(:the_task_module)
-      expect(task.task_module).to eq(:the_task_module)
+      expect(subject.task_module).to eq(:the_task_module)
     end
   end
 
   describe '#id' do
     it 'returns the sid from the workitem' do
       allow(workflow_item).to receive(:sid).and_return(:an_exciting_id)
-      expect(described_class.new(workflow_item).id).to eq(:an_exciting_id)
+      expect(subject.id).to eq(:an_exciting_id)
     end
   end
 
@@ -620,7 +595,6 @@ describe Bumbleworks::Task do
   end
 
   describe '#[], #[]=' do
-    subject{described_class.new(workflow_item)}
     it 'sets values on workitem fields' do
       subject['hive'] = 'bees at work'
       expect(workflow_item.fields['hive']).to eq('bees at work')
@@ -634,14 +608,13 @@ describe Bumbleworks::Task do
 
   describe '#nickname' do
     it 'returns the "task" param' do
-      expect(described_class.new(workflow_item).nickname).to eq('go_to_work')
+      expect(subject.nickname).to eq('go_to_work')
     end
 
     it 'is immutable; cannot be changed by modifying the param' do
-      task = described_class.new(workflow_item)
-      expect(task.nickname).to eq('go_to_work')
-      task.params['task'] = 'what_is_wrong_with_you?'
-      expect(task.nickname).to eq('go_to_work')
+      expect(subject.nickname).to eq('go_to_work')
+      subject.params['task'] = 'what_is_wrong_with_you?'
+      expect(subject.nickname).to eq('go_to_work')
     end
   end
 
@@ -779,12 +752,11 @@ describe Bumbleworks::Task do
       end
 
       it 'calls before_claim and after_claim callbacks' do
-        task = described_class.new(workflow_item)
-        allow(task).to receive(:log)
-        expect(task).to receive(:before_claim).with(:doctor_claim).ordered
-        expect(task).to receive(:set_claimant).ordered
-        expect(task).to receive(:after_claim).with(:doctor_claim).ordered
-        task.claim(:doctor_claim)
+        allow(subject).to receive(:log)
+        expect(subject).to receive(:before_claim).with(:doctor_claim).ordered
+        expect(subject).to receive(:set_claimant).ordered
+        expect(subject).to receive(:after_claim).with(:doctor_claim).ordered
+        subject.claim(:doctor_claim)
       end
 
       it 'skips callbacks if requested' do
@@ -883,12 +855,11 @@ describe Bumbleworks::Task do
       end
 
       it 'calls with hooks' do
-        task = described_class.new(workflow_item)
-        allow(task).to receive(:log)
-        expect(task).to receive(:call_before_hooks).with(:update, :argue_mints).ordered
-        expect(task).to receive(:update_workitem).ordered
-        expect(task).to receive(:call_after_hooks).with(:update, :argue_mints).ordered
-        task.update(:argue_mints)
+        allow(subject).to receive(:log)
+        expect(subject).to receive(:call_before_hooks).with(:update, :argue_mints).ordered
+        expect(subject).to receive(:update_workitem).ordered
+        expect(subject).to receive(:call_after_hooks).with(:update, :argue_mints).ordered
+        subject.update(:argue_mints)
       end
 
       it 'skips callbacks if requested' do
@@ -960,14 +931,13 @@ describe Bumbleworks::Task do
       end
 
       it 'calls update and complete callbacks' do
-        task = described_class.new(workflow_item)
-        allow(task).to receive(:log)
-        expect(task).to receive(:call_before_hooks).with(:update, :argue_mints).ordered
-        expect(task).to receive(:call_before_hooks).with(:complete, :argue_mints).ordered
-        expect(task).to receive(:proceed_workitem).ordered
-        expect(task).to receive(:call_after_hooks).with(:complete, :argue_mints).ordered
-        expect(task).to receive(:call_after_hooks).with(:update, :argue_mints).ordered
-        task.complete(:argue_mints)
+        allow(subject).to receive(:log)
+        expect(subject).to receive(:call_before_hooks).with(:update, :argue_mints).ordered
+        expect(subject).to receive(:call_before_hooks).with(:complete, :argue_mints).ordered
+        expect(subject).to receive(:proceed_workitem).ordered
+        expect(subject).to receive(:call_after_hooks).with(:complete, :argue_mints).ordered
+        expect(subject).to receive(:call_after_hooks).with(:update, :argue_mints).ordered
+        subject.complete(:argue_mints)
       end
 
       it 'skips callbacks if requested' do
@@ -1122,51 +1092,44 @@ describe Bumbleworks::Task do
 
   describe '#humanize' do
     it "returns humanized version of task name when no entity" do
-      task = described_class.new(workflow_item)
-      expect(task.humanize).to eq('Go to work')
+      expect(subject.humanize).to eq('Go to work')
     end
 
     it "returns humanized version of task name with entity" do
-      task = described_class.new(workflow_item)
-      task[:entity_id] = '45'
-      task[:entity_type] = 'RhubarbSandwich'
-      expect(task.humanize).to eq('Go to work: Rhubarb sandwich 45')
+      subject[:entity_id] = '45'
+      subject[:entity_type] = 'RhubarbSandwich'
+      expect(subject.humanize).to eq('Go to work: Rhubarb sandwich 45')
     end
 
     it "returns humanized version of task name without entity if requested" do
-      task = described_class.new(workflow_item)
-      task[:entity_id] = '45'
-      task[:entity_type] = 'RhubarbSandwich'
-      expect(task.humanize(:entity => false)).to eq('Go to work')
+      subject[:entity_id] = '45'
+      subject[:entity_type] = 'RhubarbSandwich'
+      expect(subject.humanize(:entity => false)).to eq('Go to work')
     end
   end
 
   describe '#to_s' do
     it "is aliased to #titleize" do
-      task = described_class.new(workflow_item)
-      allow(task).to receive(:titleize).with(:the_args).and_return(:see_i_told_you_so)
-      expect(task.to_s(:the_args)).to eq(:see_i_told_you_so)
+      allow(subject).to receive(:titleize).with(:the_args).and_return(:see_i_told_you_so)
+      expect(subject.to_s(:the_args)).to eq(:see_i_told_you_so)
     end
   end
 
   describe '#titleize' do
     it "returns titleized version of task name when no entity" do
-      task = described_class.new(workflow_item)
-      expect(task.titleize).to eq('Go To Work')
+      expect(subject.titleize).to eq('Go To Work')
     end
 
     it "returns titleized version of task name with entity" do
-      task = described_class.new(workflow_item)
-      task[:entity_id] = '45'
-      task[:entity_type] = 'RhubarbSandwich'
-      expect(task.titleize).to eq('Go To Work: Rhubarb Sandwich 45')
+      subject[:entity_id] = '45'
+      subject[:entity_type] = 'RhubarbSandwich'
+      expect(subject.titleize).to eq('Go To Work: Rhubarb Sandwich 45')
     end
 
     it "returns titleized version of task name without entity if requested" do
-      task = described_class.new(workflow_item)
-      task[:entity_id] = '45'
-      task[:entity_type] = 'RhubarbSandwich'
-      expect(task.titleize(:entity => false)).to eq('Go To Work')
+      subject[:entity_id] = '45'
+      subject[:entity_type] = 'RhubarbSandwich'
+      expect(subject.titleize(:entity => false)).to eq('Go To Work')
     end
   end
 
