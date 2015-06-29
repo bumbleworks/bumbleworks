@@ -21,7 +21,6 @@ describe Bumbleworks::Task do
   end
 
   it_behaves_like "comparable" do
-    subject { described_class.new(workflow_item) }
     let(:other) { described_class.new(workflow_item) }
     before(:each) do
       allow(workflow_item).to receive(:sid).and_return('blah-123-blah')
@@ -760,12 +759,11 @@ describe Bumbleworks::Task do
       end
 
       it 'skips callbacks if requested' do
-        task = described_class.new(workflow_item)
-        allow(task).to receive(:log)
-        expect(task).to receive(:before_claim).never
-        expect(task).to receive(:set_claimant)
-        expect(task).to receive(:after_claim).never
-        task.claim(:doctor_claim, :skip_callbacks => true)
+        allow(subject).to receive(:log)
+        expect(subject).to receive(:before_claim).never
+        expect(subject).to receive(:set_claimant)
+        expect(subject).to receive(:after_claim).never
+        subject.claim(:doctor_claim, :skip_callbacks => true)
       end
 
       it 'logs event' do
@@ -863,12 +861,11 @@ describe Bumbleworks::Task do
       end
 
       it 'skips callbacks if requested' do
-        task = described_class.new(workflow_item)
-        allow(task).to receive(:log)
-        expect(task).to receive(:call_before_hooks).never
-        expect(task).to receive(:update_workitem)
-        expect(task).to receive(:call_after_hooks).never
-        task.update({:actual => :params}, {:skip_callbacks => true})
+        allow(subject).to receive(:log)
+        expect(subject).to receive(:call_before_hooks).never
+        expect(subject).to receive(:update_workitem)
+        expect(subject).to receive(:call_after_hooks).never
+        subject.update({:actual => :params}, {:skip_callbacks => true})
       end
 
       it 'reloads after updating workitem' do
@@ -941,12 +938,11 @@ describe Bumbleworks::Task do
       end
 
       it 'skips callbacks if requested' do
-        task = described_class.new(workflow_item)
-        allow(task).to receive(:log)
-        expect(task).to receive(:call_before_hooks).never
-        expect(task).to receive(:proceed_workitem)
-        expect(task).to receive(:call_after_hooks).never
-        task.complete({:actual => :params}, {:skip_callbacks => true})
+        allow(subject).to receive(:log)
+        expect(subject).to receive(:call_before_hooks).never
+        expect(subject).to receive(:proceed_workitem)
+        expect(subject).to receive(:call_after_hooks).never
+        subject.complete({:actual => :params}, {:skip_callbacks => true})
       end
 
       it 'logs event' do
@@ -1135,14 +1131,12 @@ describe Bumbleworks::Task do
 
   describe '#temporary_storage' do
     it 'returns an empty hash by default' do
-      task = described_class.new(workflow_item)
-      expect(task.temporary_storage).to eq({})
+      expect(subject.temporary_storage).to eq({})
     end
 
     it 'persists stored values' do
-      task = described_class.new(workflow_item)
-      task.temporary_storage[:foo] = :bar
-      expect(task.temporary_storage[:foo]).to eq(:bar)
+      subject.temporary_storage[:foo] = :bar
+      expect(subject.temporary_storage[:foo]).to eq(:bar)
     end
   end
 
