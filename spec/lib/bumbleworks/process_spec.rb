@@ -422,7 +422,7 @@ describe Bumbleworks::Process do
       allow(bp).to receive_messages(:process_status => double('process status'))
       expect {
         bp.kerplunk!(:oh_no)
-      }.to raise_error
+      }.to raise_error(NoMethodError)
     end
   end
 end

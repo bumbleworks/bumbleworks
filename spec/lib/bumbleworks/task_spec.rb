@@ -1046,7 +1046,7 @@ describe Bumbleworks::Task do
     it 'falls back to method missing if no finder method' do
       expect {
         described_class.kerplunk!(:oh_no)
-      }.to raise_error
+      }.to raise_error(NoMethodError)
     end
   end
 

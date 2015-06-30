@@ -212,7 +212,7 @@ describe Bumbleworks::Entity do
       entity = entity_class.new
       expect {
         entity.attribute_for_process_name(:the_punisher)
-      }.to raise_error
+      }.to raise_error(Bumbleworks::Entity::ProcessNotRegistered, "the_punisher")
     end
   end
 

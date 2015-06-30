@@ -155,7 +155,7 @@ describe Bumbleworks::ProcessDefinition do
       })
       expect {
         described_class.create_all_from_directory!(definitions_path)
-      }.to raise_error
+      }.to raise_error(described_class::Invalid)
       expect(Bumbleworks.dashboard.variables['test_process']).to be_nil
       expect(Bumbleworks.dashboard.variables['keep_me']).to eq('top_secret_cat_pics')
     end

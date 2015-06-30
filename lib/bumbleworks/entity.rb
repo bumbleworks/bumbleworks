@@ -1,5 +1,7 @@
 module Bumbleworks
   module Entity
+    class ProcessNotRegistered < StandardError; end
+
     def self.included(klass)
       unless Bumbleworks.entity_classes.include? klass
         Bumbleworks.entity_classes << klass
@@ -68,7 +70,9 @@ module Bumbleworks
     end
 
     def attribute_for_process_name(name)
-      self.class.processes[name][:attribute]
+      process_config = self.class.processes[name]
+      raise ProcessNotRegistered.new(name) unless process_config
+      process_config && process_config[:attribute]
     end
 
     def tasks(nickname = nil)

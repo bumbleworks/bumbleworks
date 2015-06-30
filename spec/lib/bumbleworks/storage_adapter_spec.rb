@@ -25,13 +25,13 @@ describe Bumbleworks::StorageAdapter do
 
   describe '.storage_class' do
     it 'is a subclass responsibility' do
-      expect { described_class.storage_class }.to raise_error
+      expect { described_class.storage_class }.to raise_error(StandardError, "Subclass responsibility")
     end
   end
 
   describe '.driver' do
     it 'is a subclass responsibility' do
-      expect { described_class.driver }.to raise_error
+      expect { described_class.driver }.to raise_error(StandardError, "Subclass responsibility")
     end
   end
 
