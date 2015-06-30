@@ -73,6 +73,25 @@ describe Bumbleworks::Worker do
           described_class.refresh_worker_info
         }.not_to raise_error
       end
+
+      it 'return worker state enabled setting to off' do
+        expect(described_class.worker_state_enabled?).to eq(false)
+        described_class.refresh_worker_info
+        expect(described_class.worker_state_enabled?).to eq(false)
+      end
+
+      context "when worker state enabled setting is already on" do
+        after(:each) do
+          described_class.toggle_worker_state_enabled(false)
+        end
+
+        it 'leaves setting on' do
+          described_class.toggle_worker_state_enabled(true)
+          expect(described_class.worker_state_enabled?).to eq(true)
+          described_class.refresh_worker_info
+          expect(described_class.worker_state_enabled?).to eq(true)
+        end
+      end
     end
 
     describe '.change_worker_state' do
@@ -105,6 +124,25 @@ describe Bumbleworks::Worker do
         expect {
           described_class.change_worker_state('paused')
         }.not_to raise_error
+      end
+
+      it 'return worker state enabled setting to off' do
+        expect(described_class.worker_state_enabled?).to eq(false)
+        described_class.change_worker_state('paused')
+        expect(described_class.worker_state_enabled?).to eq(false)
+      end
+
+      context "when worker state enabled setting is already on" do
+        after(:each) do
+          described_class.toggle_worker_state_enabled(false)
+        end
+
+        it 'leaves setting on' do
+          described_class.toggle_worker_state_enabled(true)
+          expect(described_class.worker_state_enabled?).to eq(true)
+          described_class.change_worker_state('paused')
+          expect(described_class.worker_state_enabled?).to eq(true)
+        end
       end
     end
   end

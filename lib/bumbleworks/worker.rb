@@ -31,7 +31,7 @@ class Bumbleworks::Worker < Ruote::Worker
     def active_worker_states
       info.inject({}) { |hsh, info|
         id, state = info.id, info.state
-        unless info.state.nil? || info.in_stopped_state?
+        unless info.in_stopped_state?
           hsh[id] = state
         end
         hsh
@@ -60,10 +60,23 @@ class Bumbleworks::Worker < Ruote::Worker
       end
     end
 
+    def toggle_worker_state_enabled(switch)
+      unless [true, false].include?(switch)
+        return ArgumentError, "Must call with true or false"
+      end
+      Bumbleworks.dashboard.context['worker_state_enabled'] = switch
+    end
+
+    def worker_state_enabled?
+      !!Bumbleworks.dashboard.context['worker_state_enabled']
+    end
+
     def with_worker_state_enabled
-      Bumbleworks.dashboard.context['worker_state_enabled'] = true
+      was_already_enabled = worker_state_enabled?
+      toggle_worker_state_enabled(true) unless was_already_enabled
       yield
-      Bumbleworks.dashboard.context['worker_state_enabled'] = false
+    ensure
+      toggle_worker_state_enabled(false) unless was_already_enabled
     end
 
     def control_document
