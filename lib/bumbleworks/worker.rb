@@ -62,7 +62,7 @@ class Bumbleworks::Worker < Ruote::Worker
 
     def toggle_worker_state_enabled(switch)
       unless [true, false].include?(switch)
-        return ArgumentError, "Must call with true or false"
+        raise ArgumentError, "Must call with true or false"
       end
       Bumbleworks.dashboard.context['worker_state_enabled'] = switch
     end

@@ -147,6 +147,22 @@ describe Bumbleworks::Worker do
     end
   end
 
+  describe ".toggle_worker_state_enabled" do
+    it "turns on or off worker_state_enabled setting" do
+      expect(described_class.worker_state_enabled?).to eq(false)
+      described_class.toggle_worker_state_enabled(true)
+      expect(described_class.worker_state_enabled?).to eq(true)
+      described_class.toggle_worker_state_enabled(false)
+      expect(described_class.worker_state_enabled?).to eq(false)
+    end
+
+    it "raises exception if given non-Boolean argument" do
+      expect {
+        described_class.toggle_worker_state_enabled(:horse)
+      }.to raise_error(ArgumentError)
+    end
+  end
+
   describe '.shutdown_all' do
     it 'changes worker states to stopped, then resets to running' do
       expect(described_class).to receive(:change_worker_state).with('stopped', {}).ordered
