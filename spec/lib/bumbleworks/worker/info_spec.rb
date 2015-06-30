@@ -202,6 +202,11 @@ describe Bumbleworks::Worker::Info do
       allow(subject).to receive(:updated_at).and_return(frozen_time - 3)
       expect(subject).not_to be_updated_since(frozen_time - 2)
     end
+
+    it "returns true if updated_at same as given time" do
+      allow(subject).to receive(:updated_at).and_return(frozen_time - 3)
+      expect(subject).to be_updated_since(frozen_time - 3)
+    end
   end
 
   describe "#updated_recently?" do
