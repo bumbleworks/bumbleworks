@@ -4,7 +4,7 @@ describe Bumbleworks::Task do
   let(:workflow_item) {
     Ruote::Workitem.new({
       'fields' => {
-        'params' => {'task' => 'go_to_work'},
+        'params' => {'task' => 'go_to_work', 'claimant' => 'employee'},
         'dispatched_at' => 'some time ago'
       }
     })
@@ -117,6 +117,26 @@ describe Bumbleworks::Task do
         expect(observer2).to receive(:"#{phase}_snoogle").with(:chachunga, :faloop)
         subject.send(:"call_#{phase}_hooks", :snoogle, :chachunga, :faloop)
       end
+    end
+  end
+
+  describe "#log" do
+    it "creates a log entry with information from the task" do
+      allow(subject).to receive(:id).and_return(:the_id)
+      expect(Bumbleworks.logger).to receive(:info).with({
+        :actor => "employee",
+        :action => :did_a_thing,
+        :target_type => "Task",
+        :target_id => :the_id,
+        :metadata => {
+          :extra_stuff => "nothing special",
+          :current_fields => {
+            "params" => { "task" => "go_to_work", "claimant" => "employee" },
+            "dispatched_at" => "some time ago"
+          }
+        }
+      })
+      subject.log(:did_a_thing, :extra_stuff => "nothing special")
     end
   end
 
@@ -767,9 +787,9 @@ describe Bumbleworks::Task do
       end
 
       it 'logs event' do
-        log_entry = Bumbleworks.logger.entries.last[:entry]
-        expect(log_entry[:action]).to eq(:claim)
-        expect(log_entry[:actor]).to eq('boss')
+        @task.release
+        expect(@task).to receive(:log).with(:claim)
+        @task.claim(:whatever)
       end
     end
 
@@ -823,10 +843,8 @@ describe Bumbleworks::Task do
       end
 
       it 'logs event' do
+        expect(@task).to receive(:log).with(:release)
         @task.release
-        log_entry = Bumbleworks.logger.entries.last[:entry]
-        expect(log_entry[:action]).to eq(:release)
-        expect(log_entry[:actor]).to eq('boss')
       end
     end
   end
@@ -881,19 +899,8 @@ describe Bumbleworks::Task do
         event = Bumbleworks.dashboard.wait_for :dog_mouth
         task = described_class.for_role('dog_mouth').first
         task.params['claimant'] = :some_user
+        expect(task).to receive(:log).with(:update, :extra_data => :fancy)
         task.update(:extra_data => :fancy)
-        expect(Bumbleworks.logger.entries.last).to eq({
-          :level => :info, :entry => {
-            :actor => "some_user", # claimant is a string after #reload
-            :action => :update,
-            :target_type => 'Task',
-            :target_id => task.id,
-            :metadata => {
-              :extra_data => :fancy,
-              :current_fields => task.fields
-            }
-          }
-        })
       end
     end
 
@@ -949,19 +956,8 @@ describe Bumbleworks::Task do
         event = Bumbleworks.dashboard.wait_for :dog_mouth
         task = described_class.for_role('dog_mouth').first
         task.params['claimant'] = :some_user
+        expect(task).to receive(:log).with(:complete, :extra_data => :fancy)
         task.complete(:extra_data => :fancy)
-        expect(Bumbleworks.logger.entries.last).to eq({
-          :level => :info, :entry => {
-            :actor => :some_user,
-            :action => :complete,
-            :target_type => 'Task',
-            :target_id => task.id,
-            :metadata => {
-              :extra_data => :fancy,
-              :current_fields => task.fields
-            }
-          }
-        })
       end
     end
   end
