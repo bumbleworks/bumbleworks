@@ -124,7 +124,9 @@ module Bumbleworks
 
     # proceed workitem (saving changes to fields)
     def complete(metadata = {}, options = {})
-      raise NotCompletable.new(not_completable_error_message) unless completable?
+      unless completable? || options.fetch(:force, false)
+        raise NotCompletable.new(not_completable_error_message)
+      end
       with_hooks(:update, metadata, options) do
         with_hooks(:complete, metadata, options) do
           proceed_workitem

@@ -934,6 +934,14 @@ describe Bumbleworks::Task do
         expect(described_class.for_role('dog_mouth')).not_to be_empty
       end
 
+      it 'allows completion for non-completable tasks if given force option' do
+        event = Bumbleworks.dashboard.wait_for :dog_mouth
+        task = described_class.for_role('dog_mouth').first
+        allow(task).to receive(:completable?).and_return(false)
+        expect(task).to receive(:proceed_workitem)
+        task.complete({:actual => :params}, {:force => true})
+      end
+
       it 'calls update and complete callbacks' do
         allow(subject).to receive(:log)
         expect(subject).to receive(:call_before_hooks).with(:update, :argue_mints).ordered
