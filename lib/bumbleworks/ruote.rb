@@ -82,7 +82,7 @@ module Bumbleworks
           if options[:method] == :cancel || !options[:force]
             send_cancellation_message(options[:method], new_process_wfids)
           else
-            storage.clear
+            safe_storage_clear
           end
           notified_process_wfids += new_process_wfids
           dashboard.process_wfids.count == 0
@@ -142,6 +142,15 @@ module Bumbleworks
 
       def storage
         @storage ||= initialize_storage_adapter
+      end
+
+      def safe_storage_clear
+        Worker.pause_all
+        if storage.respond_to?(:redis)
+          storage.redis.del("msgs")
+        end
+        storage.clear
+        Worker.unpause_all
       end
 
       def reset!
